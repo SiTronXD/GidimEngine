@@ -2,24 +2,37 @@
 
 #include <Windows.h>
 
+#include "Input.h"
+#include "Log.h"
+
 class Window
 {
-protected:
+private:
+	Input input;
+
 	HWND m_hwnd;
 
-	bool is_run;
+	std::string windowTitle;
+
+	bool running;
+
+	int windowWidth;
+	int windowHeight;
+
+	void handleFrame();
 
 public:
-	Window();
+	Window(int windowWidth, int windowHeight, std::string windowTitle);
 	~Window();
 
 	bool init();
-	bool broadcast();
-	bool isRun();
+	bool update();
+	bool isRunning();
 	bool release();
 
 	// Events
-	virtual void onCreate() = 0;
-	virtual void onUpdate() = 0;
-	virtual void onDestroy();
+	void onCreate();
+	void onDestroy();
+
+	LRESULT CALLBACK messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 };

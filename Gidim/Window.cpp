@@ -23,13 +23,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	}
 
 	default:
-		return DefWindowProc(hwnd, msg, wparam, lparam);
+		return window->messageHandler(hwnd, msg, wparam, lparam);
 	}
 
 	return NULL;
 }
 
-Window::Window()
+void Window::handleFrame()
+{
+	// Exit if the escape button is pressed
+	if (this->input.isKeyDown(KEYS::ESCAPE))
+		this->running = false;
+}
+
+Window::Window(int windowWidth, int windowHeight, std::string windowTitle)
+	: m_hwnd(nullptr), running(false), windowWidth(windowWidth), windowHeight(windowHeight), 
+	windowTitle(windowTitle)
 {
 }
 
@@ -55,69 +64,149 @@ bool Window::init()
 
 	// Class registration failed
 	if (!RegisterClassEx(&wc))
+	{
+		Log::Error("window class registration failed");
+
 		return false;
+	}
 
 	if (!window)
 		window = this;
 
+	DEVMODE dmScreenSettings;
+	DWORD displayStyle = WS_OVERLAPPEDWINDOW;
+	int windowPosX = 0;
+	int windowPosY = 0;
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	bool fullscreen = false;
+
+	// Check for fullscreen (will be refactored for easier use later)
+	if (fullscreen)
+	{
+		displayStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP;
+
+		this->windowWidth = screenWidth;
+		this->windowHeight = screenHeight;
+
+		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
+		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+		dmScreenSettings.dmPelsWidth = (unsigned long) this->windowWidth;
+		dmScreenSettings.dmPelsHeight = (unsigned long) this->windowHeight;
+		dmScreenSettings.dmBitsPerPel = 32;
+		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+
+		// Apply settings to fullscreen
+		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
+	}
+	else
+	{
+		windowPosX = (screenWidth - windowWidth) / 2;
+		windowPosY = (screenHeight - windowHeight) / 2;
+	}
+
+
 	// Create handle
 	this->m_hwnd = CreateWindowEx(
-		WS_EX_OVERLAPPEDWINDOW, 
-		"MyWindowClass", "Gidim", 
-		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 
-		1280, 720, 
+		WS_EX_OVERLAPPEDWINDOW, "MyWindowClass", windowTitle.c_str(), 
+		displayStyle,
+		windowPosX, windowPosY,
+		windowWidth, windowHeight, 
 		NULL, NULL, NULL, NULL
 	);
 
 	// Handle creation failed
 	if (!this->m_hwnd)
+	{
+		Log::Error("handle creation failed");
+
 		return false;
+	}
 
 	// Display window
 	ShowWindow(this->m_hwnd, SW_SHOW);
+	SetForegroundWindow(this->m_hwnd);
+	SetFocus(this->m_hwnd);
 	UpdateWindow(this->m_hwnd);
 
-	this->is_run = true;
+	this->running = true;
 
 	return true;
 }
 
-bool Window::broadcast()
+bool Window::update()
 {
 	MSG msg;
+	ZeroMemory(&msg, sizeof(MSG));
 
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+
+		if (msg.message == WM_QUIT)
+		{
+			this->running = false;
+		}
 	}
 
-	window->onUpdate();
 
-	Sleep(0);
+	if (this->running)
+		this->handleFrame();
+
+
+	//Sleep(0);
 
 	return true;
 }
 
-bool Window::isRun()
+bool Window::isRunning()
 {
-	return is_run;
+	return this->running;
 }
 
 bool Window::release()
 {
+	// Handle
 	if (this->m_hwnd)
-	{
-		if (DestroyWindow(this->m_hwnd))
-		{
-			return false;
-		}
-	}
+		DestroyWindow(this->m_hwnd);
 
 	return true;
 }
 
+void Window::onCreate()
+{
+}
+
 void Window::onDestroy()
 {
-	this->is_run = false;
+	this->running = false;
+}
+
+// Handle messages from window, inside this class
+LRESULT Window::messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg)
+	{
+		// Key was pressed
+		case WM_KEYDOWN:
+		{
+			this->input.setKeyDown((unsigned int) wparam);
+
+			return 0;
+		}
+
+		// Key was released
+		case WM_KEYUP:
+		{
+			this->input.setKeyDown((unsigned int) wparam);
+
+			return 0;
+		}
+
+		default:
+		{
+			return DefWindowProc(hwnd, msg, wparam, lparam);
+		}
+	}
 }

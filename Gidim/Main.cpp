@@ -1,17 +1,18 @@
-#include "AppWindow.h"
+#include "Window.h"
 
 int main()
 {
-	AppWindow app;
-	if (app.init())
+	Window window(1280, 720, "Gidim");
+
+	if (window.init())
 	{
-		while (app.isRun())
+		while (window.isRunning())
 		{
-			app.broadcast();
+			window.update();
 		}
 	}
 
-	app.release();
+	window.release();
 
 	return 0;
 }
