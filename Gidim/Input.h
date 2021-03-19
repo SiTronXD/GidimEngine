@@ -48,7 +48,7 @@ class Input
 private:
 	static const int MAX_NUM_KEYS = 256;
 
-	bool keys[MAX_NUM_KEYS];
+	static bool keys[MAX_NUM_KEYS];
 
 public:
 	Input();
@@ -57,5 +57,5 @@ public:
 	void setKeyDown(unsigned int keyCode);
 	void setKeyUp(unsigned int keyCode);
 
-	bool isKeyDown(KEYS keyCode);
+	static bool isKeyDown(KEYS keyCode);
 };

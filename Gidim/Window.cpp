@@ -32,7 +32,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 void Window::handleFrame()
 {
 	// Exit if the escape button is pressed
-	if (this->input.isKeyDown(KEYS::ESCAPE))
+	if (Input::isKeyDown(KEYS::ESCAPE))
 		this->running = false;
 }
 
