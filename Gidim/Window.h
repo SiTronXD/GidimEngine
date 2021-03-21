@@ -10,7 +10,7 @@ class Window
 private:
 	Input input;
 
-	HWND m_hwnd;
+	HWND handle;
 
 	std::string windowTitle;
 
@@ -35,4 +35,6 @@ public:
 	void onDestroy();
 
 	LRESULT CALLBACK messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+	const HWND& getHandle() const;
 };

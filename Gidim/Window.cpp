@@ -37,7 +37,7 @@ void Window::handleFrame()
 }
 
 Window::Window(int windowWidth, int windowHeight, std::string windowTitle)
-	: m_hwnd(nullptr), running(false), windowWidth(windowWidth), windowHeight(windowHeight), 
+	: handle(nullptr), running(false), windowWidth(windowWidth), windowHeight(windowHeight),
 	windowTitle(windowTitle)
 {
 }
@@ -65,7 +65,7 @@ bool Window::init()
 	// Class registration failed
 	if (!RegisterClassEx(&wc))
 	{
-		Log::Error("window class registration failed");
+		Log::Error("Window class registration failed.");
 
 		return false;
 	}
@@ -107,7 +107,7 @@ bool Window::init()
 
 
 	// Create handle
-	this->m_hwnd = CreateWindowEx(
+	this->handle = CreateWindowEx(
 		WS_EX_OVERLAPPEDWINDOW, "MyWindowClass", windowTitle.c_str(), 
 		displayStyle,
 		windowPosX, windowPosY,
@@ -116,18 +116,18 @@ bool Window::init()
 	);
 
 	// Handle creation failed
-	if (!this->m_hwnd)
+	if (!this->handle)
 	{
-		Log::Error("handle creation failed");
+		Log::Error("Handle creation failed.");
 
 		return false;
 	}
 
 	// Display window
-	ShowWindow(this->m_hwnd, SW_SHOW);
-	SetForegroundWindow(this->m_hwnd);
-	SetFocus(this->m_hwnd);
-	UpdateWindow(this->m_hwnd);
+	ShowWindow(this->handle, SW_SHOW);
+	SetForegroundWindow(this->handle);
+	SetFocus(this->handle);
+	UpdateWindow(this->handle);
 
 	this->running = true;
 
@@ -168,8 +168,8 @@ bool Window::isRunning()
 bool Window::release()
 {
 	// Handle
-	if (this->m_hwnd)
-		DestroyWindow(this->m_hwnd);
+	if (this->handle)
+		DestroyWindow(this->handle);
 
 	return true;
 }
@@ -193,7 +193,7 @@ LRESULT Window::messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		{
 			this->input.setKeyDown((unsigned int) wparam);
 
-			return 0;
+			break;
 		}
 
 		// Key was released
@@ -201,7 +201,7 @@ LRESULT Window::messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		{
 			this->input.setKeyDown((unsigned int) wparam);
 
-			return 0;
+			break;
 		}
 
 		default:
@@ -209,4 +209,11 @@ LRESULT Window::messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 			return DefWindowProc(hwnd, msg, wparam, lparam);
 		}
 	}
+
+	return NULL;
+}
+
+const HWND& Window::getHandle() const
+{
+	return this->handle;
 }
