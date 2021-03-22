@@ -4,8 +4,7 @@
 
 class Log
 {
-private:
-
 public:
-	static void Error(std::string errorMessage);
+	static void print(std::string message);
+	static void error(std::string errorMessage);
 };

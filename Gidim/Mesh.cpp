@@ -1,6 +1,4 @@
 #include "Mesh.h"
-#include <fstream>
-#include <vector>
 
 struct Vertex
 {
@@ -8,8 +6,10 @@ struct Vertex
 	float r, g, b;
 };
 
-void Mesh::createMesh()
+bool Mesh::createMesh()
 {
+	HRESULT result;
+
 	// Actual vertices
 	Vertex vertices[] =
 	{
@@ -17,104 +17,105 @@ void Mesh::createMesh()
 		{  0.0f,  1.0f,		0.0f, 1.0f, 0.0f },
 		{  1.0f, -1.0f,		0.0f, 0.0f, 1.0f }
 	};
+	this->vertexCount = sizeof(vertices) / sizeof(vertices[0]);
+
+	// Has to be in clock-wise order for front faces
+	int indices[]{ 0, 1, 2 };
+	this->indexCount = sizeof(indices) / sizeof(indices[0]);
+
 
 	// Create vertex buffer desc
-	CD3D11_BUFFER_DESC vertexBufferDesc = CD3D11_BUFFER_DESC(sizeof(vertices), D3D11_BIND_VERTEX_BUFFER);
+	CD3D11_BUFFER_DESC vertexBufferDesc = CD3D11_BUFFER_DESC(
+		sizeof(vertices), D3D11_BIND_VERTEX_BUFFER
+	);
 	
-	// Create sub resource data for vertex data
+	// Create sub resource data containing pointer to vertex data
 	D3D11_SUBRESOURCE_DATA vertexData = { 0 };
 	vertexData.pSysMem = vertices;
+	vertexData.SysMemPitch = 0;			// Distance in bytes from one line to the next one (2D/3D textures)
+	vertexData.SysMemSlicePitch = 0;	// Distance in bytes from one depth level to the next one (3D textures)
 
 	// Create vertex buffer
-	renderer.getDevice()->CreateBuffer(&vertexBufferDesc, &vertexData, &this->vertexBuffer);
-}
-
-void Mesh::createShaders()
-{
-	// Load vertex shader
-	std::ifstream vsFile("DefaultShader_Vert.cso", std::ios::binary);
-	std::vector<char> vsData = 
-	{ 
-		std::istreambuf_iterator<char>(vsFile), 
-		std::istreambuf_iterator<char>() 
-	};
-
-	// Load pixel shader
-	std::ifstream psFile("DefaultShader_Pix.cso", std::ios::binary);
-	std::vector<char> psData =
-	{
-		std::istreambuf_iterator<char>(psFile),
-		std::istreambuf_iterator<char>()
-	};
-
-	// Create shaders
-	renderer.getDevice()->CreateVertexShader(
-		vsData.data(), vsData.size(), nullptr, &this->vertexShader
+	result = renderer.getDevice()->CreateBuffer(
+		&vertexBufferDesc, &vertexData, &this->vertexBuffer
 	);
-	renderer.getDevice()->CreatePixelShader(
-		psData.data(), psData.size(), nullptr, &this->pixelShader
+	if (FAILED(result))
+	{
+		Log::error("Could not create vertex buffer.");
+
+		return false;
+	}
+
+	// Create index buffer desc
+	CD3D11_BUFFER_DESC indexBufferDesc = CD3D11_BUFFER_DESC(
+		sizeof(indices), D3D11_BIND_INDEX_BUFFER
 	);
 
-	// Create input layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+	// Create sub resource data containing pointer to index data
+	D3D11_SUBRESOURCE_DATA indexData = { 0 };
+	indexData.pSysMem = indices;
+	indexData.SysMemPitch = 0;
+	indexData.SysMemSlicePitch = 0;
+
+	// Create the index buffer
+	result = renderer.getDevice()->CreateBuffer(
+		&indexBufferDesc, &indexData, &this->indexBuffer
+	);
+	if (FAILED(result))
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	renderer.getDevice()->CreateInputLayout(layout, 2, vsData.data(), vsData.size(), &this->inputLayout);
+		Log::error("Could not create index buffer.");
+
+		return false;
+	}
+
+	return true;
 }
 
 Mesh::Mesh(Renderer& renderer)
-	: renderer(renderer), vertexBuffer(nullptr), vertexShader(nullptr), 
-	pixelShader(nullptr), inputLayout(nullptr)
+	: renderer(renderer), vertexBuffer(nullptr)
 {
 	this->createMesh();
-	this->createShaders();
+
+	this->shader.loadFromFile(
+		this->renderer.getDevice(), 
+		"DefaultShader_Vert.cso", 
+		"DefaultShader_Pix.cso"
+	);
 }
 
 Mesh::~Mesh()
 {
-	if (this->vertexBuffer)
-	{
-		this->vertexBuffer->Release();
-		this->vertexBuffer = nullptr;
-	}
-
-	if (this->vertexShader)
-	{
-		this->vertexShader->Release();
-		this->vertexShader = nullptr;
-	}
-
-	if (this->pixelShader)
-	{
-		this->pixelShader->Release();
-		this->pixelShader = nullptr;
-	}
-
-	if (this->inputLayout)
-	{
-		this->inputLayout->Release();
-		this->inputLayout = nullptr;
-	}
+	this->indexBuffer->Release();
+	this->vertexBuffer->Release();
 }
 
 void Mesh::draw()
 {
 	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
 
+	// Set topology
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	deviceContext->IASetInputLayout(this->inputLayout);
+	
+	XMMATRIX projectionMatrix = XMMatrixIdentity();
+	XMMATRIX viewMatrix = XMMatrixIdentity();
+	XMMATRIX worldMatrix = XMMatrixIdentity();
+	//worldMatrix = XMMatrixScaling(0.2f, 0.5f, 0.5f);
 
-	// Bind the triangle shaders
-	deviceContext->VSSetShader(this->vertexShader, nullptr, 0);
-	deviceContext->PSSetShader(this->pixelShader, nullptr, 0);
+	// Update buffers in shader
+	this->shader.update(renderer);
 
-	// Bind the vertex buffer
+	// Set shader
+	this->shader.bind(deviceContext);
+
+	// Set the vertex buffer
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &this->vertexBuffer, &stride, &offset);
 
+	// Set the index buffer
+	deviceContext->IASetIndexBuffer(this->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+
 	// Draw
-	deviceContext->Draw(3, 0);
+	deviceContext->DrawIndexed(this->indexCount, 0, 0);
 }

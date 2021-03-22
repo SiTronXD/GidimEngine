@@ -2,6 +2,7 @@
 
 #include <d3d11.h>
 #include "Window.h"
+#include "Camera.h"
 
 class Renderer
 {
@@ -13,7 +14,11 @@ private:
 	ID3D11RenderTargetView* renderTargetView;
 	D3D11_TEXTURE2D_DESC backBufferDesc;
 
-	bool createDevice(Window& window);
+	Camera* camera;
+	XMMATRIX projectionMatrix;
+	XMMATRIX viewMatrix;
+
+	bool createDevice(Window& window, bool vsyncEnabled);
 	bool createRenderTarget();
 
 public:
@@ -24,6 +29,11 @@ public:
 	void clear(float clearColor[]);
 	void endFrame();
 
+	void setCamera(Camera& cam);
+
 	ID3D11Device* getDevice() const;
 	ID3D11DeviceContext* getDeviceContext() const;
+
+	XMMATRIX getProjectionMatrix();
+	XMMATRIX getViewMatrix();
 };

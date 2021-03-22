@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "Log.h"
 
-bool Renderer::createDevice(Window& window)
+bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 {
 	// Swap chain desc
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0 };
@@ -12,17 +12,36 @@ bool Renderer::createDevice(Window& window)
 	swapChainDesc.SampleDesc.Count = 1; // Number of samples for AA
 	swapChainDesc.Windowed = true;
 
+	unsigned int refreshRateNumerator = 0;
+	unsigned int refreshRateDenominator = 0;
+
+	// Handle vsync
+	if (vsyncEnabled)
+	{
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = refreshRateNumerator;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = refreshRateDenominator;
+	}
+	else
+	{
+		swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	}
+
+	// Set feature level of DirectX 11
+	D3D_FEATURE_LEVEL featureLevel;
+	featureLevel = D3D_FEATURE_LEVEL_11_0;
+
 	// Create the swap chain, device and device context
 	auto result = D3D11CreateDeviceAndSwapChain(
 		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
-		nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc,
+		&featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc,
 		&this->swapChain, &this->device, nullptr, &this->deviceContext
 	);
 
 	// Check for errors
 	if (result != S_OK)
 	{
-		Log::Error("Swap chain creation failed.");
+		Log::error("Swap chain creation failed.");
 		return false;
 	}
 
@@ -36,7 +55,14 @@ bool Renderer::createRenderTarget()
 	this->swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**) &backBuffer);
 
 	// Create render target view from back buffer
-	this->device->CreateRenderTargetView(backBuffer, nullptr, &this->renderTargetView);
+	if (backBuffer != nullptr)
+	{
+		this->device->CreateRenderTargetView(
+			backBuffer, nullptr, &this->renderTargetView
+		);
+	}
+	else
+		Log::error("Backbuffer was nullptr when trying to create render target view.");
 
 	// Get desc before releasing
 	backBuffer->GetDesc(&backBufferDesc);
@@ -47,9 +73,12 @@ bool Renderer::createRenderTarget()
 
 Renderer::Renderer(Window& window)
 	: swapChain(nullptr), device(nullptr), deviceContext(nullptr),
-	renderTargetView(nullptr)
+	renderTargetView(nullptr), camera(nullptr)
 {
-	this->createDevice(window);
+	this->projectionMatrix = XMMatrixIdentity();
+	this->viewMatrix = XMMatrixIdentity();
+
+	this->createDevice(window, false);
 	this->createRenderTarget();
 }
 
@@ -57,34 +86,13 @@ Renderer::~Renderer()
 {
 	// Set to windowed mode or the swap chain will throw an exception
 	if (this->swapChain)
-	{
 		this->swapChain->SetFullscreenState(false, NULL);
-	}
 
 
-	if (this->renderTargetView)
-	{
-		this->renderTargetView->Release();
-		this->renderTargetView = nullptr;
-	}
-
-	if (this->deviceContext)
-	{
-		this->deviceContext->Release();
-		this->deviceContext = nullptr;
-	}
-
-	if (this->device)
-	{
-		this->device->Release();
-		this->device = nullptr;
-	}
-
-	if (this->swapChain)
-	{
-		this->swapChain->Release();
-		this->device = nullptr;
-	}
+	this->renderTargetView->Release();
+	this->deviceContext->Release();
+	this->device->Release();
+	this->swapChain->Release();
 }
 
 void Renderer::beginFrame()
@@ -98,12 +106,16 @@ void Renderer::beginFrame()
 		(float) backBufferDesc.Width, (float) backBufferDesc.Height
 	);
 	this->deviceContext->RSSetViewports(1, &viewport);
+
+	// Update view matrix
+	if (this->camera != nullptr)
+		this->viewMatrix = this->camera->getViewMatrix();
 }
 
 void Renderer::endFrame()
 {
 	// Swap buffers
-	this->swapChain->Present(1, 0);
+	this->swapChain->Present(0, 0);
 }
 
 void Renderer::clear(float clearColor[])
@@ -120,4 +132,22 @@ ID3D11Device* Renderer::getDevice() const
 ID3D11DeviceContext* Renderer::getDeviceContext() const
 {
 	return this->deviceContext;
+}
+
+void Renderer::setCamera(Camera& cam)
+{
+	this->camera = &cam;
+
+	this->projectionMatrix = this->camera->getProjectionMatrix();
+	this->viewMatrix = this->camera->getViewMatrix();
+}
+
+XMMATRIX Renderer::getProjectionMatrix()
+{
+	return this->projectionMatrix;
+}
+
+XMMATRIX Renderer::getViewMatrix()
+{
+	return this->viewMatrix;
 }

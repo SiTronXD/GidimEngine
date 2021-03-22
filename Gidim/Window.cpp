@@ -65,7 +65,7 @@ bool Window::init()
 	// Class registration failed
 	if (!RegisterClassEx(&wc))
 	{
-		Log::Error("Window class registration failed.");
+		Log::error("Window class registration failed.");
 
 		return false;
 	}
@@ -118,7 +118,7 @@ bool Window::init()
 	// Handle creation failed
 	if (!this->handle)
 	{
-		Log::Error("Handle creation failed.");
+		Log::error("Handle creation failed.");
 
 		return false;
 	}

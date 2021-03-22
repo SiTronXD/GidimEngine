@@ -1,6 +1,16 @@
 #include "Log.h"
+#include <Windows.h>
 
-void Log::Error(std::string errorMessage)
+void Log::print(std::string message)
 {
-	std::cout << "--ERROR [ " << errorMessage << " ]" << std::endl;
+	std::cout << "-- " << message << std::endl;
+}
+
+void Log::error(std::string errorMessage)
+{
+	//std::cout << "--ERROR [ " << errorMessage << " ]" << std::endl;
+
+	MessageBox(
+		NULL, errorMessage.c_str(), "ERROR", MB_OK
+	);
 }
