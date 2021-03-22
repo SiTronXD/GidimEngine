@@ -8,14 +8,14 @@ cbuffer MatrixBuffer
 
 struct Input
 {
-	float2 position : POSITION;
-	float3 color : COLOR;
+	float3 position : POSITION;
+	float2 uv : TEXCOORD;
 };
 
 struct Output
 {
 	float4 position : SV_POSITION;
-	float3 color : COLOR;
+	float2 uv : TEXCOORD;
 };
 
 Output main(Input input)
@@ -23,13 +23,13 @@ Output main(Input input)
 	Output output;
 
 	// Position
-	float4 p = float4(input.position.xy, 0.0f, 1.0f);
+	float4 p = float4(input.position.xyz, 1.0f);
 	output.position = mul(p, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 
-	// Color
-	output.color = input.color;
+	// UV coordinates
+	output.uv = input.uv;
 
 	return output;
 }

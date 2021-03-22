@@ -31,13 +31,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void Window::handleFrame()
 {
+#ifdef _DEBUG
 	// Exit if the escape button is pressed
 	if (Input::isKeyDown(KEYS::ESCAPE))
 		this->running = false;
+#endif
 }
 
 Window::Window(int windowWidth, int windowHeight, std::string windowTitle)
-	: handle(nullptr), running(false), windowWidth(windowWidth), windowHeight(windowHeight),
+	: handle(nullptr), running(false), 
+	windowWidth(windowWidth), windowHeight(windowHeight),
 	windowTitle(windowTitle)
 {
 }
@@ -105,13 +108,20 @@ bool Window::init()
 		windowPosY = (screenHeight - windowHeight) / 2;
 	}
 
+	// Fix window rect to account for the upper bar
+	RECT windowRect;
+	windowRect.left = windowPosX;
+	windowRect.top = windowPosY;
+	windowRect.right = windowRect.left + windowWidth;
+	windowRect.bottom = windowRect.top + windowHeight;
+	AdjustWindowRect(&windowRect, displayStyle, FALSE);
 
 	// Create handle
 	this->handle = CreateWindowEx(
 		WS_EX_OVERLAPPEDWINDOW, "MyWindowClass", windowTitle.c_str(), 
 		displayStyle,
-		windowPosX, windowPosY,
-		windowWidth, windowHeight, 
+		windowRect.left, windowRect.top,
+		windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
 		NULL, NULL, NULL, NULL
 	);
 
@@ -128,6 +138,9 @@ bool Window::init()
 	SetForegroundWindow(this->handle);
 	SetFocus(this->handle);
 	UpdateWindow(this->handle);
+
+	// Don't show cursor
+	ShowCursor(FALSE);
 
 	this->running = true;
 
@@ -150,12 +163,29 @@ bool Window::update()
 		}
 	}
 
+	POINT newCursorPoint;
+	newCursorPoint.x = this->windowWidth / 2;
+	newCursorPoint.y = this->windowHeight / 2;
 
+	// Update cursor delta
+	POINT cursorPoint;
+	GetCursorPos(&cursorPoint);
+	ScreenToClient(this->handle, &cursorPoint);
+	input.setCursorDelta(
+		cursorPoint.x - newCursorPoint.x, cursorPoint.y - newCursorPoint.y
+	);
+
+	// Lock cursor position
+	ClientToScreen(this->handle, &newCursorPoint);
+	SetCursorPos(newCursorPoint.x, newCursorPoint.y);
+
+	// Update cursor position
+	input.setCursorPos(newCursorPoint.x, newCursorPoint.y);
+
+	// Process frame
 	if (this->running)
 		this->handleFrame();
 
-
-	//Sleep(0);
 
 	return true;
 }
@@ -199,7 +229,7 @@ LRESULT Window::messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 		// Key was released
 		case WM_KEYUP:
 		{
-			this->input.setKeyDown((unsigned int) wparam);
+			this->input.setKeyUp((unsigned int) wparam);
 
 			break;
 		}

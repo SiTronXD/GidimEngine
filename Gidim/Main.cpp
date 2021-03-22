@@ -1,7 +1,7 @@
 #include "Window.h"
 #include "Renderer.h"
 #include "Mesh.h"
-#include "Camera.h"
+#include "CameraController.h"
 #include "Time.h"
 
 int main()
@@ -19,23 +19,71 @@ int main()
 	}
 
 	Renderer renderer(window);
-	Mesh mesh(renderer);
-	Camera camera(3.14f * 0.5f, (float) windowWidth / (float) windowHeight, 0.1f, 1000.0f);
+	CameraController cameraController(windowWidth, windowHeight);
+	renderer.setCamera(cameraController.getCamera());
 	Time time;
 
-	renderer.setCamera(camera);
+	float p1[]{ -0.866f,  0.0f,  0.866f };
+	float p2[]{  0.0f,  0.0f, -1.0f };
+	float p3[]{ 0.866f,  0.0f,  0.866f };
 
-	float movingTimer = 0.0f;
+	// Create mesh
+	Vertex vertices[] =
+	{
+		{ -0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
+		{    0.0f,  0.0f,	-1.0f,		0.5f, 0.0f },
+		{  0.866f,  0.0f,	 0.5f,		1.0f, 1.0f },
+
+		{    0.0f,  0.0f,	-1.0f,		1.0f, 1.0f },
+		{ -0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
+		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f },
+
+		{  0.866f,  0.0f,	  0.5f,		1.0f, 1.0f },
+		{    0.0f,  0.0f,	-1.0f,		0.0f, 1.0f },
+		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f },
+
+		{ -0.866f,  0.0f,	  0.5f,		1.0f, 1.0f },
+		{  0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
+		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f }
+	};
+	int indices[]
+	{ 
+		0, 1, 2,
+		3, 4, 5,
+		6, 7, 8,
+		9, 10, 11
+	};
+	int numVertices = sizeof(vertices) / sizeof(vertices[0]);
+	int numIndices = sizeof(indices) / sizeof(indices[0]);
+
+	Mesh mesh(renderer, vertices, indices, numVertices, numIndices);
+	Texture texture;
+	texture.loadFromFile(
+		renderer.getDevice(),
+		"Resources/Textures/myMan.png"
+	);
+
+
+	// Update once before starting loop
+	window.update();
+
+	float timer = 0.0f;
 
 	// Main game loop
 	while (window.isRunning())
 	{
+		// Handle windows events
+		window.update();
+
 		// Update delta time
 		time.updateDeltaTime();
 
-		// Move camera
-		movingTimer += Time::getDeltaTime() * 3.14f * 2.0f;
-		camera.setPosition(XMVectorSet(sin(movingTimer) * 3.0f, 0.0f, cos(movingTimer) * -3.0f, 1.0f));
+		/////////////////////////////////////////////////////////////////////////
+		// GAME LOGIC
+
+		timer += Time::getDeltaTime();
+
+		cameraController.update();
 
 		// Print fps once every second
 		if (Time::hasOneSecondPassed())
@@ -47,18 +95,34 @@ int main()
 
 		/////////////////////////////////////////////////////////////////////////
 
-		// Handle windows events
-		window.update();
-
 		// Prepare for rendering frame
 		renderer.beginFrame();
 
-		// Clear background
-		float clearColor[]{ 0.1f, 0.1f, 0.1f, 1.0f };
+		// Clear background color
+		XMFLOAT4 clearColor;
+		clearColor.x = 0.1f;
+		clearColor.y = 0.1f;
+		clearColor.z = 0.1f;
+		clearColor.w = 1.0f;
+
 		renderer.clear(clearColor);
 
+		// Set texture
+		texture.set(renderer.getDeviceContext());
+
 		// Draw!
+		XMMATRIX currentWorldMatrix = XMMatrixRotationY(timer) * XMMatrixTranslation(1.5f, 0.0f, 0.0f);
+		mesh.setWorldMatrix(currentWorldMatrix);
 		mesh.draw();
+
+		currentWorldMatrix = XMMatrixRotationY(timer + 0.4) * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		mesh.setWorldMatrix(currentWorldMatrix);
+		mesh.draw();
+
+		currentWorldMatrix = XMMatrixRotationY(timer + 0.4 * 2.0) * XMMatrixTranslation(-1.5f, 0.0f, 0.0f);
+		mesh.setWorldMatrix(currentWorldMatrix);
+		mesh.draw();
+
 
 		// Present frame
 		renderer.endFrame();

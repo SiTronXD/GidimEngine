@@ -1,45 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{81b6aa18-6a26-467f-ad8b-d9a6c6633f15}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{72bec3b0-db69-4bf3-91c2-53a0bac0e8dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics">
+      <UniqueIdentifier>{15354fa4-2721-483e-be2c-38b7c7a2c5fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ExternalLibraries">
+      <UniqueIdentifier>{69c15c49-64dd-49a7-95e0-5a53a9e64c2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExternalLibraries\Microsoft">
+      <UniqueIdentifier>{5687d8aa-d45a-40e2-98ef-a56fbf3c097a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Window.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="Time.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Main.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="External\DDSTextureLoader11.cpp">
+      <Filter>ExternalLibraries\Microsoft</Filter>
+    </ClCompile>
+    <ClCompile Include="External\WICTextureLoader11.cpp">
+      <Filter>ExternalLibraries\Microsoft</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,26 +72,40 @@
     <ClInclude Include="Log.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
+    <ClInclude Include="Time.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
-      <Filter>Engine</Filter>
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>Engine</Filter>
+      <Filter>Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Engine</Filter>
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="External\DDSTextureLoader11.h">
+      <Filter>ExternalLibraries\Microsoft</Filter>
+    </ClInclude>
+    <ClInclude Include="External\WICTextureLoader11.h">
+      <Filter>ExternalLibraries\Microsoft</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\DefaultShader_Pix.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\DefaultShader_Vert.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

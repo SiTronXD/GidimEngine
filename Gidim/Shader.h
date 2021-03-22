@@ -23,6 +23,8 @@ private:
 	ID3D11InputLayout* inputLayout;
 	ID3D11Buffer* matrixBuffer;
 
+	ID3D11SamplerState* samplerState;
+
 public:
 	Shader();
 	~Shader();
@@ -34,7 +36,7 @@ public:
 	);
 
 	void update(
-		Renderer& renderer
+		Renderer& renderer, XMMATRIX currentWorldMatrix
 	);
-	void bind(ID3D11DeviceContext* context);
+	void set(ID3D11DeviceContext* context);
 };

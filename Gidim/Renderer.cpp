@@ -1,6 +1,5 @@
 #include "Renderer.h"
 #include "Log.h"
-#include <string>
 
 bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 {
@@ -140,7 +139,11 @@ bool Renderer::createRenderTarget()
 		);
 	}
 	else
+	{
 		Log::error("Backbuffer was nullptr when trying to create render target view.");
+
+		return false;
+	}
 
 	// Get desc before releasing
 	backBuffer->GetDesc(&backBufferDesc);
@@ -149,15 +152,145 @@ bool Renderer::createRenderTarget()
 	return true;
 }
 
+bool Renderer::createDepthStencilBuffers(Window& window)
+{
+	HRESULT result;
+
+	// Create a description of the depth and stencil buffers
+	D3D11_TEXTURE2D_DESC depthStencilBufferDesc = { 0 };
+	depthStencilBufferDesc.Width = window.getWidth();
+	depthStencilBufferDesc.Height = window.getHeight();
+	depthStencilBufferDesc.MipLevels = 1;
+	depthStencilBufferDesc.ArraySize = 1;
+	depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilBufferDesc.SampleDesc.Count = 1;
+	depthStencilBufferDesc.SampleDesc.Quality = 0;
+	depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilBufferDesc.CPUAccessFlags = 0;
+	depthStencilBufferDesc.MiscFlags = 0;
+
+	// Create a texture for the depth and stencil buffers using the filled out
+	// description
+	result = device->CreateTexture2D(
+		&depthStencilBufferDesc, NULL, &this->depthStencilBuffer
+	);
+	if (FAILED(result))
+	{
+		Log::error("Could not create depth/stencil texture.");
+
+		return false;
+	}
+
+	// Create a description of the depth and stencil states
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = { 0 };
+
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // Write on/off
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	depthStencilDesc.StencilEnable = false;
+	depthStencilDesc.StencilReadMask = 0xFF; // Portion for reading
+	depthStencilDesc.StencilWriteMask = 0xFF; // Portion for writing
+
+	// Stencil operations if pixel is front-facing
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Stencil operations if pixel is back-facing
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+
+	// Create a depth stencil state
+	result = device->CreateDepthStencilState(&depthStencilDesc, &this->depthStencilState);
+	if (FAILED(result))
+	{
+		Log::error("Could not create depth stencil state.");
+
+		return false;
+	}
+
+	// Set the depth stencil state
+	deviceContext->OMSetDepthStencilState(this->depthStencilState, 1);
+
+	// Set up the depth stencil views desc
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
+
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+
+	// Create the depth stencil view
+	result = device->CreateDepthStencilView(
+		this->depthStencilBuffer, &depthStencilViewDesc, &this->depthStencilView
+	);
+	if (FAILED(result))
+	{
+		Log::error("Failed creating depth stencil view.");
+
+		return false;
+	}
+
+	// Bind the render target view and depth stencil view to the 
+	// output merger pipeline
+	this->deviceContext->OMSetRenderTargets(
+		1, &this->renderTargetView, depthStencilView
+	);
+
+	// Setup the raster description which will determine how and what
+	// polygons will be drawn
+	D3D11_RASTERIZER_DESC rasterDesc;
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	// Create the rasterizer state from the description we just filled out
+	result = device->CreateRasterizerState(&rasterDesc, &this->rasterState);
+	if (FAILED(result))
+	{
+		Log::error("Could not create rasterizer state.");
+
+		return false;
+	}
+
+	// Set rasteriser state
+	deviceContext->RSSetState(this->rasterState);
+
+	// Set viewport
+	CD3D11_VIEWPORT viewport = CD3D11_VIEWPORT(
+		0.0f, 0.0f,
+		(float)backBufferDesc.Width, (float)backBufferDesc.Height
+	);
+	this->deviceContext->RSSetViewports(1, &viewport);
+
+	return true;
+}
+
 Renderer::Renderer(Window& window)
 	: swapChain(nullptr), device(nullptr), deviceContext(nullptr),
 	renderTargetView(nullptr), camera(nullptr)
 {
+	// Initialize matrices
 	this->projectionMatrix = XMMatrixIdentity();
 	this->viewMatrix = XMMatrixIdentity();
 
 	this->createDevice(window, vsyncEnabled);
 	this->createRenderTarget();
+	this->createDepthStencilBuffers(window);
 }
 
 Renderer::~Renderer()
@@ -166,7 +299,10 @@ Renderer::~Renderer()
 	if (this->swapChain)
 		this->swapChain->SetFullscreenState(false, NULL);
 
-
+	this->rasterState->Release();
+	this->depthStencilView->Release();
+	this->depthStencilState->Release();
+	this->depthStencilBuffer->Release();
 	this->renderTargetView->Release();
 	this->deviceContext->Release();
 	this->device->Release();
@@ -175,16 +311,6 @@ Renderer::~Renderer()
 
 void Renderer::beginFrame()
 {
-	// Bind render target
-	this->deviceContext->OMSetRenderTargets(1, &this->renderTargetView, nullptr);
-
-	// Set viewport
-	auto viewport = CD3D11_VIEWPORT(
-		0.0f, 0.0f, 
-		(float) backBufferDesc.Width, (float) backBufferDesc.Height
-	);
-	this->deviceContext->RSSetViewports(1, &viewport);
-
 	// Update view matrix
 	if (this->camera != nullptr)
 		this->viewMatrix = this->camera->getViewMatrix();
@@ -196,10 +322,14 @@ void Renderer::endFrame()
 	this->swapChain->Present(vsyncEnabled, 0);
 }
 
-void Renderer::clear(float clearColor[])
+void Renderer::clear(XMFLOAT4 clearColor)
 {
 	// Set the background color
-	this->deviceContext->ClearRenderTargetView(this->renderTargetView, clearColor);
+	float cc[4]{ clearColor.x, clearColor.y, clearColor.z, clearColor.w };
+	this->deviceContext->ClearRenderTargetView(this->renderTargetView, cc);
+
+	// Clear the depth buffer
+	this->deviceContext->ClearDepthStencilView(this->depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 ID3D11Device* Renderer::getDevice() const

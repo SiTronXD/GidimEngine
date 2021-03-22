@@ -47,6 +47,10 @@ class Input
 {
 private:
 	static const int MAX_NUM_KEYS = 256;
+	static int cursorX;
+	static int cursorY;
+	static int cursorDeltaX;
+	static int cursorDeltaY;
 
 	static bool keys[MAX_NUM_KEYS];
 
@@ -56,6 +60,12 @@ public:
 
 	void setKeyDown(unsigned int keyCode);
 	void setKeyUp(unsigned int keyCode);
+	void setCursorPos(int newX, int newY);
+	void setCursorDelta(int newDeltaX, int newDeltaY);
 
 	static bool isKeyDown(KEYS keyCode);
+	static int getCursorX();
+	static int getCursorY();
+	static int getCursorDeltaX();
+	static int getCursorDeltaY();
 };
