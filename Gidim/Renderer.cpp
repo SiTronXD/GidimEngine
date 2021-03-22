@@ -1,25 +1,103 @@
 #include "Renderer.h"
 #include "Log.h"
+#include <string>
 
 bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 {
+	HRESULT result;
+
+	// Create a DirectX graphics interface factory
+	IDXGIFactory* factory;
+	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**) &factory);
+	if (FAILED(result))
+	{
+		Log::error("Could not create graphics interface factory.");
+
+		return false;
+	}
+
+	// Use the factory to create an adapter for the primary
+	// graphics interface (video card)
+	IDXGIAdapter* adapter;
+	result = factory->EnumAdapters(0, &adapter);
+	if (FAILED(result))
+	{
+		Log::error("Could not create adapter.");
+
+		return false;
+	}
+
+	// Use the adapter to get the adapter output (monitor)
+	IDXGIOutput* adapterOutput;
+	result = adapter->EnumOutputs(0, &adapterOutput);
+	if (FAILED(result))
+	{
+		Log::error("Could not create adapter output.");
+
+		return false;
+	}
+
+	// Get the number of modes that fit the 
+	// DXGI_FORMAT_R8G8B8A8_UNORM display format for the
+	// adapter output
+	unsigned int numModes = 0;
+	result = adapterOutput->GetDisplayModeList(
+		DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED,
+		&numModes, NULL
+	);
+	if (FAILED(result))
+	{
+		Log::error("Could not get display modes.");
+
+		return false;
+	}
+
+	// Create an array to hold all possible display modes for
+	// this monitor/video card combination
+	DXGI_MODE_DESC* displayModeList = new DXGI_MODE_DESC[numModes];
+
+	// Fill display mode array
+	result = adapterOutput->GetDisplayModeList(
+		DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED,
+		&numModes, displayModeList
+	);
+
+	// Save numerator and denominator after finding the correct display mode
+	unsigned int refreshRateNumerator = 0;
+	unsigned int refreshRateDenominator = 1;
+	for (int i = 0; i < numModes; ++i)
+	{
+		if (displayModeList[i].Width == (unsigned int) window.getWidth() &&
+			displayModeList[i].Height == (unsigned int) window.getHeight())
+		{
+			refreshRateNumerator = displayModeList[i].RefreshRate.Numerator;
+			refreshRateDenominator = displayModeList[i].RefreshRate.Denominator;
+		}
+	}
+
+	// Deallocate dynamic array of display modes
+	delete[] displayModeList;
+	displayModeList = 0;
+
 	// Swap chain desc
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0 };
 	swapChainDesc.BufferCount = 1; // One back buffer, (and one front buffer)
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.Width = window.getWidth();
+	swapChainDesc.BufferDesc.Height = window.getHeight();
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.OutputWindow = window.getHandle();
 	swapChainDesc.SampleDesc.Count = 1; // Number of samples for AA
+	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = true;
-
-	unsigned int refreshRateNumerator = 0;
-	unsigned int refreshRateDenominator = 0;
 
 	// Handle vsync
 	if (vsyncEnabled)
 	{
 		swapChainDesc.BufferDesc.RefreshRate.Numerator = refreshRateNumerator;
 		swapChainDesc.BufferDesc.RefreshRate.Denominator = refreshRateDenominator;
+
+		Log::print("refreshRateNumerator: " + std::to_string(refreshRateNumerator) + "  refreshRateDenominator: " + std::to_string(refreshRateDenominator));
 	}
 	else
 	{
@@ -32,7 +110,7 @@ bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// Create the swap chain, device and device context
-	auto result = D3D11CreateDeviceAndSwapChain(
+	result = D3D11CreateDeviceAndSwapChain(
 		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
 		&featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc,
 		&this->swapChain, &this->device, nullptr, &this->deviceContext
@@ -78,7 +156,7 @@ Renderer::Renderer(Window& window)
 	this->projectionMatrix = XMMatrixIdentity();
 	this->viewMatrix = XMMatrixIdentity();
 
-	this->createDevice(window, false);
+	this->createDevice(window, vsyncEnabled);
 	this->createRenderTarget();
 }
 
@@ -115,7 +193,7 @@ void Renderer::beginFrame()
 void Renderer::endFrame()
 {
 	// Swap buffers
-	this->swapChain->Present(0, 0);
+	this->swapChain->Present(vsyncEnabled, 0);
 }
 
 void Renderer::clear(float clearColor[])

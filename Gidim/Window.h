@@ -37,4 +37,7 @@ public:
 	LRESULT CALLBACK messageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 	const HWND& getHandle() const;
+
+	const int& getWidth() const;
+	const int& getHeight() const;
 };

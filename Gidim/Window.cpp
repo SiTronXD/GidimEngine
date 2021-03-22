@@ -217,3 +217,13 @@ const HWND& Window::getHandle() const
 {
 	return this->handle;
 }
+
+const int& Window::getWidth() const
+{
+	return windowWidth;
+}
+
+const int& Window::getHeight() const
+{
+	return windowHeight;
+}

@@ -18,6 +18,8 @@ private:
 	XMMATRIX projectionMatrix;
 	XMMATRIX viewMatrix;
 
+	const bool vsyncEnabled = false;
+
 	bool createDevice(Window& window, bool vsyncEnabled);
 	bool createRenderTarget();
 
