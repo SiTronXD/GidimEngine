@@ -4,9 +4,6 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{81b6aa18-6a26-467f-ad8b-d9a6c6633f15}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Application">
-      <UniqueIdentifier>{72bec3b0-db69-4bf3-91c2-53a0bac0e8dc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Graphics">
       <UniqueIdentifier>{15354fa4-2721-483e-be2c-38b7c7a2c5fb}</UniqueIdentifier>
     </Filter>
@@ -20,25 +17,22 @@
     <Filter Include="ExternalLibraries\Microsoft">
       <UniqueIdentifier>{5687d8aa-d45a-40e2-98ef-a56fbf3c097a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Dev">
+      <UniqueIdentifier>{01c048a2-07b1-4526-8637-137898f5fdd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Application">
+      <UniqueIdentifier>{6a865be5-94ef-4bf8-be75-8696683e934b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gidim">
+      <UniqueIdentifier>{72bec3b0-db69-4bf3-91c2-53a0bac0e8dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Input.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Log.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>Application</Filter>
+      <Filter>Gidim</Filter>
     </ClCompile>
     <ClCompile Include="CameraController.cpp">
-      <Filter>Application</Filter>
+      <Filter>Gidim</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Engine\Graphics</Filter>
@@ -61,22 +55,23 @@
     <ClCompile Include="External\WICTextureLoader11.cpp">
       <Filter>ExternalLibraries\Microsoft</Filter>
     </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Engine\Dev</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Engine\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Engine\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Engine\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Time.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="CameraController.h">
-      <Filter>Application</Filter>
+      <Filter>Gidim</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>Engine\Graphics</Filter>
@@ -98,6 +93,22 @@
     </ClInclude>
     <ClInclude Include="External\WICTextureLoader11.h">
       <Filter>ExternalLibraries\Microsoft</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Engine\Dev</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Engine\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Engine\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Engine\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h" />
+    <ClInclude Include="SDXHelpers.h">
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,8 +5,8 @@ struct Input
 	float2 uv : TEXCOORD;
 };
 
-Texture2D shaderTexture;
-SamplerState sampleType;
+Texture2D shaderTexture : register(t0);
+SamplerState sampleType : register(s0);
 
 float4 main(Input input) : SV_TARGET
 {

@@ -23,50 +23,29 @@ int main()
 	renderer.setCamera(cameraController.getCamera());
 	Time time;
 
-	float p1[]{ -0.866f,  0.0f,  0.866f };
-	float p2[]{  0.0f,  0.0f, -1.0f };
-	float p3[]{ 0.866f,  0.0f,  0.866f };
 
 	// Create mesh
-	Vertex vertices[] =
-	{
-		{ -0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
-		{    0.0f,  0.0f,	-1.0f,		0.5f, 0.0f },
-		{  0.866f,  0.0f,	 0.5f,		1.0f, 1.0f },
+	MeshData md; 
+	md.createDefault(DefaultMesh::SPHERE, 100, 100);
+	//md.invertFaces();
 
-		{    0.0f,  0.0f,	-1.0f,		1.0f, 1.0f },
-		{ -0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
-		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f },
+	Log::print("Mesh vertices: " + std::to_string(md.getVertices().size()));
+	Log::print("Mesh num triangles: " + std::to_string(md.getIndices().size() / 3));
 
-		{  0.866f,  0.0f,	  0.5f,		1.0f, 1.0f },
-		{    0.0f,  0.0f,	-1.0f,		0.0f, 1.0f },
-		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f },
+	Mesh mesh(renderer, md);
 
-		{ -0.866f,  0.0f,	  0.5f,		1.0f, 1.0f },
-		{  0.866f,  0.0f,	 0.5f,		0.0f, 1.0f },
-		{    0.0f,  1.5f,	 0.0f,		0.5f, 0.0f }
-	};
-	int indices[]
-	{ 
-		0, 1, 2,
-		3, 4, 5,
-		6, 7, 8,
-		9, 10, 11
-	};
-	int numVertices = sizeof(vertices) / sizeof(vertices[0]);
-	int numIndices = sizeof(indices) / sizeof(indices[0]);
-
-	Mesh mesh(renderer, vertices, indices, numVertices, numIndices);
-	Texture texture;
+	// Load texture
+	Texture texture(renderer);
 	texture.loadFromFile(
 		renderer.getDevice(),
-		"Resources/Textures/myMan.png"
+		"Resources/Textures/poggers.dds"
 	);
 
 
 	// Update once before starting loop
 	window.update();
 
+	bool isWireframe = false;
 	float timer = 0.0f;
 
 	// Main game loop
@@ -93,6 +72,13 @@ int main()
 			Log::print("FPS: " + std::to_string(fps) + " (" + std::to_string(1000.0f / fps) + " ms)");
 		}
 
+		if (Input::isKeyJustPressed(Keys::R))
+		{
+			isWireframe = !isWireframe;
+
+			renderer.setWireframe(isWireframe);
+		}
+
 		/////////////////////////////////////////////////////////////////////////
 
 		// Prepare for rendering frame
@@ -108,20 +94,20 @@ int main()
 		renderer.clear(clearColor);
 
 		// Set texture
-		texture.set(renderer.getDeviceContext());
+		texture.set(renderer.getDeviceContext(), 0);
 
 		// Draw!
-		XMMATRIX currentWorldMatrix = XMMatrixRotationY(timer) * XMMatrixTranslation(1.5f, 0.0f, 0.0f);
+		XMMATRIX currentWorldMatrix = XMMatrixRotationY(timer) * XMMatrixScaling(2.0f, 2.0f, 2.0f);
 		mesh.setWorldMatrix(currentWorldMatrix);
 		mesh.draw();
 
-		currentWorldMatrix = XMMatrixRotationY(timer + 0.4) * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		/*currentWorldMatrix = XMMatrixRotationY(timer + 0.4) * XMMatrixTranslation(1.5f, 0.0f, 0.0f);
 		mesh.setWorldMatrix(currentWorldMatrix);
 		mesh.draw();
 
 		currentWorldMatrix = XMMatrixRotationY(timer + 0.4 * 2.0) * XMMatrixTranslation(-1.5f, 0.0f, 0.0f);
 		mesh.setWorldMatrix(currentWorldMatrix);
-		mesh.draw();
+		mesh.draw();*/
 
 
 		// Present frame

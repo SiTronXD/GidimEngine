@@ -11,12 +11,14 @@ private:
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
 	ID3D11RenderTargetView* renderTargetView;
-	D3D11_TEXTURE2D_DESC backBufferDesc;
 
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilState* depthStencilState;
 	ID3D11DepthStencilView* depthStencilView;
 	ID3D11RasterizerState* rasterState;
+
+	D3D11_TEXTURE2D_DESC backBufferDesc;
+	D3D11_RASTERIZER_DESC rasterDesc;
 
 	Camera* camera;
 	XMMATRIX projectionMatrix;
@@ -37,6 +39,8 @@ public:
 	void endFrame();
 
 	void setCamera(Camera& cam);
+
+	void setWireframe(bool wireFrame);
 
 	ID3D11Device* getDevice() const;
 	ID3D11DeviceContext* getDeviceContext() const;

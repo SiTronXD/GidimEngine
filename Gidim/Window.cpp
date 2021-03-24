@@ -33,7 +33,7 @@ void Window::handleFrame()
 {
 #ifdef _DEBUG
 	// Exit if the escape button is pressed
-	if (Input::isKeyDown(KEYS::ESCAPE))
+	if (Input::isKeyDown(Keys::ESCAPE))
 		this->running = false;
 #endif
 }
@@ -149,6 +149,9 @@ bool Window::init()
 
 bool Window::update()
 {
+	// Update last pressed keys
+	input.updateLastPressedKeys();
+
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 

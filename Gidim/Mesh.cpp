@@ -1,19 +1,18 @@
 #include "Mesh.h"
-#include <iostream>
-#include <vector>
+#include "SDXHelpers.h"
 
-bool Mesh::createBuffers(Vertex vertices[], int indices[])
+bool Mesh::createBuffers(MeshData& meshData)
 {
 	HRESULT result;
 
 	// Create vertex buffer desc
 	CD3D11_BUFFER_DESC vertexBufferDesc = CD3D11_BUFFER_DESC(
-		sizeof(vertices[0]) * this->vertexCount, D3D11_BIND_VERTEX_BUFFER
+		sizeof(meshData.getVertices()[0]) * this->vertexCount, D3D11_BIND_VERTEX_BUFFER
 	);
 
 	// Create sub resource data containing pointer to vertex data
 	D3D11_SUBRESOURCE_DATA vertexData = { 0 };
-	vertexData.pSysMem = vertices;
+	vertexData.pSysMem = &meshData.getVertices()[0];
 	vertexData.SysMemPitch = 0;			// Distance in bytes from one line to the next one (2D/3D textures)
 	vertexData.SysMemSlicePitch = 0;	// Distance in bytes from one depth level to the next one (3D textures)
 
@@ -32,12 +31,12 @@ bool Mesh::createBuffers(Vertex vertices[], int indices[])
 
 	// Create index buffer desc
 	CD3D11_BUFFER_DESC indexBufferDesc = CD3D11_BUFFER_DESC(
-		sizeof(indices[0]) * this->indexCount, D3D11_BIND_INDEX_BUFFER
+		sizeof(meshData.getIndices()[0]) * this->indexCount, D3D11_BIND_INDEX_BUFFER
 	);
 
 	// Create sub resource data containing pointer to index data
 	D3D11_SUBRESOURCE_DATA indexData = { 0 };
-	indexData.pSysMem = indices;
+	indexData.pSysMem = &meshData.getIndices()[0];
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
@@ -55,13 +54,28 @@ bool Mesh::createBuffers(Vertex vertices[], int indices[])
 	return true;
 }
 
-Mesh::Mesh(Renderer& renderer, Vertex vertices[], int indices[], 
-	unsigned int vertexCount, unsigned int indexCount)
+Mesh::Mesh(Renderer& renderer, MeshData& meshData)
 	: renderer(renderer), vertexBuffer(nullptr), 
-	vertexCount(vertexCount), indexCount(indexCount)
+	vertexCount(meshData.getVertices().size()), 
+	indexCount(meshData.getIndices().size())
 {
+	// Make sure indices are multiple of 3
+	int remainingIndices = meshData.getIndices().size() % 3;
+	if (remainingIndices != 0)
+	{
+		Log::warning(
+			std::to_string(meshData.getIndices().size()) +
+			" indices is not a multiple of 3. Removing the last " +
+			std::to_string(remainingIndices) + " indices."
+		);
+
+		// Remove overflowing indices
+		meshData.getIndices().resize(meshData.getIndices().size() - remainingIndices);
+	}
+
+
 	// Create vertex buffers and index buffers
-	this->createBuffers(vertices, indices);
+	this->createBuffers(meshData);
 
 	// Load shader to render this mesh with
 	this->shader.loadFromFile(
@@ -73,8 +87,8 @@ Mesh::Mesh(Renderer& renderer, Vertex vertices[], int indices[],
 
 Mesh::~Mesh()
 {
-	this->indexBuffer->Release();
-	this->vertexBuffer->Release();
+	S_RELEASE(this->indexBuffer);
+	S_RELEASE(this->vertexBuffer);
 }
 
 void Mesh::setWorldMatrix(XMMATRIX newWorldMatrix)

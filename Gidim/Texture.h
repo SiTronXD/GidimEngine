@@ -2,17 +2,18 @@
 
 #include <iostream>
 #include <string>
-#include <d3d11.h>
+#include "Renderer.h"
 
 class Texture
 {
 private:
+	ID3D11SamplerState* samplerState;
 	ID3D11ShaderResourceView* texture;
 
-	void release();
+	bool setSamplerState(ID3D11Device* device);
 
 public:
-	Texture();
+	Texture(Renderer& renderer);
 	~Texture();
 
 	bool loadFromFile(ID3D11Device* device, std::string path);

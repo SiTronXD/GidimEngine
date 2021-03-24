@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 
-enum class KEYS
+enum class Keys
 {
 	NUM_0 = 0x30,
 	NUM_1 = 0x31,
@@ -46,24 +46,27 @@ enum class KEYS
 class Input
 {
 private:
-	static const int MAX_NUM_KEYS = 256;
+	static const unsigned int MAX_NUM_KEYS = 256;
 	static int cursorX;
 	static int cursorY;
 	static int cursorDeltaX;
 	static int cursorDeltaY;
 
 	static bool keys[MAX_NUM_KEYS];
+	static bool lastPressedKeys[MAX_NUM_KEYS];
 
 public:
 	Input();
 	~Input();
 
+	void updateLastPressedKeys();
 	void setKeyDown(unsigned int keyCode);
 	void setKeyUp(unsigned int keyCode);
 	void setCursorPos(int newX, int newY);
 	void setCursorDelta(int newDeltaX, int newDeltaY);
 
-	static bool isKeyDown(KEYS keyCode);
+	static bool isKeyDown(Keys keyCode);
+	static bool isKeyJustPressed(Keys keyCode);
 	static int getCursorX();
 	static int getCursorY();
 	static int getCursorDeltaX();

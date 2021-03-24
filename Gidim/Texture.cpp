@@ -2,31 +2,54 @@
 #include "External/DDSTextureLoader11.h"
 #include "External/WICTextureLoader11.h"
 #include "Log.h"
+#include "SDXHelpers.h"
 
-void Texture::release()
+bool Texture::setSamplerState(ID3D11Device* device)
 {
-	if (this->texture)
+	// Create texture sampler desc for the sampler state
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	// Create the texture sampler state
+	HRESULT result = device->CreateSamplerState(&samplerDesc, &this->samplerState);
+	if (FAILED(result))
 	{
-		this->texture->Release();
-		this->texture = nullptr;
+		Log::error("Could not create texture sampler state.");
+
+		return false;
 	}
+
+	return true;
 }
 
-Texture::Texture()
-	: texture(nullptr)
+Texture::Texture(Renderer& renderer)
+	: samplerState(nullptr), texture(nullptr)
 {
-	
+	this->setSamplerState(renderer.getDevice());
 }
 
 Texture::~Texture()
 {
-	this->release();
+	S_RELEASE(this->samplerState);
+	S_RELEASE(this->texture);
 }
 
 bool Texture::loadFromFile(ID3D11Device* device, std::string path)
 {
-	// Deallocate old texture, if it can
-	this->release();
+	// Deallocate old texture, if it exists
+	S_RELEASE(this->texture);
 
 
 	HRESULT result;
@@ -54,19 +77,22 @@ bool Texture::loadFromFile(ID3D11Device* device, std::string path)
 	// Did the loading fail?
 	if (FAILED(result))
 	{
-		Log::error("Could not create texture from file.");
+		Log::error("Could not create texture from file path: " + path);
 
 		return false;
 	}
 
 	// Release resource, since we only care about the SRV
-	texResource->Release();
+	S_RELEASE(texResource);
 
 	return true;
 }
 
 void Texture::set(ID3D11DeviceContext* deviceContext, UINT startSlot)
 {
+	// Set sampler state in the pixel shader
+	deviceContext->PSSetSamplers(startSlot, 1, &this->samplerState);
+
 	// Set shader texture resource in the pixel shader
 	deviceContext->PSSetShaderResources(startSlot, 1, &this->texture);
 }

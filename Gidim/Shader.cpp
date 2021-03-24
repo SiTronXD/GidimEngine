@@ -1,22 +1,22 @@
 #include "Shader.h"
 #include "Log.h"
+#include "SDXHelpers.h"
 #include <fstream>
 #include <vector>
 
 Shader::Shader()
 	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
-	matrixBuffer(nullptr), samplerState(nullptr)
+	matrixBuffer(nullptr)
 {
 	
 }
 
 Shader::~Shader()
 {
-	this->samplerState->Release();
-	this->matrixBuffer->Release();
-	this->vertexShader->Release();
-	this->pixelShader->Release();
-	this->inputLayout->Release();
+	S_RELEASE(this->matrixBuffer);
+	S_RELEASE(this->vertexShader);
+	S_RELEASE(this->pixelShader);
+	S_RELEASE(this->inputLayout);
 }
 
 bool Shader::loadFromFile(
@@ -120,32 +120,6 @@ bool Shader::loadFromFile(
 	}
 
 
-
-	// Create texture sampler desc for the sampler state
-	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	// Create the texture sampler state
-	result = device->CreateSamplerState(&samplerDesc, &this->samplerState);
-	if (FAILED(result))
-	{
-		Log::error("Could not create texture sampler state.");
-
-		return false;
-	}
-
 	return true;
 }
 
@@ -185,10 +159,10 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 
 void Shader::set(ID3D11DeviceContext* context)
 {
-	// Bind current input layout
+	// Set current input layout
 	context->IASetInputLayout(this->inputLayout);
 
-	// Bind the triangle shaders
+	// Set current vertex and pixel shaders
 	context->VSSetShader(this->vertexShader, nullptr, 0);
 	context->PSSetShader(this->pixelShader, nullptr, 0);
 }

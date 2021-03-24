@@ -24,9 +24,9 @@ void CameraController::update()
 
 
     // Movement
-    int forwardDir = Input::isKeyDown(KEYS::W) - Input::isKeyDown(KEYS::S);
-    int leftDir = Input::isKeyDown(KEYS::A) - Input::isKeyDown(KEYS::D);
-    int upDir = Input::isKeyDown(KEYS::E) - Input::isKeyDown(KEYS::Q);
+    int forwardDir = Input::isKeyDown(Keys::W) - Input::isKeyDown(Keys::S);
+    int leftDir = Input::isKeyDown(Keys::A) - Input::isKeyDown(Keys::D);
+    int upDir = Input::isKeyDown(Keys::E) - Input::isKeyDown(Keys::Q);
 
     // Apply movement
     XMVECTOR deltaMovement =

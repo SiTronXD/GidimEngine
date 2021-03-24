@@ -1,5 +1,7 @@
 #include "Renderer.h"
 #include "Log.h"
+#include "SDXHelpers.h"
+
 
 bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 {
@@ -147,7 +149,7 @@ bool Renderer::createRenderTarget()
 
 	// Get desc before releasing
 	backBuffer->GetDesc(&backBufferDesc);
-	backBuffer->Release();
+	S_RELEASE(backBuffer);
 
 	return true;
 }
@@ -246,17 +248,16 @@ bool Renderer::createDepthStencilBuffers(Window& window)
 
 	// Setup the raster description which will determine how and what
 	// polygons will be drawn
-	D3D11_RASTERIZER_DESC rasterDesc;
-	rasterDesc.AntialiasedLineEnable = false;
-	rasterDesc.CullMode = D3D11_CULL_BACK;
-	rasterDesc.DepthBias = 0;
-	rasterDesc.DepthBiasClamp = 0.0f;
-	rasterDesc.DepthClipEnable = true;
-	rasterDesc.FillMode = D3D11_FILL_SOLID;
-	rasterDesc.FrontCounterClockwise = false;
-	rasterDesc.MultisampleEnable = false;
-	rasterDesc.ScissorEnable = false;
-	rasterDesc.SlopeScaledDepthBias = 0.0f;
+	this->rasterDesc.AntialiasedLineEnable = false;
+	this->rasterDesc.CullMode = D3D11_CULL_BACK; //D3D11_CULL_NONE;
+	this->rasterDesc.DepthBias = 0;
+	this->rasterDesc.DepthBiasClamp = 0.0f;
+	this->rasterDesc.DepthClipEnable = true;
+	this->rasterDesc.FillMode = D3D11_FILL_SOLID;
+	this->rasterDesc.FrontCounterClockwise = false;
+	this->rasterDesc.MultisampleEnable = false;
+	this->rasterDesc.ScissorEnable = false;
+	this->rasterDesc.SlopeScaledDepthBias = 0.0f;
 
 	// Create the rasterizer state from the description we just filled out
 	result = device->CreateRasterizerState(&rasterDesc, &this->rasterState);
@@ -299,14 +300,14 @@ Renderer::~Renderer()
 	if (this->swapChain)
 		this->swapChain->SetFullscreenState(false, NULL);
 
-	this->rasterState->Release();
-	this->depthStencilView->Release();
-	this->depthStencilState->Release();
-	this->depthStencilBuffer->Release();
-	this->renderTargetView->Release();
-	this->deviceContext->Release();
-	this->device->Release();
-	this->swapChain->Release();
+	S_RELEASE(this->rasterState);
+	S_RELEASE(this->depthStencilView);
+	S_RELEASE(this->depthStencilState);
+	S_RELEASE(this->depthStencilBuffer);
+	S_RELEASE(this->renderTargetView);
+	S_RELEASE(this->deviceContext);
+	S_RELEASE(this->device);
+	S_RELEASE(this->swapChain);
 }
 
 void Renderer::beginFrame()
@@ -330,6 +331,25 @@ void Renderer::clear(XMFLOAT4 clearColor)
 
 	// Clear the depth buffer
 	this->deviceContext->ClearDepthStencilView(this->depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+
+void Renderer::setWireframe(bool wireFrame)
+{
+	// Destroy old raster state
+	S_RELEASE(this->rasterState);
+
+	// Set fill mode when toggling wireframe
+	this->rasterDesc.FillMode = wireFrame ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
+
+	// Create the rasterizer state from the description we just filled out
+	HRESULT result = device->CreateRasterizerState(&rasterDesc, &this->rasterState);
+	if (FAILED(result))
+	{
+		Log::error("Could not create rasterizer state.");
+	}
+
+	// Set rasteriser state
+	deviceContext->RSSetState(this->rasterState);
 }
 
 ID3D11Device* Renderer::getDevice() const

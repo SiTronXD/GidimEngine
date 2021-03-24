@@ -1,6 +1,7 @@
 #include "Input.h"
 
 bool Input::keys[] = { false };
+bool Input::lastPressedKeys[] = { false };
 int Input::cursorX = 0;
 int Input::cursorY = 0;
 int Input::cursorDeltaX = 0;
@@ -9,13 +10,22 @@ int Input::cursorDeltaY = 0;
 
 Input::Input()
 {
-	for (int i = 0; i < MAX_NUM_KEYS; ++i)
+	for (unsigned int i = 0; i < MAX_NUM_KEYS; ++i)
 	{
 		keys[i] = false;
+		lastPressedKeys[i] = false;
 	}
 }
 
 Input::~Input() { }
+
+void Input::updateLastPressedKeys()
+{
+	for (unsigned int i = 0; i < MAX_NUM_KEYS; ++i)
+	{
+		lastPressedKeys[i] = keys[i];
+	}
+}
 
 void Input::setKeyDown(unsigned int keyCode)
 {
@@ -39,9 +49,14 @@ void Input::setCursorDelta(int newDeltaX, int newDeltaY)
 	this->cursorDeltaY = newDeltaY;
 }
 
-bool Input::isKeyDown(KEYS keyCode)
+bool Input::isKeyDown(Keys keyCode)
 {
 	return keys[(unsigned int) keyCode];
+}
+
+bool Input::isKeyJustPressed(Keys keyCode)
+{
+	return keys[(unsigned int)keyCode] && !lastPressedKeys[(unsigned int)keyCode];
 }
 
 int Input::getCursorX()

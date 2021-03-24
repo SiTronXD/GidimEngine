@@ -24,6 +24,9 @@ Output main(Input input)
 
 	// Position
 	float4 p = float4(input.position.xyz, 1.0f);
+
+	//p.y += sin(p.x * 3243.43 + p.z * 5532.123) * 0.7;
+
 	output.position = mul(p, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);

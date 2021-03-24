@@ -3,12 +3,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
-
-struct Vertex
-{
-	float x, y, z;
-	float u, v;
-};
+#include "MeshData.h"
 
 class Mesh
 {
@@ -24,11 +19,10 @@ private:
 	unsigned int vertexCount;
 	unsigned int indexCount;
 
-	bool createBuffers(Vertex vertices[], int indices[]);
+	bool createBuffers(MeshData& meshData);
 
 public:
-	Mesh(Renderer& renderer, Vertex vertices[], int indices[], 
-		unsigned int vertexCount, unsigned int indexCount);
+	Mesh(Renderer& renderer, MeshData& meshData);
 	~Mesh();
 
 	void setWorldMatrix(XMMATRIX newWorldMatrix);

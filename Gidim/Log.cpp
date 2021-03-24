@@ -6,6 +6,11 @@ void Log::print(std::string message)
 	std::cout << "-- " << message << std::endl;
 }
 
+void Log::warning(std::string warningMessage)
+{
+	std::cout << "## WARNING [ " << warningMessage << " ]" << std::endl;
+}
+
 void Log::error(std::string errorMessage)
 {
 	//std::cout << "--ERROR [ " << errorMessage << " ]" << std::endl;
