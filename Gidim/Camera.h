@@ -25,7 +25,7 @@ private:
 	void updateViewMatrix();
 
 public:
-	Camera(float fov, float aspectRatio, float nearZ, float farZ);
+	Camera(float fov, float aspectRatio, float nearZ, float farZ, XMVECTOR startPos);
 	~Camera();
 
 	void setPosition(XMVECTOR newPos);

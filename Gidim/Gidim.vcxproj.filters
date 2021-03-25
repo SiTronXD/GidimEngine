@@ -26,6 +26,12 @@
     <Filter Include="Gidim">
       <UniqueIdentifier>{72bec3b0-db69-4bf3-91c2-53a0bac0e8dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Gidim\ShaderClasses">
+      <UniqueIdentifier>{6f6508c4-067f-4003-bd67-b8d6271b71d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gidim\Examples">
+      <UniqueIdentifier>{6bbff7b9-7339-4ed6-af7f-a3fd8b8cdfde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -67,7 +73,16 @@
     <ClCompile Include="Window.cpp">
       <Filter>Engine\Application</Filter>
     </ClCompile>
-    <ClCompile Include="MeshData.cpp" />
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshData.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="WaterRendering.cpp">
+      <Filter>Gidim\Examples</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -106,16 +121,37 @@
     <ClInclude Include="Window.h">
       <Filter>Engine\Application</Filter>
     </ClInclude>
-    <ClInclude Include="MeshData.h" />
     <ClInclude Include="SDXHelpers.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="WaterRendering.h">
+      <Filter>Gidim\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorShader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\DefaultShader_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\DefaultShader_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxShader_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxShader_Pix.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="DefaultColorShader_Pix.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="DefaultColorShader_Vert.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

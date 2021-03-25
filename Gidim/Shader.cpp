@@ -151,14 +151,13 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 
 	// Unlock the constant buffer
 	deviceContext->Unmap(this->matrixBuffer, NULL);
-
-
-	// Set the updated constant buffer in the vertex shader
-	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 }
 
 void Shader::set(ID3D11DeviceContext* context)
 {
+	// Set the current constant buffer in the vertex shader
+	context->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
 	// Set current input layout
 	context->IASetInputLayout(this->inputLayout);
 

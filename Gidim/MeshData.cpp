@@ -161,7 +161,6 @@ void MeshData::createSphere(int resX, int resY)
 		{
 			float angle = (float) x / (resX - 1);
 
-
 			float vx = sin(angle * 2.0f * PI) * sin(ty * PI);
 			float vy = cos((1.0f - ty) * PI);
 			float vz = cos(angle * 2.0f * PI) * sin(ty * PI);
@@ -192,6 +191,21 @@ void MeshData::createSphere(int resX, int resY)
 		this->indices.push_back(squareY * resX + squareX + 0);
 		this->indices.push_back(squareY * resX + squareX + 1);
 		this->indices.push_back(squareY * resX + squareX + resX + 1);
+	}
+
+	// Create triangles between the 2 vertical edges to avoid 
+	// precision errors and z-fighting
+	for (int i = 0; i < resY - 1; ++i)
+	{
+		int squareY = i * resX;
+
+		this->indices.push_back(squareY + resX - 1 + 0);
+		this->indices.push_back(squareY + resX - 1 + 1);
+		this->indices.push_back(squareY + resX - 1 + resX);
+
+		this->indices.push_back(squareY + resX - 1 + 0);
+		this->indices.push_back(squareY + 0);
+		this->indices.push_back(squareY + resX + 0);
 	}
 }
 

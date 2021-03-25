@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Renderer.h"
-#include "Shader.h"
-#include "Texture.h"
 #include "MeshData.h"
 
 class Mesh
@@ -11,7 +9,6 @@ private:
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
 
-	Shader shader;
 	Renderer& renderer;
 
 	XMMATRIX worldMatrix;
@@ -28,4 +25,6 @@ public:
 	void setWorldMatrix(XMMATRIX newWorldMatrix);
 
 	void draw();
+
+	const XMMATRIX& getWorldMatrix() const;
 };

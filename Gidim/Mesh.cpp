@@ -77,12 +77,9 @@ Mesh::Mesh(Renderer& renderer, MeshData& meshData)
 	// Create vertex buffers and index buffers
 	this->createBuffers(meshData);
 
-	// Load shader to render this mesh with
-	this->shader.loadFromFile(
-		this->renderer.getDevice(), 
-		"DefaultShader_Vert.cso", 
-		"DefaultShader_Pix.cso"
-	);
+	
+	// Initialize world matrix to identity matrix
+	this->setWorldMatrix(XMMatrixIdentity());
 }
 
 Mesh::~Mesh()
@@ -103,12 +100,6 @@ void Mesh::draw()
 	// Set topology
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
-	// Update buffers in shader
-	this->shader.update(renderer, this->worldMatrix);
-
-	// Set shader
-	this->shader.set(deviceContext);
-
 	// Set the vertex buffer
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -120,4 +111,9 @@ void Mesh::draw()
 
 	// Draw
 	deviceContext->DrawIndexed(this->indexCount, 0, 0);
+}
+
+const XMMATRIX& Mesh::getWorldMatrix() const
+{
+	return this->worldMatrix;
 }

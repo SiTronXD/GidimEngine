@@ -25,7 +25,7 @@ private:
 
 public:
 	Shader();
-	~Shader();
+	virtual ~Shader();
 
 	bool loadFromFile(
 		ID3D11Device* device, 
@@ -33,8 +33,8 @@ public:
 		std::string pixelShaderFilePath
 	);
 
-	void update(
+	virtual void update(
 		Renderer& renderer, XMMATRIX currentWorldMatrix
 	);
-	void set(ID3D11DeviceContext* context);
+	virtual void set(ID3D11DeviceContext* context);
 };
