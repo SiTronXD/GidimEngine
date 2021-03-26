@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include "Window.h"
 #include "Camera.h"
+#include "SDXHelpers.h"
 
 class Renderer
 {

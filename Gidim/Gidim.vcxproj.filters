@@ -32,6 +32,9 @@
     <Filter Include="Gidim\Examples">
       <UniqueIdentifier>{6bbff7b9-7339-4ed6-af7f-a3fd8b8cdfde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\ComputeShaders">
+      <UniqueIdentifier>{a5036ea7-30bd-43ae-9244-53bcc4b256aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -82,7 +85,15 @@
     <ClCompile Include="WaterRendering.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
-    <ClCompile Include="ColorShader.cpp" />
+    <ClCompile Include="ComputeShader.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorShader.cpp">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureShader.cpp">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -133,7 +144,15 @@
     <ClInclude Include="WaterRendering.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
-    <ClInclude Include="ColorShader.h" />
+    <ClInclude Include="ComputeShader.h">
+      <Filter>Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorShader.h">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureShader.h">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\DefaultShader_Pix.hlsl">
@@ -153,6 +172,9 @@
     </FxCompile>
     <FxCompile Include="DefaultColorShader_Vert.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="TestComputeShader_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

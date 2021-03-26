@@ -32,7 +32,7 @@ bool Shader::loadFromFile(
 	// Check if the file could not be found or opened
 	if (vsFile.fail())
 	{
-		Log::error("Could not open shader file from: " + vertexShaderFilePath);
+		Log::error("Could not open vertex shader file from: " + vertexShaderFilePath);
 
 		return false;
 	}
@@ -49,7 +49,7 @@ bool Shader::loadFromFile(
 	// Check if the file could not be found or opened
 	if (psFile.fail())
 	{
-		Log::error("Could not open shader file from: " + pixelShaderFilePath);
+		Log::error("Could not open pixel shader file from: " + pixelShaderFilePath);
 
 		return false;
 	}
@@ -77,7 +77,7 @@ bool Shader::loadFromFile(
 	);
 	if (FAILED(result))
 	{
-		Log::error("Failed calling device->CreatePixelShader.");
+		Log::error("Failed calling device->CreatePixelShader().");
 
 		return false;
 	}
@@ -94,7 +94,7 @@ bool Shader::loadFromFile(
 	result = device->CreateInputLayout(layout, numLayoutElements, vsData.data(), vsData.size(), &this->inputLayout);
 	if (FAILED(result))
 	{
-		Log::error("Failed calling device->CreateInputLayout.");
+		Log::error("Failed calling device->CreateInputLayout().");
 
 		return false;
 	}

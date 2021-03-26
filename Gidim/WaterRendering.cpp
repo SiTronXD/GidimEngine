@@ -5,9 +5,11 @@
 #include "Mesh.h"
 #include "CameraController.h"
 #include "Time.h"
+#include "ComputeShader.h"
 
 #include "SkyboxShader.h"
 #include "ColorShader.h"
+#include "TextureShader.h"
 
 WaterRendering::WaterRendering()
 { }
@@ -32,28 +34,31 @@ void WaterRendering::run()
 	Time time;
 
 
-	// Create mesh
+	// Create skybox mesh
 	MeshData skyboxMeshData;
 	skyboxMeshData.createDefault(DefaultMesh::SPHERE, 20, 20);
 	skyboxMeshData.invertFaces();
 	Mesh skyboxMesh(renderer, skyboxMeshData);
 	skyboxMesh.setWorldMatrix(XMMatrixRotationY(3.1415) * XMMatrixScaling(4.0f, 4.0f, 4.0f));
 
+	// Create water mesh
 	MeshData waterMeshData;
 	waterMeshData.createDefault(DefaultMesh::PLANE, 64, 64);
 	Mesh waterMesh(renderer, waterMeshData);
+	waterMesh.setWorldMatrix(XMMatrixScaling(3.0f, 3.0f, 3.0f));
 
 	// Create shader for rendering meshes
 	SkyboxShader skyboxShader(renderer);
-	ColorShader waterShader(renderer);
+	TextureShader waterShader(renderer);
 	
+	Texture renderTexture(renderer);
+	renderTexture.createAsRenderTexture(renderer, 1024, 1024);
 
-	// Load texture
-	Texture texture(renderer);
-	texture.loadFromFile(
-		renderer.getDevice(),
-		"Resources/Textures/poggers.dds"
-	);
+	ComputeShader testComputeShader;
+	testComputeShader.createFromFile(renderer, "TestComputeShader_Comp.cso");
+	testComputeShader.addRenderTexture(renderTexture);
+	testComputeShader.run(renderer);
+	renderTexture.set(renderer);
 
 
 	// Update once before starting loop
@@ -105,10 +110,8 @@ void WaterRendering::run()
 		clearColor.z = 0.1f;
 		clearColor.w = 1.0f;
 
+		// Clear color and depth buffers
 		renderer.clear(clearColor);
-
-		// Set texture
-		//texture.set(renderer.getDeviceContext(), 0);
 
 		// Update buffers in shader
 		skyboxShader.update(renderer, skyboxMesh.getWorldMatrix());
@@ -118,9 +121,11 @@ void WaterRendering::run()
 		skyboxShader.set(renderer.getDeviceContext());
 		skyboxMesh.draw();
 
+
 		// Set shader to render mesh with
 		waterShader.set(renderer.getDeviceContext());
 		waterMesh.draw();
+
 
 		// Present frame
 		renderer.endFrame();

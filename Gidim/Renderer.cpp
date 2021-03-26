@@ -1,7 +1,5 @@
 #include "Renderer.h"
 #include "Log.h"
-#include "SDXHelpers.h"
-
 
 bool Renderer::createDevice(Window& window, bool vsyncEnabled)
 {
