@@ -17,8 +17,11 @@ private:
 	std::vector<Texture*> renderTextures;
 	std::vector<ID3D11UnorderedAccessView*> renderTextureUAVs;
 
+	int threadGroupX;
+	int threadGroupY;
+
 public:
-	ComputeShader();
+	ComputeShader(int threadGroupX, int threadGroupY);
 	~ComputeShader();
 
 	bool createFromFile(Renderer& renderer, std::string path);

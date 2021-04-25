@@ -51,14 +51,28 @@ void WaterRendering::run()
 	SkyboxShader skyboxShader(renderer);
 	TextureShader waterShader(renderer);
 	
-	Texture renderTexture(renderer);
-	renderTexture.createAsRenderTexture(renderer, 1024, 1024);
+	
+	/*Texture renderTexture(renderer);
+	renderTexture.createAsRenderTexture(renderer, 256, 256);
 
-	ComputeShader testComputeShader;
+	ComputeShader testComputeShader(16, 16);
 	testComputeShader.createFromFile(renderer, "TestComputeShader_Comp.cso");
 	testComputeShader.addRenderTexture(renderTexture);
 	testComputeShader.run(renderer);
-	renderTexture.set(renderer);
+	renderTexture.set(renderer);*/
+
+	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	spectrumTexture0.createAsRenderTexture(renderer, 256, 256);
+	spectrumTexture1.createAsRenderTexture(renderer, 256, 256);
+
+	ComputeShader spectrumCreatorShader(16, 16);
+	spectrumCreatorShader.createFromFile(renderer, "SpectrumCreatorShader_Comp.cso");
+	spectrumCreatorShader.addRenderTexture(spectrumTexture0);
+	spectrumCreatorShader.addRenderTexture(spectrumTexture1);
+	spectrumCreatorShader.run(renderer);
+
+	spectrumTexture0.set(renderer);
 
 
 	// Update once before starting loop
@@ -114,12 +128,12 @@ void WaterRendering::run()
 		renderer.clear(clearColor);
 
 		// Update buffers in shader
-		skyboxShader.update(renderer, skyboxMesh.getWorldMatrix());
+		//skyboxShader.update(renderer, skyboxMesh.getWorldMatrix());
 		waterShader.update(renderer, waterMesh.getWorldMatrix());
 
 		// Set shader to render mesh with
-		skyboxShader.set(renderer.getDeviceContext());
-		skyboxMesh.draw();
+		//skyboxShader.set(renderer.getDeviceContext());
+		//skyboxMesh.draw();
 
 
 		// Set shader to render mesh with

@@ -4,6 +4,12 @@
 #include <string>
 #include "Renderer.h"
 
+enum class TextureFilter
+{
+	BILINEAR,
+	NEAREST_NEIGHBOR
+};
+
 class Texture
 {
 private:
@@ -13,10 +19,13 @@ private:
 	ID3D11UnorderedAccessView* textureUAV;
 	ID3D11ShaderResourceView* textureSRV;
 
-	bool createSamplerState(ID3D11Device* device);
+	DXGI_FORMAT textureFormat;
+
+	bool createSamplerState(ID3D11Device* device, TextureFilter filter);
 
 public:
-	Texture(Renderer& renderer);
+	Texture(Renderer& renderer, TextureFilter filter = TextureFilter::BILINEAR, 
+		DXGI_FORMAT textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
 	~Texture();
 
 	void set(Renderer& renderer, UINT startSlot = 0);

@@ -4,11 +4,10 @@
 #include "Log.h"
 #include "SDXHelpers.h"
 
-bool Texture::createSamplerState(ID3D11Device* device)
+bool Texture::createSamplerState(ID3D11Device* device, TextureFilter filter)
 {
 	// Create texture sampler desc for the sampler state
 	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -22,6 +21,29 @@ bool Texture::createSamplerState(ID3D11Device* device)
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
+	// Set filter based on options
+	switch (filter)
+	{
+	case TextureFilter::BILINEAR:
+
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+
+		break;
+
+	case TextureFilter::NEAREST_NEIGHBOR:
+
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+
+		break;
+
+	default:
+
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+
+		break;
+	}
+
+
 	// Create the texture sampler state
 	HRESULT result = device->CreateSamplerState(&samplerDesc, &this->samplerState);
 	if (FAILED(result))
@@ -34,10 +56,11 @@ bool Texture::createSamplerState(ID3D11Device* device)
 	return true;
 }
 
-Texture::Texture(Renderer& renderer)
-	: samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr)
+Texture::Texture(Renderer& renderer, TextureFilter filter, DXGI_FORMAT textureFormat)
+	: samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr),
+	textureFormat(textureFormat)
 {
-	this->createSamplerState(renderer.getDevice());
+	this->createSamplerState(renderer.getDevice(), filter);
 }
 
 Texture::~Texture()
@@ -48,7 +71,8 @@ Texture::~Texture()
 	S_RELEASE(this->textureSRV);
 }
 
-bool Texture::createAsRenderTexture(Renderer& renderer, unsigned int width, unsigned int height)
+bool Texture::createAsRenderTexture(Renderer& renderer, 
+	unsigned int width, unsigned int height)
 {
 	HRESULT result;
 
@@ -68,7 +92,7 @@ bool Texture::createAsRenderTexture(Renderer& renderer, unsigned int width, unsi
 	textureDesc.SampleDesc.Quality = 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 	textureDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.Format = this->textureFormat;
 
 	result = renderer.getDevice()->CreateTexture2D(&textureDesc, NULL, &this->texture);
 	if (FAILED(result))
@@ -81,7 +105,7 @@ bool Texture::createAsRenderTexture(Renderer& renderer, unsigned int width, unsi
 	// Create UAV for texture
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	ZeroMemory(&uavDesc, sizeof(uavDesc));
-	uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	uavDesc.Format = this->textureFormat;
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = 0;
 
@@ -168,7 +192,7 @@ bool Texture::recreateSRVAsRenderTexture(Renderer& renderer)
 	// Create SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.Format = this->textureFormat;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 

@@ -173,7 +173,10 @@
     <FxCompile Include="DefaultColorShader_Vert.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="TestComputeShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\TestComputeShader_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\SpectrumCreatorShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
   </ItemGroup>
