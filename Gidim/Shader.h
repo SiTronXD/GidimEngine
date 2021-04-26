@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <iostream>
 #include "Renderer.h"
+#include "SDXBuffer.h"
 
 using namespace DirectX;
 
@@ -21,10 +22,11 @@ private:
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
-	ID3D11Buffer* matrixBuffer;
+
+	SDXBuffer matrixBuffer;
 
 public:
-	Shader();
+	Shader(Renderer& renderer);
 	virtual ~Shader();
 
 	bool loadFromFile(

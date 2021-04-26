@@ -1,6 +1,7 @@
 #include "TextureShader.h"
 
 TextureShader::TextureShader(Renderer& renderer)
+	: Shader(renderer)
 { 
 	this->loadFromFile(
 		renderer.getDevice(),

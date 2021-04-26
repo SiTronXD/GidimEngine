@@ -1,6 +1,7 @@
 #include "SkyboxShader.h"
 
 SkyboxShader::SkyboxShader(Renderer& renderer)
+	: Shader(renderer)
 {
 	this->loadFromFile(
 		renderer.getDevice(),

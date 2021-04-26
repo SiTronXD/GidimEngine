@@ -147,6 +147,7 @@
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
+    <ClCompile Include="SDXBuffer.cpp" />
     <ClCompile Include="External\DDSTextureLoader11.cpp" />
     <ClCompile Include="External\WICTextureLoader11.cpp" />
     <ClCompile Include="Input.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="ComputeShader.h" />
+    <ClInclude Include="SDXBuffer.h" />
     <ClInclude Include="External\DDSTextureLoader11.h" />
     <ClInclude Include="External\WICTextureLoader11.h" />
     <ClInclude Include="Input.h" />

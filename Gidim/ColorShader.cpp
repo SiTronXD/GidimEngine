@@ -1,6 +1,7 @@
 #include "ColorShader.h"
 
 ColorShader::ColorShader(Renderer& renderer)
+	: Shader(renderer)
 {
 	this->loadFromFile(
 		renderer.getDevice(),

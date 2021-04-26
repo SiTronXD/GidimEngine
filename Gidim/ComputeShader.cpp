@@ -1,9 +1,11 @@
 #include "ComputeShader.h"
 #include <fstream>
 
+#define VECTOR_ADDRESS(x) x.empty() ? 0 : &x[0]
+
 ComputeShader::ComputeShader(int threadGroupX, int threadGroupY)
 	: threadGroupX(threadGroupX), threadGroupY(threadGroupY),
-	computeShader(nullptr), uavNULL{ NULL }
+	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL }
 { }
 
 ComputeShader::~ComputeShader()
@@ -16,8 +18,8 @@ bool ComputeShader::createFromFile(Renderer& renderer, std::string path)
 	// Deallocate old texture, if it exists
 	S_RELEASE(this->computeShader);
 
-	// Only accept shader model 5.0 for best performance, and ignore
-	// shader model 4.0
+	// Only accept shader model 5.0 for best performance and features, ignore
+	// shader model 4.0 for now
 	if (renderer.getDevice()->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
 	{
 		Log::error(
@@ -64,7 +66,10 @@ void ComputeShader::run(Renderer& renderer)
 	// Set
 	deviceContext->CSSetShader(this->computeShader, NULL, 0);
 	deviceContext->CSSetUnorderedAccessViews(
-		0, this->renderTextureUAVs.size(), &this->renderTextureUAVs[0], NULL
+		0, this->renderTextureUAVs.size(), VECTOR_ADDRESS(this->renderTextureUAVs), NULL
+	);
+	deviceContext->CSSetConstantBuffers(
+		0, this->constantBuffers.size(), VECTOR_ADDRESS(this->constantBuffers)
 	);
 
 	// Run
@@ -73,11 +78,24 @@ void ComputeShader::run(Renderer& renderer)
 	// Reset
 	deviceContext->CSSetShader(NULL, NULL, 0);
 	deviceContext->CSSetUnorderedAccessViews(0, NUM_MAX_RENDER_TEXTURES, uavNULL, NULL);
-
+	deviceContext->CSSetConstantBuffers(0, NUM_MAX_CONSTANT_BUFFERS, constantBufferNULL);
 
 	// Recreate SRVs after dispatch
 	for(int i = 0; i < this->renderTextures.size(); ++i)
 		this->renderTextures[i]->recreateSRVAsRenderTexture(renderer);
+}
+
+void ComputeShader::addConstantBuffer(SDXBuffer& buffer)
+{
+	Log::print("Tried to add constant buffer");
+
+	// Add constant buffer, if we haven't reached the maximum yet
+	if (this->constantBuffers.size() < NUM_MAX_CONSTANT_BUFFERS)
+	{
+		this->constantBuffers.push_back(buffer.getBuffer());
+
+		Log::print("Added constant buffer");
+	}
 }
 
 void ComputeShader::addRenderTexture(Texture& texture)

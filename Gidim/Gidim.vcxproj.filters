@@ -35,6 +35,9 @@
     <Filter Include="Shaders\ComputeShaders">
       <UniqueIdentifier>{a5036ea7-30bd-43ae-9244-53bcc4b256aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Graphics\DirectX">
+      <UniqueIdentifier>{ba71a899-eadd-4e2c-b7df-90297e7d2835}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -97,6 +100,9 @@
     <ClCompile Include="SMath.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="SDXBuffer.cpp">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -135,9 +141,6 @@
     <ClInclude Include="Window.h">
       <Filter>Engine\Application</Filter>
     </ClInclude>
-    <ClInclude Include="SDXHelpers.h">
-      <Filter>Engine\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="SkyboxShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
@@ -158,6 +161,12 @@
     </ClInclude>
     <ClInclude Include="SMath.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="SDXBuffer.h">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="SDXHelpers.h">
+      <Filter>Engine\Graphics\DirectX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

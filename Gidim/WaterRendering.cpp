@@ -11,6 +11,14 @@
 #include "ColorShader.h"
 #include "TextureShader.h"
 
+struct SpectrumInterpolationBufferType
+{
+	float time;
+	float padding1;
+	float padding2;
+	float padding3;
+};
+
 WaterRendering::WaterRendering()
 { }
 
@@ -70,11 +78,20 @@ void WaterRendering::run()
 	spectrumCreatorShader.addRenderTexture(spectrumTexture1);
 	spectrumCreatorShader.run(renderer);
 
+	SDXBuffer spectrumInterpolationBuffer(renderer.getDevice(), sizeof(SpectrumInterpolationBufferType));
+
+	D3D11_MAPPED_SUBRESOURCE mappedRes;
+	spectrumInterpolationBuffer.map(renderer.getDeviceContext(), mappedRes);
+	SpectrumInterpolationBufferType* sib = (SpectrumInterpolationBufferType*) mappedRes.pData;
+	sib->time = 1.0f;
+	spectrumInterpolationBuffer.unmap(renderer.getDeviceContext());
+
 	// Spectrum interpolation shader
 	spectrumInterpolatorShader.createFromFile(renderer, "SpectrumInterpolatorShader_Comp.cso");
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture0);
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture1);
 	spectrumInterpolatorShader.addRenderTexture(finalSpectrumTexture);
+	spectrumInterpolatorShader.addConstantBuffer(spectrumInterpolationBuffer);
 	spectrumInterpolatorShader.run(renderer);
 
 	finalSpectrumTexture.set(renderer);

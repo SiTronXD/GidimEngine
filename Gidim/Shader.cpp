@@ -1,19 +1,17 @@
 #include "Shader.h"
 #include "Log.h"
-#include "SDXHelpers.h"
 #include <fstream>
 #include <vector>
 
-Shader::Shader()
+Shader::Shader(Renderer& renderer)
 	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
-	matrixBuffer(nullptr)
+	matrixBuffer(renderer.getDevice(), sizeof(MatrixBuffer))
 {
 	
 }
 
 Shader::~Shader()
 {
-	S_RELEASE(this->matrixBuffer);
 	S_RELEASE(this->vertexShader);
 	S_RELEASE(this->pixelShader);
 	S_RELEASE(this->inputLayout);
@@ -99,49 +97,21 @@ bool Shader::loadFromFile(
 		return false;
 	}
 
-
-	// Set description for the dynamic constant buffer that is in the vertex shader
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBuffer);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the
-	// vertex shader constant buffer from the class
-	result = device->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
-	if (FAILED(result))
-	{
-		Log::error("Failed creating matrix buffer.");
-
-		return false;
-	}
-
-
 	return true;
 }
 
 void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 {
-	HRESULT result;
-	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-
 	// Transpose matrices
 	XMMATRIX projectionMatrix = XMMatrixTranspose(renderer.getProjectionMatrix());
 	XMMATRIX viewMatrix = XMMatrixTranspose(renderer.getViewMatrix());
 	XMMATRIX worldMatrix = XMMatrixTranspose(currentWorldMatrix);
 
-	// Lock the constant buffer so it can be written to
 	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
-	result = deviceContext->Map(
-		this->matrixBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubResource
-	);
-	if (FAILED(result))
-	{
-		Log::error("Could not map matrix buffer.");
-	}
+
+	// Lock the constant buffer so it can be written to
+	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
+	this->matrixBuffer.map(deviceContext, mappedSubResource);
 
 	// Get a pointer to the data in the constant buffer
 	MatrixBuffer* dataPtr = (MatrixBuffer*) mappedSubResource.pData;
@@ -150,13 +120,14 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 	dataPtr->worldMatrix = worldMatrix;
 
 	// Unlock the constant buffer
-	deviceContext->Unmap(this->matrixBuffer, NULL);
+	this->matrixBuffer.unmap(deviceContext);
 }
 
 void Shader::set(ID3D11DeviceContext* context)
 {
 	// Set the current constant buffer in the vertex shader
-	context->VSSetConstantBuffers(0, 1, &matrixBuffer);
+	ID3D11Buffer* buf = matrixBuffer.getBuffer();
+	context->VSSetConstantBuffers(0, 1, &buf);
 
 	// Set current input layout
 	context->IASetInputLayout(this->inputLayout);
