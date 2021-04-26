@@ -23,7 +23,7 @@ void CameraController::update()
     float rotX = Input::getCursorDeltaX() * this->mouseSensitivity * 0.01f;
     float rotY = -Input::getCursorDeltaY() * this->mouseSensitivity * 0.01f;
 
-    camera.rotate(XMVectorSet(rotY, rotX, 0.0f, 0.0f));
+    camera.rotate(XMVectorSet(rotX, rotY, 0.0f, 0.0f));
 
 
     // Movement

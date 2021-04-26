@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "SMath.h"
 
 void Camera::updateDirectionVectors()
 {
@@ -64,8 +65,15 @@ void Camera::rotate(XMVECTOR dirV)
 	XMFLOAT4 dir;
 	XMStoreFloat4(&dir, dirV);
 
-	this->pitch += dir.x;
-	this->yaw += dir.y;
+	this->yaw += dir.x;
+	this->pitch += dir.y;
+
+	// Clamp limit
+	this->pitch = SMath::clamp(
+		this->pitch, 
+		-SMath::PI * 0.5f * 0.99f, 
+		 SMath::PI * 0.5f * 0.99f
+	);
 
 	// Create rotation matrix from new pitch, yaw and roll
 	this->lookAt = XMVectorAdd(this->position, 

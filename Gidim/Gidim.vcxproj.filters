@@ -94,6 +94,9 @@
     <ClCompile Include="TextureShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
+    <ClCompile Include="SMath.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -152,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="TextureShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SMath.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
