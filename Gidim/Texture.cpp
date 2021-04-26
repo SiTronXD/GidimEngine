@@ -20,29 +20,7 @@ bool Texture::createSamplerState(ID3D11Device* device, TextureFilter filter)
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	// Set filter based on options
-	switch (filter)
-	{
-	case TextureFilter::BILINEAR:
-
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-
-		break;
-
-	case TextureFilter::NEAREST_NEIGHBOR:
-
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-
-		break;
-
-	default:
-
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-
-		break;
-	}
-
+	samplerDesc.Filter = (D3D11_FILTER) filter;
 
 	// Create the texture sampler state
 	HRESULT result = device->CreateSamplerState(&samplerDesc, &this->samplerState);

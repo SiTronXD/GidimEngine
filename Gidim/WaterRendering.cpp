@@ -51,28 +51,33 @@ void WaterRendering::run()
 	SkyboxShader skyboxShader(renderer);
 	TextureShader waterShader(renderer);
 	
-	
-	/*Texture renderTexture(renderer);
-	renderTexture.createAsRenderTexture(renderer, 256, 256);
 
-	ComputeShader testComputeShader(16, 16);
-	testComputeShader.createFromFile(renderer, "TestComputeShader_Comp.cso");
-	testComputeShader.addRenderTexture(renderTexture);
-	testComputeShader.run(renderer);
-	renderTexture.set(renderer);*/
+	// Water rendering shaders
+	ComputeShader spectrumCreatorShader(16, 16);
+	ComputeShader spectrumInterpolatorShader(16, 16);
 
+	// Initial spectrum textures
 	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture finalSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	spectrumTexture0.createAsRenderTexture(renderer, 256, 256);
 	spectrumTexture1.createAsRenderTexture(renderer, 256, 256);
+	finalSpectrumTexture.createAsRenderTexture(renderer, 256, 256);
 
-	ComputeShader spectrumCreatorShader(16, 16);
+	// Initial spectrum texture creator shader
 	spectrumCreatorShader.createFromFile(renderer, "SpectrumCreatorShader_Comp.cso");
 	spectrumCreatorShader.addRenderTexture(spectrumTexture0);
 	spectrumCreatorShader.addRenderTexture(spectrumTexture1);
 	spectrumCreatorShader.run(renderer);
 
-	spectrumTexture0.set(renderer);
+	// Spectrum interpolation shader
+	spectrumInterpolatorShader.createFromFile(renderer, "SpectrumInterpolatorShader_Comp.cso");
+	spectrumInterpolatorShader.addRenderTexture(spectrumTexture0);
+	spectrumInterpolatorShader.addRenderTexture(spectrumTexture1);
+	spectrumInterpolatorShader.addRenderTexture(finalSpectrumTexture);
+	spectrumInterpolatorShader.run(renderer);
+
+	finalSpectrumTexture.set(renderer);
 
 
 	// Update once before starting loop
