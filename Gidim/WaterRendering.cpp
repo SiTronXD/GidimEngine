@@ -84,12 +84,12 @@ void WaterRendering::run()
 	ComputeShader invPermShader(16, 16);
 
 	// Water rendering textures
-	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture finalSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture pingPongTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	Texture finalSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	Texture butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	Texture pingPongTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	Texture displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R32G32B32A32_FLOAT);
 	spectrumTexture0.createAsRenderTexture(256, 256);
 	spectrumTexture1.createAsRenderTexture(256, 256);
 	finalSpectrumTexture.createAsRenderTexture(256, 256);

@@ -24,9 +24,9 @@ complex createComplex(float value1, float value2)
 #define R6(n) R4(n), R4(n + 2*4 ), R4(n + 1*4 ), R4(n + 3*4 )
 #define REVERSE_BITS R6(0), R6(2), R6(1), R6(3)
 
-uint bitReversed(int i)
+int bitReversed(int i)
 {
-	uint lookup[256] = { REVERSE_BITS };
+	int lookup[256] = { REVERSE_BITS };
 
 	return lookup[i];
 }
@@ -49,11 +49,23 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	if (pos.y % pow(2, pos.x + 1) < pow(2, pos.x))
 		butterflyWing = 1;
 
-	
-	finalButterflyTexture[dispatchThreadID.xy] = float4(
-		twiddleFactor.realNum,
-		twiddleFactor.imgNum,
-		bitReversed(pos.y - (butterflySpan * (1 - butterflyWing))),
-		bitReversed(pos.y + (butterflySpan * butterflyWing))
-	);
+	// Only the first stage requires bit reversal
+	if (pos.x == 0)
+	{
+		finalButterflyTexture[dispatchThreadID.xy] = float4(
+			twiddleFactor.realNum,
+			twiddleFactor.imgNum,
+			bitReversed(pos.y - (butterflySpan * (1 - butterflyWing))),
+			bitReversed(pos.y + (butterflySpan * butterflyWing))
+		);
+	}
+	else
+	{
+		finalButterflyTexture[dispatchThreadID.xy] = float4(
+			twiddleFactor.realNum,
+			twiddleFactor.imgNum,
+			pos.y - (butterflySpan * (1 - butterflyWing)),
+			pos.y + (butterflySpan * butterflyWing)
+		);
+	}
 }

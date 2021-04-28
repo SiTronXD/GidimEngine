@@ -23,7 +23,7 @@ float randomFloat(inout uint state)
 	return clamp(float(wangHash(state)) / 4294967296.0, 0.001, 1.0);
 }
 
-// Generates 4 random, normally distributed numbers
+// Generates 4 random and normally distributed numbers
 float4 randomBoxMuller(inout uint randomState)
 {
 	float theta0 = 2.0 * _PI * randomFloat(randomState);

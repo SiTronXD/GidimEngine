@@ -80,4 +80,11 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		finalVal,
 		1.0
 	) * 1.0;
+
+	/*displacementTexture[pos] = float4(
+		h / (float(N) * float(N)),
+		h / (float(N) * float(N)),
+		h / (float(N) * float(N)),
+		1.0
+	) * 10.0;*/
 }
