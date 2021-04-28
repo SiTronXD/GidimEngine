@@ -95,6 +95,8 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 		return false;
 	}
 
+	this->createSRVAsRenderTexture();
+
 	return true;
 }
 
@@ -169,7 +171,7 @@ void Texture::clearRenderTexture(float red, float green, float blue, float alpha
 	);
 }
 
-bool Texture::recreateSRVAsRenderTexture()
+bool Texture::createSRVAsRenderTexture()
 {
 	S_RELEASE(this->textureSRV);
 

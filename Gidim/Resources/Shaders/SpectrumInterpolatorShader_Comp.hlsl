@@ -1,5 +1,5 @@
 
-cbuffer SpectrumInterpolationBufferType : register(b0)
+cbuffer SpectrumInterpolatorBuffer : register(b0)
 {
 	float time;
 	float padding1;
@@ -9,7 +9,8 @@ cbuffer SpectrumInterpolationBufferType : register(b0)
 
 RWTexture2D<float4> spectrumTexture0 : register(u0);
 RWTexture2D<float4> spectrumTexture1 : register(u1);
-RWTexture2D<float4> finalSpectrumTexture : register(u2);
+RWTexture2D<float4> finalSpectrumTexture0 : register(u2);
+RWTexture2D<float4> finalSpectrumTexture1 : register(u3);
 
 
 #define _PI 3.14159265
@@ -66,7 +67,9 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	complex h0K = createComplex(spectrumTexture0[dispatchThreadID.xy].rg);
 	complex h0MinusKConj = createComplexConj(spectrumTexture1[dispatchThreadID.xy].rg);
 
-	float2 pos = dispatchThreadID.xy;// -(float2(gridWidth, gridHeight) * 0.5);
+	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
+	//float2 pos = dispatchThreadID.xy;
+
 	float2 k = float2(
 		2.0 * _PI * pos.x / horizontalSize, 
 		2.0 * _PI * pos.y / horizontalSize
@@ -84,5 +87,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	complex hKT_Y = complexAdd(complexMul(h0K, expIWT), complexMul(h0MinusKConj, expMinusIWT));
 
-	finalSpectrumTexture[dispatchThreadID.xy] = float4(hKT_Y.realNum, hKT_Y.imgNum, 0.0, 1.0);
+	finalSpectrumTexture0[dispatchThreadID.xy] = float4(hKT_Y.realNum, hKT_Y.imgNum, 0.0, 1.0);
+	finalSpectrumTexture1[dispatchThreadID.xy] = float4(hKT_Y.realNum, hKT_Y.imgNum, 0.0, 1.0);
 }

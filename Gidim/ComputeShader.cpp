@@ -82,7 +82,7 @@ void ComputeShader::run(Renderer& renderer)
 
 	// Recreate SRVs after dispatch
 	for(int i = 0; i < this->renderTextures.size(); ++i)
-		this->renderTextures[i]->recreateSRVAsRenderTexture();
+		this->renderTextures[i]->createSRVAsRenderTexture();
 }
 
 void ComputeShader::addConstantBuffer(SDXBuffer& buffer)

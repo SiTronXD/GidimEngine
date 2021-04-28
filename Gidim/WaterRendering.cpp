@@ -19,6 +19,22 @@ struct SpectrumInterpolationBuffer
 	float padding3;
 };
 
+struct ButterflyOperationBuffer
+{
+	int stage;
+	int pingPong;
+	int direction;
+	int padding1;
+};
+
+struct InvPermBuffer
+{
+	int pingPong;
+	int padding1;
+	int padding2;
+	int padding3;
+};
+
 WaterRendering::WaterRendering()
 { }
 
@@ -65,21 +81,21 @@ void WaterRendering::run()
 	ComputeShader spectrumInterpolatorShader(16, 16);
 	ComputeShader butterflyTextureShader(4, 16);
 	ComputeShader butterflyOperationsShader(16, 16);
+	ComputeShader invPermShader(16, 16);
 
 	// Water rendering textures
 	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture finalSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture pingPongTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	Texture pingPongTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture pingPongTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	spectrumTexture0.createAsRenderTexture(256, 256);
 	spectrumTexture1.createAsRenderTexture(256, 256);
 	finalSpectrumTexture.createAsRenderTexture(256, 256);
 	butterflyTexture.createAsRenderTexture(8, 256);
-	pingPongTexture0.createAsRenderTexture(256, 256);
-	pingPongTexture1.createAsRenderTexture(256, 256);
-	//pingPongTexture0.clear(renderer, 1.0f, 1.0f, 0.0f, 1.0f);
+	pingPongTexture.createAsRenderTexture(256, 256);
+	displacementTexture.createAsRenderTexture(256, 256);
 
 	// Initial spectrum texture creator shader
 	spectrumCreatorShader.createFromFile(renderer, "SpectrumCreatorShader_Comp.cso");
@@ -87,14 +103,17 @@ void WaterRendering::run()
 	spectrumCreatorShader.addRenderTexture(spectrumTexture1);
 	spectrumCreatorShader.run(renderer);
 
-	// Constant buffer to communicate with the spectrum interpolator shader
+	// Constant buffer to communicate with shaders
 	SDXBuffer spectrumInterpolationShaderBuffer(renderer.getDevice(), sizeof(SpectrumInterpolationBuffer));
+	SDXBuffer butterflyOperationShaderBuffer(renderer.getDevice(), sizeof(ButterflyOperationBuffer));
+	SDXBuffer invPermShaderBuffer(renderer.getDevice(), sizeof(InvPermBuffer));
 
 	// Spectrum interpolator shader
 	spectrumInterpolatorShader.createFromFile(renderer, "SpectrumInterpolatorShader_Comp.cso");
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture0);
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture1);
 	spectrumInterpolatorShader.addRenderTexture(finalSpectrumTexture);
+	spectrumInterpolatorShader.addRenderTexture(pingPongTexture);
 	spectrumInterpolatorShader.addConstantBuffer(spectrumInterpolationShaderBuffer);
 
 	// Butterfly texture shader
@@ -104,8 +123,18 @@ void WaterRendering::run()
 
 	// Butterfly operations shader
 	butterflyOperationsShader.createFromFile(renderer, "ButterflyOperationsShader_Comp.cso");
-	butterflyOperationsShader.addRenderTexture(pingPongTexture0);
-	butterflyOperationsShader.addRenderTexture(pingPongTexture1);
+	butterflyOperationsShader.addRenderTexture(butterflyTexture);
+	butterflyOperationsShader.addRenderTexture(pingPongTexture);
+	butterflyOperationsShader.addRenderTexture(finalSpectrumTexture);
+	butterflyOperationsShader.addConstantBuffer(butterflyOperationShaderBuffer);
+
+	// Inversion and permutation shader
+	invPermShader.createFromFile(renderer, "InversionPermutationShader_Comp.cso");
+	invPermShader.addRenderTexture(displacementTexture);
+	invPermShader.addRenderTexture(pingPongTexture);
+	invPermShader.addRenderTexture(finalSpectrumTexture);
+	invPermShader.addConstantBuffer(invPermShaderBuffer);
+
 
 	// Update once before starting loop
 	window.update();
@@ -160,18 +189,55 @@ void WaterRendering::run()
 		renderer.clear(clearColor);
 
 		// Update spectrum interpolation shader
-		D3D11_MAPPED_SUBRESOURCE mappedRes;
-		spectrumInterpolationShaderBuffer.map(renderer.getDeviceContext(), mappedRes);
-		SpectrumInterpolationBuffer* sib = (SpectrumInterpolationBuffer*)mappedRes.pData;
+		D3D11_MAPPED_SUBRESOURCE mappedSpecIntRes;
+		spectrumInterpolationShaderBuffer.map(renderer.getDeviceContext(), mappedSpecIntRes);
+		SpectrumInterpolationBuffer* sib = (SpectrumInterpolationBuffer*) mappedSpecIntRes.pData;
 		sib->time = timer;
+		sib->padding1 = 0.0f;
+		sib->padding2 = 0.0f;
+		sib->padding3 = 0.0f;
 		spectrumInterpolationShaderBuffer.unmap(renderer.getDeviceContext());
 
 		spectrumInterpolatorShader.run(renderer);
 
 		// Update butterfly operations shader
-		butterflyOperationsShader.run(renderer);
+		int pingPong = 0;
+		D3D11_MAPPED_SUBRESOURCE mappedButterOpRes;
+		for (int j = 0; j < 2; ++j)
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				// Update shader buffer
+				butterflyOperationShaderBuffer.map(renderer.getDeviceContext(), mappedButterOpRes);
+				ButterflyOperationBuffer* bob = (ButterflyOperationBuffer*)mappedButterOpRes.pData;
 
-		pingPongTexture0.set();
+				bob->stage = i;
+				bob->pingPong = pingPong;
+				bob->direction = j;
+				bob->padding1 = 0;
+
+				butterflyOperationShaderBuffer.unmap(renderer.getDeviceContext());
+
+
+				butterflyOperationsShader.run(renderer);
+				pingPong = (pingPong + 1) % 2;
+			}
+		}
+
+		// Inversion and permutation shader
+		D3D11_MAPPED_SUBRESOURCE mappedInvPermRes;
+		invPermShaderBuffer.map(renderer.getDeviceContext(), mappedInvPermRes);
+		InvPermBuffer* ipb = (InvPermBuffer*) mappedInvPermRes.pData;
+		ipb->pingPong = pingPong;
+		ipb->padding1 = 0;
+		ipb->padding2 = 0;
+		ipb->padding3 = 0;
+		invPermShaderBuffer.unmap(renderer.getDeviceContext());
+
+		invPermShader.run(renderer);
+
+		// Debug displacementTexture
+		displacementTexture.set();
 
 
 

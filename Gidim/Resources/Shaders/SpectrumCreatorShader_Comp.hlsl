@@ -20,7 +20,7 @@ uint wangHash(inout uint seed)
 // Generates a random number from 0 to 1
 float randomFloat(inout uint state)
 {
-	return float(wangHash(state)) / 4294967296.0;
+	return clamp(float(wangHash(state)) / 4294967296.0, 0.001, 1.0);
 }
 
 // Generates 4 random, normally distributed numbers
@@ -50,12 +50,12 @@ float phillipsSpectrum(float2 k, float horizontalSize,
 
 	float num = amplitude * exp(-1.0 / (kMag * kMag * L_ * L_)) / 
 		(kMag * kMag * kMag * kMag) * 
-		pow(abs(dot(normalize(k), normalize(windDirection))), 6.0);
+		pow(dot(normalize(k), normalize(windDirection)), 6.0);
 
 	// Suppress small waves
-	num *= exp(-kMag * kMag * pow(horizontalSize / 2000.0, 2));
+	num *= exp(-kMag * kMag * pow(horizontalSize / 2000.0, 2.0));
 
-	return clamp(num, -4000.0, 4000.0);
+	return clamp(sqrt(num) / sqrt(2.0), -4000.0, 4000.0);
 }
 
 [numthreads(16, 16, 1)]
@@ -65,15 +65,15 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	int gridHeight = 256;
 
 	float horizontalSize = 1000.0;
-	float windSpeed = 26.0;
-	float amplitude = 20.0;
-	float2 windDirection = float2(1.0, 0.0);
+	float windSpeed = 40.0;
+	float amplitude = 4.0;
+	float2 windDirection = float2(1.0, 1.0);
 
 	// Create initial random state
 	uint randomState = uint(dispatchThreadID.x + dispatchThreadID.y * gridWidth) * uint(5243);
 
-	float2 pos = dispatchThreadID.xy;// -(float2(gridWidth, gridHeight) * 0.5);
-	//float2 pos = dispatchThreadID.xy -(float2(gridWidth, gridHeight) * 0.5);
+	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
+	//float2 pos = dispatchThreadID.xy;
 	
 	float2 k = float2(
 		2.0 * _PI * pos.x / horizontalSize,
@@ -82,9 +82,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	float L_ = windSpeed * windSpeed / _G;
 
-	float oneOverSqrtTwo = 1.0 / sqrt(2);
-	float h0K = sqrt(phillipsSpectrum(k, horizontalSize, L_, amplitude, windDirection)) * oneOverSqrtTwo;
-	float h0MinusK = sqrt(phillipsSpectrum(-k, horizontalSize, L_, amplitude, windDirection)) * oneOverSqrtTwo;
+	float h0K = phillipsSpectrum(k, horizontalSize, L_, amplitude, windDirection);
+	float h0MinusK = phillipsSpectrum(-k, horizontalSize, L_, amplitude, windDirection);
 
 	float4 rndGaussNums = randomBoxMuller(randomState);
 

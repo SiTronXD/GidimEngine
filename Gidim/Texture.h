@@ -36,7 +36,7 @@ public:
 
 	bool createAsRenderTexture(unsigned int width, unsigned int height);
 	bool createFromFile(std::string path);
-	bool recreateSRVAsRenderTexture();
+	bool createSRVAsRenderTexture();
 
 	ID3D11ShaderResourceView* getTextureSRV() const;
 	ID3D11UnorderedAccessView* getTextureUAV() const;
