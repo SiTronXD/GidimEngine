@@ -63,14 +63,23 @@ void WaterRendering::run()
 	// Water rendering shaders
 	ComputeShader spectrumCreatorShader(16, 16);
 	ComputeShader spectrumInterpolatorShader(16, 16);
+	ComputeShader butterflyTextureShader(4, 16);
+	ComputeShader butterflyOperationsShader(16, 16);
 
-	// Initial spectrum textures
+	// Water rendering textures
 	Texture spectrumTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture spectrumTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	Texture finalSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	spectrumTexture0.createAsRenderTexture(renderer, 256, 256);
-	spectrumTexture1.createAsRenderTexture(renderer, 256, 256);
-	finalSpectrumTexture.createAsRenderTexture(renderer, 256, 256);
+	Texture butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture pingPongTexture0(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	Texture pingPongTexture1(renderer, TextureFilter::NEAREST_NEIGHBOR, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	spectrumTexture0.createAsRenderTexture(256, 256);
+	spectrumTexture1.createAsRenderTexture(256, 256);
+	finalSpectrumTexture.createAsRenderTexture(256, 256);
+	butterflyTexture.createAsRenderTexture(8, 256);
+	pingPongTexture0.createAsRenderTexture(256, 256);
+	pingPongTexture1.createAsRenderTexture(256, 256);
+	//pingPongTexture0.clear(renderer, 1.0f, 1.0f, 0.0f, 1.0f);
 
 	// Initial spectrum texture creator shader
 	spectrumCreatorShader.createFromFile(renderer, "SpectrumCreatorShader_Comp.cso");
@@ -88,7 +97,15 @@ void WaterRendering::run()
 	spectrumInterpolatorShader.addRenderTexture(finalSpectrumTexture);
 	spectrumInterpolatorShader.addConstantBuffer(spectrumInterpolationShaderBuffer);
 
+	// Butterfly texture shader
+	butterflyTextureShader.createFromFile(renderer, "ButterflyTextureShader_Comp.cso");
+	butterflyTextureShader.addRenderTexture(butterflyTexture);
+	butterflyTextureShader.run(renderer);
 
+	// Butterfly operations shader
+	butterflyOperationsShader.createFromFile(renderer, "ButterflyOperationsShader_Comp.cso");
+	butterflyOperationsShader.addRenderTexture(pingPongTexture0);
+	butterflyOperationsShader.addRenderTexture(pingPongTexture1);
 
 	// Update once before starting loop
 	window.update();
@@ -150,7 +167,11 @@ void WaterRendering::run()
 		spectrumInterpolationShaderBuffer.unmap(renderer.getDeviceContext());
 
 		spectrumInterpolatorShader.run(renderer);
-		finalSpectrumTexture.set(renderer);
+
+		// Update butterfly operations shader
+		butterflyOperationsShader.run(renderer);
+
+		pingPongTexture0.set();
 
 
 

@@ -4,7 +4,7 @@
 #include "Log.h"
 #include "SDXHelpers.h"
 
-bool Texture::createSamplerState(ID3D11Device* device, TextureFilter filter)
+bool Texture::createSamplerState(TextureFilter filter)
 {
 	// Create texture sampler desc for the sampler state
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -23,7 +23,7 @@ bool Texture::createSamplerState(ID3D11Device* device, TextureFilter filter)
 	samplerDesc.Filter = (D3D11_FILTER) filter;
 
 	// Create the texture sampler state
-	HRESULT result = device->CreateSamplerState(&samplerDesc, &this->samplerState);
+	HRESULT result = this->device->CreateSamplerState(&samplerDesc, &this->samplerState);
 	if (FAILED(result))
 	{
 		Log::error("Could not create texture sampler state.");
@@ -35,10 +35,11 @@ bool Texture::createSamplerState(ID3D11Device* device, TextureFilter filter)
 }
 
 Texture::Texture(Renderer& renderer, TextureFilter filter, DXGI_FORMAT textureFormat)
-	: samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr),
+	: device(renderer.getDevice()), deviceContext(renderer.getDeviceContext()),
+	samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr),
 	textureFormat(textureFormat)
 {
-	this->createSamplerState(renderer.getDevice(), filter);
+	this->createSamplerState(filter);
 }
 
 Texture::~Texture()
@@ -49,8 +50,7 @@ Texture::~Texture()
 	S_RELEASE(this->textureSRV);
 }
 
-bool Texture::createAsRenderTexture(Renderer& renderer, 
-	unsigned int width, unsigned int height)
+bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 {
 	HRESULT result;
 
@@ -72,7 +72,7 @@ bool Texture::createAsRenderTexture(Renderer& renderer,
 	textureDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 	textureDesc.Format = this->textureFormat;
 
-	result = renderer.getDevice()->CreateTexture2D(&textureDesc, NULL, &this->texture);
+	result = this->device->CreateTexture2D(&textureDesc, NULL, &this->texture);
 	if (FAILED(result))
 	{
 		Log::error("Failed creating texture in compute shader.");
@@ -87,7 +87,7 @@ bool Texture::createAsRenderTexture(Renderer& renderer,
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Texture2D.MipSlice = 0;
 
-	result = renderer.getDevice()->CreateUnorderedAccessView(this->texture, &uavDesc, &this->textureUAV);
+	result = this->device->CreateUnorderedAccessView(this->texture, &uavDesc, &this->textureUAV);
 	if (FAILED(result))
 	{
 		Log::error("Failed creating UAV for texture in compute shader.");
@@ -98,10 +98,8 @@ bool Texture::createAsRenderTexture(Renderer& renderer,
 	return true;
 }
 
-bool Texture::createFromFile(Renderer& renderer, std::string path)
+bool Texture::createFromFile(std::string path)
 {
-	ID3D11Device* device = renderer.getDevice();
-
 	// Deallocate old texture, if it exists
 	S_RELEASE(this->texture);
 	S_RELEASE(this->textureUAV);
@@ -119,11 +117,11 @@ bool Texture::createFromFile(Renderer& renderer, std::string path)
 	if (path.substr(path.size() - 3) == "dds")
 	{
 		/*result = DirectX::CreateDDSTextureFromFile(
-			device, widePath.c_str(), &texResource, &this->texture
+			this->device, widePath.c_str(), &texResource, &this->texture
 		);*/
 
 		result = DirectX::CreateDDSTextureFromFileEx(
-			device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT, 
+			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT, 
 			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 			0, 0, false, (ID3D11Resource**) &this->texture, &this->textureSRV
 		);
@@ -131,11 +129,11 @@ bool Texture::createFromFile(Renderer& renderer, std::string path)
 	else // Load non-DDS
 	{
 		/*result = DirectX::CreateWICTextureFromFile(
-			device, widePath.c_str(), &texResource, &this->texture
+			this->device, widePath.c_str(), &texResource, &this->texture
 		);*/
 
 		result = DirectX::CreateWICTextureFromFileEx(
-			device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
+			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
 			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 			0, 0, false, (ID3D11Resource**) &this->texture, &this->textureSRV
 		);
@@ -152,18 +150,26 @@ bool Texture::createFromFile(Renderer& renderer, std::string path)
 	return true;
 }
 
-void Texture::set(Renderer& renderer, UINT startSlot)
+void Texture::set(UINT startSlot)
 {
-	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
-
 	// Set sampler state in the pixel shader
-	deviceContext->PSSetSamplers(startSlot, 1, &this->samplerState);
+	this->deviceContext->PSSetSamplers(startSlot, 1, &this->samplerState);
 
 	// Set shader texture resource in the pixel shader
-	deviceContext->PSSetShaderResources(startSlot, 1, &this->textureSRV);
+	this->deviceContext->PSSetShaderResources(startSlot, 1, &this->textureSRV);
 }
 
-bool Texture::recreateSRVAsRenderTexture(Renderer& renderer)
+void Texture::clearRenderTexture(float red, float green, float blue, float alpha)
+{
+	float colors[4]{ red, green, blue, alpha };
+
+	this->deviceContext->ClearUnorderedAccessViewFloat(
+		this->textureUAV,
+		colors
+	);
+}
+
+bool Texture::recreateSRVAsRenderTexture()
 {
 	S_RELEASE(this->textureSRV);
 
@@ -174,7 +180,7 @@ bool Texture::recreateSRVAsRenderTexture(Renderer& renderer)
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	HRESULT result = renderer.getDevice()->CreateShaderResourceView(this->texture, &srvDesc, &this->textureSRV);
+	HRESULT result = this->device->CreateShaderResourceView(this->texture, &srvDesc, &this->textureSRV);
 	if (FAILED(result))
 	{
 		Log::error("Failed recreating SRV from texture.");
