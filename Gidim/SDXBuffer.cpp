@@ -23,8 +23,6 @@ SDXBuffer::SDXBuffer(ID3D11Device* device, UINT structSize)
 SDXBuffer::~SDXBuffer()
 {
 	S_RELEASE(this->buffer);
-
-	Log::print("DEALLOCATED BUFFER");
 }
 
 void SDXBuffer::map(ID3D11DeviceContext* deviceContext, 

@@ -11,7 +11,7 @@
 #include "ColorShader.h"
 #include "TextureShader.h"
 
-struct SpectrumInterpolationBufferType
+struct SpectrumInterpolationBuffer
 {
 	float time;
 	float padding1;
@@ -78,23 +78,16 @@ void WaterRendering::run()
 	spectrumCreatorShader.addRenderTexture(spectrumTexture1);
 	spectrumCreatorShader.run(renderer);
 
-	SDXBuffer spectrumInterpolationBuffer(renderer.getDevice(), sizeof(SpectrumInterpolationBufferType));
+	// Constant buffer to communicate with the spectrum interpolator shader
+	SDXBuffer spectrumInterpolationShaderBuffer(renderer.getDevice(), sizeof(SpectrumInterpolationBuffer));
 
-	D3D11_MAPPED_SUBRESOURCE mappedRes;
-	spectrumInterpolationBuffer.map(renderer.getDeviceContext(), mappedRes);
-	SpectrumInterpolationBufferType* sib = (SpectrumInterpolationBufferType*) mappedRes.pData;
-	sib->time = 1.0f;
-	spectrumInterpolationBuffer.unmap(renderer.getDeviceContext());
-
-	// Spectrum interpolation shader
+	// Spectrum interpolator shader
 	spectrumInterpolatorShader.createFromFile(renderer, "SpectrumInterpolatorShader_Comp.cso");
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture0);
 	spectrumInterpolatorShader.addRenderTexture(spectrumTexture1);
 	spectrumInterpolatorShader.addRenderTexture(finalSpectrumTexture);
-	spectrumInterpolatorShader.addConstantBuffer(spectrumInterpolationBuffer);
-	spectrumInterpolatorShader.run(renderer);
+	spectrumInterpolatorShader.addConstantBuffer(spectrumInterpolationShaderBuffer);
 
-	finalSpectrumTexture.set(renderer);
 
 
 	// Update once before starting loop
@@ -148,6 +141,18 @@ void WaterRendering::run()
 
 		// Clear color and depth buffers
 		renderer.clear(clearColor);
+
+		// Update spectrum interpolation shader
+		D3D11_MAPPED_SUBRESOURCE mappedRes;
+		spectrumInterpolationShaderBuffer.map(renderer.getDeviceContext(), mappedRes);
+		SpectrumInterpolationBuffer* sib = (SpectrumInterpolationBuffer*)mappedRes.pData;
+		sib->time = timer;
+		spectrumInterpolationShaderBuffer.unmap(renderer.getDeviceContext());
+
+		spectrumInterpolatorShader.run(renderer);
+		finalSpectrumTexture.set(renderer);
+
+
 
 		// Update buffers in shader
 		//skyboxShader.update(renderer, skyboxMesh.getWorldMatrix());

@@ -87,14 +87,10 @@ void ComputeShader::run(Renderer& renderer)
 
 void ComputeShader::addConstantBuffer(SDXBuffer& buffer)
 {
-	Log::print("Tried to add constant buffer");
-
 	// Add constant buffer, if we haven't reached the maximum yet
 	if (this->constantBuffers.size() < NUM_MAX_CONSTANT_BUFFERS)
 	{
 		this->constantBuffers.push_back(buffer.getBuffer());
-
-		Log::print("Added constant buffer");
 	}
 }
 

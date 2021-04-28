@@ -1,6 +1,8 @@
 #include <crtdbg.h>
 #include "WaterRendering.h"
 
+#include <iostream>
+
 int main()
 {
 	// Set flags for tracking memory leaks
