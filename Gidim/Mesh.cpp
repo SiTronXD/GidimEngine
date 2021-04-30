@@ -1,9 +1,17 @@
 #include "Mesh.h"
-#include "SDXHelpers.h"
+#include "Helpers.h"
 
 bool Mesh::createBuffers(MeshData& meshData)
 {
 	HRESULT result;
+
+	// Make sure there are vertices to create buffers from
+	if (meshData.getVertices().empty())
+	{
+		Log::error("MeshData contained no vertices.");
+
+		return false;
+	}
 
 	// Create vertex buffer desc
 	CD3D11_BUFFER_DESC vertexBufferDesc = CD3D11_BUFFER_DESC(

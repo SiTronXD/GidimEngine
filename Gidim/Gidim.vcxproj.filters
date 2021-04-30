@@ -118,6 +118,12 @@
     <ClCompile Include="SDXBuffer.cpp">
       <Filter>Engine\Graphics\DirectX</Filter>
     </ClCompile>
+    <ClCompile Include="WaterShader.cpp">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Water.cpp">
+      <Filter>Gidim\Examples</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -180,8 +186,14 @@
     <ClInclude Include="SDXBuffer.h">
       <Filter>Engine\Graphics\DirectX</Filter>
     </ClInclude>
-    <ClInclude Include="SDXHelpers.h">
-      <Filter>Engine\Graphics\DirectX</Filter>
+    <ClInclude Include="WaterShader.h">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>Engine\Dev</Filter>
+    </ClInclude>
+    <ClInclude Include="Water.h">
+      <Filter>Gidim\Examples</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +229,12 @@
     </FxCompile>
     <FxCompile Include="Resources\Shaders\InversionPermutationShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 5</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\WaterShader_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\WaterShader_Pix.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -25,15 +25,15 @@ private:
 
 	SDXBuffer matrixBuffer;
 
-public:
-	Shader(Renderer& renderer);
-	virtual ~Shader();
-
 	bool loadFromFile(
-		ID3D11Device* device, 
-		std::string vertexShaderFilePath, 
+		ID3D11Device* device,
+		std::string vertexShaderFilePath,
 		std::string pixelShaderFilePath
 	);
+
+public:
+	Shader(Renderer& renderer, std::string vertexShaderFilePath, std::string pixelShaderFilePath);
+	virtual ~Shader();
 
 	virtual void update(
 		Renderer& renderer, XMMATRIX currentWorldMatrix

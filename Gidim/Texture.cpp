@@ -2,7 +2,7 @@
 #include "External/DDSTextureLoader11.h"
 #include "External/WICTextureLoader11.h"
 #include "Log.h"
-#include "SDXHelpers.h"
+#include "Helpers.h"
 
 bool Texture::createSamplerState(TextureFilter filter)
 {
@@ -152,13 +152,22 @@ bool Texture::createFromFile(std::string path)
 	return true;
 }
 
-void Texture::set(UINT startSlot)
+void Texture::setPS(UINT startSlot)
 {
 	// Set sampler state in the pixel shader
 	this->deviceContext->PSSetSamplers(startSlot, 1, &this->samplerState);
 
 	// Set shader texture resource in the pixel shader
 	this->deviceContext->PSSetShaderResources(startSlot, 1, &this->textureSRV);
+}
+
+void Texture::setVS(UINT startSlot)
+{
+	// Set sampler state in the vertex shader
+	this->deviceContext->VSSetSamplers(startSlot, 1, &this->samplerState);
+
+	// Set shader texture resource in the vertex shader
+	this->deviceContext->VSSetShaderResources(startSlot, 1, &this->textureSRV);
 }
 
 void Texture::clearRenderTexture(float red, float green, float blue, float alpha)

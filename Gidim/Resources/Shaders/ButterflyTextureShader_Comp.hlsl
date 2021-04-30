@@ -1,4 +1,10 @@
 
+cbuffer ButterflyTextureBuffer : register(b0)
+{
+	int gridSize;
+	int padding[3];
+};
+
 RWTexture2D<float4> finalButterflyTexture : register(u0);
 
 
@@ -34,13 +40,13 @@ int bitReversed(int i)
 [numthreads(2, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	int N = 256;
+	// int N = 256;
 
 	float2 pos = dispatchThreadID.xy;
-	float k = (pos.y * float(N) / pow(2.0, pos.x + 1)) % N;
+	float k = (pos.y * float(gridSize) / pow(2.0, pos.x + 1)) % gridSize;
 	complex twiddleFactor = createComplex(
-		cos(2.0 * _PI * k / float(N)),
-		sin(2.0 * _PI * k / float(N))
+		cos(2.0 * _PI * k / float(gridSize)),
+		sin(2.0 * _PI * k / float(gridSize))
 	);
 
 	int butterflySpan = int(pow(2.0, pos.x));

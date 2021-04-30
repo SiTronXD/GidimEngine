@@ -1,5 +1,5 @@
 #include "SDXBuffer.h"
-#include "SDXHelpers.h"
+#include "Helpers.h"
 #include "Log.h"
 
 SDXBuffer::SDXBuffer(ID3D11Device* device, UINT structSize)

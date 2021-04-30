@@ -3,22 +3,8 @@
 #include <fstream>
 #include <vector>
 
-Shader::Shader(Renderer& renderer)
-	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
-	matrixBuffer(renderer.getDevice(), sizeof(MatrixBuffer))
-{
-	
-}
-
-Shader::~Shader()
-{
-	S_RELEASE(this->vertexShader);
-	S_RELEASE(this->pixelShader);
-	S_RELEASE(this->inputLayout);
-}
-
 bool Shader::loadFromFile(
-	ID3D11Device* device, 
+	ID3D11Device* device,
 	std::string vertexShaderFilePath, std::string pixelShaderFilePath
 )
 {
@@ -98,6 +84,21 @@ bool Shader::loadFromFile(
 	}
 
 	return true;
+}
+
+Shader::Shader(Renderer& renderer, 
+	std::string vertexShaderFilePath, std::string pixelShaderFilePath)
+	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
+	matrixBuffer(renderer.getDevice(), sizeof(MatrixBuffer))
+{
+	this->loadFromFile(renderer.getDevice(), vertexShaderFilePath, pixelShaderFilePath);
+}
+
+Shader::~Shader()
+{
+	S_RELEASE(this->vertexShader);
+	S_RELEASE(this->pixelShader);
+	S_RELEASE(this->inputLayout);
 }
 
 void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)

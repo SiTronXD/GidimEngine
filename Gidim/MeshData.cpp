@@ -222,6 +222,11 @@ MeshData::MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices)
 	: vertices(vertices), indices(indices)
 { }
 
+MeshData::MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY)
+{
+	this->createDefault(defaultMeshType, resolutionX, resolutionY);
+}
+
 void MeshData::createDefault(DefaultMesh defaultMeshType, int resolutionX, int resolutionY)
 {
 	// Remove earlier vertex info, just to be sure

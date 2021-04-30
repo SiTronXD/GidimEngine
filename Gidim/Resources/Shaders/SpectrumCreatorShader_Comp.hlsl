@@ -1,4 +1,17 @@
 
+cbuffer CreatorBuffer : register(b0)
+{
+	int gridWidth;
+	int gridHeight;
+
+	float2 windDirection;
+
+	float horizontalSize;
+	float windSpeed;
+	float amplitude;
+	float padding;
+};
+
 RWTexture2D<float4> spectrumTexture0 : register(u0);
 RWTexture2D<float4> spectrumTexture1 : register(u1);
 
@@ -61,19 +74,10 @@ float phillipsSpectrum(float2 k, float horizontalSize,
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	int gridWidth = 256;
-	int gridHeight = 256;
-
-	float horizontalSize = 1000.0;
-	float windSpeed = 40.0;
-	float amplitude = 4.0;
-	float2 windDirection = float2(1.0, 1.0);
-
 	// Create initial random state
 	uint randomState = uint(dispatchThreadID.x + dispatchThreadID.y * gridWidth) * uint(5243);
 
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
-	//float2 pos = dispatchThreadID.xy;
 	
 	float2 k = float2(
 		2.0 * _PI * pos.x / horizontalSize,

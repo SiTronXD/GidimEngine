@@ -1,10 +1,10 @@
 
 cbuffer SpectrumInterpolatorBuffer : register(b0)
 {
+	int gridWidth;
+	int gridHeight;
+	float horizontalSize;
 	float time;
-	float padding1;
-	float padding2;
-	float padding3;
 };
 
 RWTexture2D<float4> spectrumTexture0 : register(u0);
@@ -60,15 +60,14 @@ complex complexMul(complex val1, complex val2)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	float horizontalSize = 1000.0;
-	int gridWidth = 256;
-	int gridHeight = 256;
+	// float horizontalSize = 1000.0;
+	// int gridWidth = 256;
+	// int gridHeight = 256;
 
 	complex h0K = createComplex(spectrumTexture0[dispatchThreadID.xy].rg);
 	complex h0MinusKConj = createComplexConj(spectrumTexture1[dispatchThreadID.xy].rg);
 
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
-	//float2 pos = dispatchThreadID.xy;
 
 	float2 k = float2(
 		2.0 * _PI * pos.x / horizontalSize, 

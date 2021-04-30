@@ -1,7 +1,6 @@
 #include "ComputeShader.h"
+#include "Helpers.h"
 #include <fstream>
-
-#define VECTOR_ADDRESS(x) x.empty() ? 0 : &x[0]
 
 ComputeShader::ComputeShader(int threadGroupX, int threadGroupY)
 	: threadGroupX(threadGroupX), threadGroupY(threadGroupY),

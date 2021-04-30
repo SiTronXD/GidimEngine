@@ -38,6 +38,7 @@ private:
 public:
 	MeshData();
 	MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices);
+	MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY);
 
 	void createDefault(DefaultMesh defaultMeshType, int resolutionX = 0, int resolutionY = 0);
 	void invertFaces();

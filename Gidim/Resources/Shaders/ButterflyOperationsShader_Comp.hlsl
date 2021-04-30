@@ -4,7 +4,7 @@ cbuffer ButterflyOperationsBuffer : register(b0)
 	int stage;
 	int pingPong;
 	int direction;
-	int padding1;
+	int padding;
 };
 
 RWTexture2D<float4> butterflyTexture : register(u0);

@@ -31,7 +31,8 @@ public:
 		DXGI_FORMAT textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
 	~Texture();
 
-	void set(UINT startSlot = 0);
+	void setPS(UINT startSlot = 0);
+	void setVS(UINT startSlot = 0);
 	void clearRenderTexture(float red, float green, float blue, float alpha);
 
 	bool createAsRenderTexture(unsigned int width, unsigned int height);

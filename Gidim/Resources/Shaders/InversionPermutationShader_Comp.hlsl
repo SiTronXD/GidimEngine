@@ -1,10 +1,9 @@
 
 cbuffer InvPermBuffer : register(b0)
 {
+	int gridSize;
 	int pingPong;
-	int padding1;
-	int padding2;
-	int padding3;
+	int padding[2];
 };
 
 RWTexture2D<float4> displacementTexture : register(u0);
@@ -53,7 +52,7 @@ complex complexMul(complex val1, complex val2)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	int N = 256;
+	// int N = 256;
 
 	uint2 pos = dispatchThreadID.xy;
 
@@ -72,19 +71,12 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		h = pingPong1[pos].r;
 	}
 
-	float finalVal = curPerm * h / (float(N) * float(N));
+	float finalVal = curPerm * h / (float(gridSize) * float(gridSize));
 
 	displacementTexture[pos] = float4(
 		finalVal,
 		finalVal,
 		finalVal,
 		1.0
-	) * 1.0;
-
-	/*displacementTexture[pos] = float4(
-		h / (float(N) * float(N)),
-		h / (float(N) * float(N)),
-		h / (float(N) * float(N)),
-		1.0
-	) * 10.0;*/
+	);
 }
