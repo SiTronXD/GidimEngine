@@ -7,9 +7,10 @@ cbuffer SpectrumInterpolatorBuffer : register(b0)
 	float time;
 };
 
-RWTexture2D<float4> spectrumTexture0 : register(u0);
-RWTexture2D<float4> spectrumTexture1 : register(u1);
-RWTexture2D<float4> finalSpectrumTexture0 : register(u2);
+RWTexture2D<float4> spectrumTexture : register(u0);
+RWTexture2D<float4> finalSpectrumTextureX : register(u1);
+RWTexture2D<float4> finalSpectrumTextureY : register(u2);
+RWTexture2D<float4> finalSpectrumTextureZ : register(u3);
 
 
 #define _PI 3.14159265
@@ -60,8 +61,8 @@ complex complexMul(complex val1, complex val2)
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	// Get complex numbers from the textures
-	complex h0K = createComplex(spectrumTexture0[dispatchThreadID.xy].rg);
-	complex h0MinusKConj = createComplexConj(spectrumTexture1[dispatchThreadID.xy].rg);
+	complex h0K = createComplex(spectrumTexture[dispatchThreadID.xy].rg);
+	complex h0MinusKConj = createComplexConj(spectrumTexture[dispatchThreadID.xy].ba);
 
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
 
@@ -78,10 +79,26 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	complex expIWT = createComplex(cosWT, sinWT);
 	complex expMinusIWT = createComplex(cosWT, -sinWT); // Negative angle
 	complex hKT_Y = complexAdd(complexMul(h0K, expIWT), complexMul(h0MinusKConj, expMinusIWT));
+	complex hKT_X = complexMul(createComplex(0.0, -k.x / kMag), hKT_Y);
+	complex hKT_Z = complexMul(createComplex(0.0, -k.y / kMag), hKT_Y);
 
 	// Store the interpolated values twice for gradually calculating FFTs later
-	finalSpectrumTexture0[dispatchThreadID.xy] = float4(
-		hKT_Y.realNum, hKT_Y.imgNum, 
+	
+	// X
+	finalSpectrumTextureX[dispatchThreadID.xy] = float4(
+		hKT_X.realNum, hKT_X.imgNum,
+		hKT_X.realNum, hKT_X.imgNum
+	);
+
+	// Y
+	finalSpectrumTextureY[dispatchThreadID.xy] = float4(
+		hKT_Y.realNum, hKT_Y.imgNum,
 		hKT_Y.realNum, hKT_Y.imgNum
+	);
+
+	// Z
+	finalSpectrumTextureZ[dispatchThreadID.xy] = float4(
+		hKT_Z.realNum, hKT_Z.imgNum,
+		hKT_Z.realNum, hKT_Z.imgNum
 	);
 }

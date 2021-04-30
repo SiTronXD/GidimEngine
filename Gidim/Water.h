@@ -26,7 +26,7 @@ private:
 		float horizontalSize;
 		float windSpeed;
 		float amplitude;
-		float padding;
+		float waveDirectionTendency;
 	} scb{};
 
 	struct SpectrumInterpolationBuffer
@@ -72,11 +72,14 @@ private:
 	ComputeShader butterflyOperationsShader;
 	ComputeShader invPermShader;
 
-	Texture spectrumTexture0;
-	Texture spectrumTexture1;
-	Texture finalSpectrumTexture;
+	Texture initialSpectrumTexture;
 	Texture butterflyTexture;
-	Texture displacementTexture;
+	Texture finalSpectrumTextureX;
+	Texture finalSpectrumTextureY;
+	Texture finalSpectrumTextureZ;
+	Texture displacementTextureX;
+	Texture displacementTextureY;
+	Texture displacementTextureZ;
 
 	ShaderBuffer spectrumCreatorShaderBuffer;
 	ShaderBuffer spectrumInterpolationShaderBuffer;
@@ -88,9 +91,15 @@ private:
 
 	float timer;
 
+	bool displaceHorizontally;
+
+	void runIFFT(Texture& currentSpectrumTexture, Texture& currentDisplacementTexture);
+
 public:
 	Water(Renderer& renderer);
 	~Water();
+
+	void toggleHorizontalDisplacement();
 
 	void draw();
 };

@@ -7,5 +7,5 @@ struct Input
 
 float4 main(Input input) : SV_TARGET
 {
-	return float4(float3(input.uv, 0.0), 1.0);
+	return float4(input.uv, 0.0, 1.0);
 }

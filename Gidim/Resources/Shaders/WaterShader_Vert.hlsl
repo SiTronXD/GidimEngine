@@ -18,7 +18,9 @@ struct Output
 	float2 uv : TEXCOORD;
 };
 
-Texture2D displacementTexture : register(t0);
+Texture2D displacementTextureX : register(t0);
+Texture2D displacementTextureY : register(t1);
+Texture2D displacementTextureZ : register(t2);
 SamplerState displacementSampler;
 
 Output main(Input input)
@@ -26,13 +28,23 @@ Output main(Input input)
 	Output output;
 
 	// Displacement
-	float displacementCol = displacementTexture.SampleLevel(
+	float displacementColX = displacementTextureX.SampleLevel(
+		displacementSampler,
+		input.uv,
+		0
+	).r;
+	float displacementColY = displacementTextureY.SampleLevel(
+		displacementSampler,
+		input.uv,
+		0
+	).r;
+	float displacementColZ = displacementTextureZ.SampleLevel(
 		displacementSampler,
 		input.uv,
 		0
 	).r;
 
-	float3 displacementPos = float3(0.0, displacementCol, 0.0) * 0.15;
+	float3 displacementPos = float3(displacementColX, displacementColY, displacementColZ) * 0.15;
 
 	// Position
 	float4 p = float4(input.position.xyz, 1.0);

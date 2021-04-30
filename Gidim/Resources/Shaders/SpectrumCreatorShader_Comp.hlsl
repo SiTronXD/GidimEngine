@@ -9,11 +9,10 @@ cbuffer CreatorBuffer : register(b0)
 	float horizontalSize;
 	float windSpeed;
 	float amplitude;
-	float padding;
+	float waveDirectionTendency;
 };
 
-RWTexture2D<float4> spectrumTexture0 : register(u0);
-RWTexture2D<float4> spectrumTexture1 : register(u1);
+RWTexture2D<float4> spectrumTexture : register(u0);
 
 #define _PI 3.14159265
 #define _G 9.80665
@@ -74,9 +73,10 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	kMagSqrd = max(0.0001, kMagSqrd); // Avoid division by 0
 
 	// Phillips spectrum
+	// abs(dot(normalize(-k), windDir)) == abs(dot(normalize(k), windDir))
 	float spec = amplitude * exp(-1.0 / (kMagSqrd * L_ * L_)) /
 		(kMagSqrd * kMagSqrd) *
-		pow(abs(dot(normalize(k), normalize(windDirection))), 4.0);
+		pow(abs(dot(normalize(k), normalize(windDirection))), waveDirectionTendency);
 
 	// Suppress small waves
 	spec *= exp(-kMagSqrd * pow(horizontalSize / 2000.0, 2.0));
@@ -90,10 +90,5 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	// R: real component
 	// G: imaginary component
-	spectrumTexture0[dispatchThreadID.xy] = 
-		float4(rndGaussNums.xy * spec, 0.0, 1.0);
-
-	// abs(dot(normalize(-k), windDir)) == abs(dot(normalize(k), windDir))
-	spectrumTexture1[dispatchThreadID.xy] =
-		float4(rndGaussNums.zw * spec, 0.0, 1.0);
+	spectrumTexture[dispatchThreadID.xy] = rndGaussNums * spec;
 }

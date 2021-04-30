@@ -91,6 +91,8 @@ void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
 	{
 		this->constantBuffers.push_back(buffer.getBuffer());
 	}
+	else
+		Log::error("Too many shader buffers were attempted to be added for this compute shader.");
 }
 
 void ComputeShader::addRenderTexture(Texture& texture)
@@ -101,4 +103,18 @@ void ComputeShader::addRenderTexture(Texture& texture)
 		this->renderTextures.push_back(&texture);
 		this->renderTextureUAVs.push_back(texture.getTextureUAV());
 	}
+	else
+		Log::error("Too many render textures were attempted to be added for this compute shader.");
+}
+
+void ComputeShader::removeRenderTextureAt(int index)
+{
+	this->renderTextures.erase(this->renderTextures.begin() + index);
+	this->renderTextureUAVs.erase(this->renderTextureUAVs.begin() + index);
+}
+
+void ComputeShader::removeAllRenderTextures()
+{
+	this->renderTextures.clear();
+	this->renderTextureUAVs.clear();
 }

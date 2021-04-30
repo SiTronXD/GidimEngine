@@ -6,8 +6,8 @@ cbuffer InvPermBuffer : register(b0)
 	int padding[2];
 };
 
-RWTexture2D<float4> displacementTexture : register(u0);
-RWTexture2D<float4> spectrumTexture : register(u1);
+RWTexture2D<float4> spectrumTexture : register(u0);
+RWTexture2D<float4> displacementTexture : register(u1);
 
 
 #define _PI 3.14159265

@@ -78,6 +78,11 @@ void WaterRendering::run()
 			renderer.setWireframe(isWireframe);
 		}
 
+		if (Input::isKeyJustPressed(Keys::T))
+		{
+			water.toggleHorizontalDisplacement();
+		}
+
 		/////////////////////////////////////////////////////////////////////////
 
 		// Prepare for rendering frame

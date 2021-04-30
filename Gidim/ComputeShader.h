@@ -33,4 +33,7 @@ public:
 	void run(Renderer& renderer);
 	void addRenderTexture(Texture& texture);
 	void addShaderBuffer(ShaderBuffer& buffer);
+
+	void removeRenderTextureAt(int index);
+	void removeAllRenderTextures();
 };
