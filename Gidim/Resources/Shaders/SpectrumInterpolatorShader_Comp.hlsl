@@ -10,7 +10,6 @@ cbuffer SpectrumInterpolatorBuffer : register(b0)
 RWTexture2D<float4> spectrumTexture0 : register(u0);
 RWTexture2D<float4> spectrumTexture1 : register(u1);
 RWTexture2D<float4> finalSpectrumTexture0 : register(u2);
-RWTexture2D<float4> finalSpectrumTexture1 : register(u3);
 
 
 #define _PI 3.14159265
@@ -60,10 +59,7 @@ complex complexMul(complex val1, complex val2)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	// float horizontalSize = 1000.0;
-	// int gridWidth = 256;
-	// int gridHeight = 256;
-
+	// Get complex numbers from the textures
 	complex h0K = createComplex(spectrumTexture0[dispatchThreadID.xy].rg);
 	complex h0MinusKConj = createComplexConj(spectrumTexture1[dispatchThreadID.xy].rg);
 
@@ -74,18 +70,18 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		2.0 * _PI * pos.y / horizontalSize
 	);
 	float kMag = length(k);
-	kMag = max(0.0001, kMag);
-
+	kMag = max(0.0001, kMag); // Avoid division by 0
 	float w = sqrt(_G * kMag);
-
 	float cosWT = cos(w * time);
 	float sinWT = sin(w * time);
 
 	complex expIWT = createComplex(cosWT, sinWT);
-	complex expMinusIWT = createComplex(cosWT, -sinWT);
-
+	complex expMinusIWT = createComplex(cosWT, -sinWT); // Negative angle
 	complex hKT_Y = complexAdd(complexMul(h0K, expIWT), complexMul(h0MinusKConj, expMinusIWT));
 
-	finalSpectrumTexture0[dispatchThreadID.xy] = float4(hKT_Y.realNum, hKT_Y.imgNum, 0.0, 1.0);
-	finalSpectrumTexture1[dispatchThreadID.xy] = float4(hKT_Y.realNum, hKT_Y.imgNum, 0.0, 1.0);
+	// Store the interpolated values twice for gradually calculating FFTs later
+	finalSpectrumTexture0[dispatchThreadID.xy] = float4(
+		hKT_Y.realNum, hKT_Y.imgNum, 
+		hKT_Y.realNum, hKT_Y.imgNum
+	);
 }

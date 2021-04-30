@@ -4,7 +4,7 @@
 #include <DirectXMath.h>
 #include <iostream>
 #include "Renderer.h"
-#include "SDXBuffer.h"
+#include "ShaderBuffer.h"
 
 using namespace DirectX;
 
@@ -17,13 +17,13 @@ private:
 		XMMATRIX projectionMatrix;	// 64 bytes
 		XMMATRIX viewMatrix;		// 64 bytes
 		XMMATRIX worldMatrix;		// 64 bytes
-	};
+	} matrixBufferValues{};
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
 
-	SDXBuffer matrixBuffer;
+	ShaderBuffer matrixBuffer;
 
 	bool loadFromFile(
 		ID3D11Device* device,

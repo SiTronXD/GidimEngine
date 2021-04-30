@@ -25,6 +25,7 @@ complex createComplex(float value1, float value2)
 	return createdComplex;
 }
 
+// Preprocessor directives for creating an array with reversed bits at each index
 #define R2(n) n, n + 2*64, n + 1*64, n + 3*64
 #define R4(n) R2(n), R2(n + 2*16), R2(n + 1*16), R2(n + 3*16)
 #define R6(n) R4(n), R4(n + 2*4 ), R4(n + 1*4 ), R4(n + 3*4 )
@@ -40,8 +41,6 @@ int bitReversed(int i)
 [numthreads(2, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	// int N = 256;
-
 	float2 pos = dispatchThreadID.xy;
 	float k = (pos.y * float(gridSize) / pow(2.0, pos.x + 1)) % gridSize;
 	complex twiddleFactor = createComplex(

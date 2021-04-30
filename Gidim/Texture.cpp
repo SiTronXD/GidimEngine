@@ -34,10 +34,10 @@ bool Texture::createSamplerState(TextureFilter filter)
 	return true;
 }
 
-Texture::Texture(Renderer& renderer, TextureFilter filter, DXGI_FORMAT textureFormat)
+Texture::Texture(Renderer& renderer, TextureFilter filter, TextureFormat textureFormat)
 	: device(renderer.getDevice()), deviceContext(renderer.getDeviceContext()),
 	samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr),
-	textureFormat(textureFormat)
+	textureFormat((DXGI_FORMAT) textureFormat)
 {
 	this->createSamplerState(filter);
 }

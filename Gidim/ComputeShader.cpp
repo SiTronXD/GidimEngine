@@ -84,7 +84,7 @@ void ComputeShader::run(Renderer& renderer)
 		this->renderTextures[i]->createSRVAsRenderTexture();
 }
 
-void ComputeShader::addConstantBuffer(SDXBuffer& buffer)
+void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
 {
 	// Add constant buffer, if we haven't reached the maximum yet
 	if (this->constantBuffers.size() < NUM_MAX_CONSTANT_BUFFERS)

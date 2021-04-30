@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "ComputeShader.h"
 #include "WaterShader.h"
+#include "ShaderBuffer.h"
 
 class Water
 {
@@ -26,7 +27,7 @@ private:
 		float windSpeed;
 		float amplitude;
 		float padding;
-	};
+	} scb{};
 
 	struct SpectrumInterpolationBuffer
 	{
@@ -35,13 +36,13 @@ private:
 
 		float horizontalSize;
 		float time;
-	};
+	} sib{};
 
 	struct ButterflyTextureBuffer
 	{
 		int gridSize;
 		int padding[3];
-	};
+	} btb{};
 
 	struct ButterflyOperationBuffer
 	{
@@ -49,14 +50,14 @@ private:
 		int pingPong;
 		int direction;
 		int padding;
-	};
+	} bob{};
 
 	struct InvPermBuffer
 	{
 		int gridSize;
 		int pingPong;
 		int padding[2];
-	};
+	} ipb{};
 
 	Renderer& renderer;
 
@@ -75,14 +76,13 @@ private:
 	Texture spectrumTexture1;
 	Texture finalSpectrumTexture;
 	Texture butterflyTexture;
-	Texture pingPongTexture;
 	Texture displacementTexture;
 
-	SDXBuffer spectrumCreatorShaderBuffer;
-	SDXBuffer spectrumInterpolationShaderBuffer;
-	SDXBuffer butterflyTextureShaderBuffer;
-	SDXBuffer butterflyOperationShaderBuffer;
-	SDXBuffer invPermShaderBuffer;
+	ShaderBuffer spectrumCreatorShaderBuffer;
+	ShaderBuffer spectrumInterpolationShaderBuffer;
+	ShaderBuffer butterflyTextureShaderBuffer;
+	ShaderBuffer butterflyOperationShaderBuffer;
+	ShaderBuffer invPermShaderBuffer;
 
 	int numMultiplicationStages;
 

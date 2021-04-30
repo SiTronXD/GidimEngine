@@ -3,7 +3,7 @@
 #include <vector>
 #include "Renderer.h"
 #include "Texture.h"
-#include "SDXBuffer.h"
+#include "ShaderBuffer.h"
 
 class ComputeShader
 {
@@ -32,5 +32,5 @@ public:
 
 	void run(Renderer& renderer);
 	void addRenderTexture(Texture& texture);
-	void addConstantBuffer(SDXBuffer& buffer);
+	void addShaderBuffer(ShaderBuffer& buffer);
 };

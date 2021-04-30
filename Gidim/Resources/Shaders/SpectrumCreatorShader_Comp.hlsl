@@ -55,22 +55,6 @@ float4 randomBoxMuller(inout uint randomState)
 	return randomNums;
 }
 
-float phillipsSpectrum(float2 k, float horizontalSize, 
-	float L_, float amplitude, float2 windDirection)
-{
-	float kMag = length(k);
-	kMag = max(0.0001, kMag);
-
-	float num = amplitude * exp(-1.0 / (kMag * kMag * L_ * L_)) / 
-		(kMag * kMag * kMag * kMag) * 
-		pow(dot(normalize(k), normalize(windDirection)), 6.0);
-
-	// Suppress small waves
-	num *= exp(-kMag * kMag * pow(horizontalSize / 2000.0, 2.0));
-
-	return clamp(sqrt(num) / sqrt(2.0), -4000.0, 4000.0);
-}
-
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
@@ -79,23 +63,37 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
 	
+	// Variables required for the pillips spectrum
 	float2 k = float2(
 		2.0 * _PI * pos.x / horizontalSize,
 		2.0 * _PI * pos.y / horizontalSize
 	);
-
 	float L_ = windSpeed * windSpeed / _G;
+	float kMag = length(k);
+	float kMagSqrd = kMag * kMag;
+	kMagSqrd = max(0.0001, kMagSqrd); // Avoid division by 0
 
-	float h0K = phillipsSpectrum(k, horizontalSize, L_, amplitude, windDirection);
-	float h0MinusK = phillipsSpectrum(-k, horizontalSize, L_, amplitude, windDirection);
+	// Phillips spectrum
+	float spec = amplitude * exp(-1.0 / (kMagSqrd * L_ * L_)) /
+		(kMagSqrd * kMagSqrd) *
+		pow(abs(dot(normalize(k), normalize(windDirection))), 4.0);
 
+	// Suppress small waves
+	spec *= exp(-kMagSqrd * pow(horizontalSize / 2000.0, 2.0));
+
+	// Square root and clamp
+	spec = clamp(sqrt(spec * 0.5), -4000.0, 4000.0);
+
+
+	// Get 4 random numbers
 	float4 rndGaussNums = randomBoxMuller(randomState);
 
 	// R: real component
 	// G: imaginary component
 	spectrumTexture0[dispatchThreadID.xy] = 
-		float4(rndGaussNums.xy * h0K, 0.0, 1.0);
+		float4(rndGaussNums.xy * spec, 0.0, 1.0);
 
+	// abs(dot(normalize(-k), windDir)) == abs(dot(normalize(k), windDir))
 	spectrumTexture1[dispatchThreadID.xy] =
-		float4(rndGaussNums.zw * h0MinusK, 0.0, 1.0);
+		float4(rndGaussNums.zw * spec, 0.0, 1.0);
 }

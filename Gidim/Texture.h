@@ -10,6 +10,16 @@ enum class TextureFilter
 	NEAREST_NEIGHBOR = D3D11_FILTER_MIN_MAG_MIP_POINT
 };
 
+enum class TextureFormat
+{
+	R8G8B8A8_UNORM = DXGI_FORMAT_R8G8B8A8_UNORM,
+
+	R16G16B16A16_FLOAT = DXGI_FORMAT_R16G16B16A16_FLOAT,
+	R16G16B16A16_UNORM = DXGI_FORMAT_R16G16B16A16_UNORM,
+
+	R32G32B32A32_FLOAT = DXGI_FORMAT_R32G32B32A32_FLOAT
+};
+
 class Texture
 {
 private:
@@ -28,7 +38,7 @@ private:
 
 public:
 	Texture(Renderer& renderer, TextureFilter filter = TextureFilter::BILINEAR, 
-		DXGI_FORMAT textureFormat = DXGI_FORMAT_R8G8B8A8_UNORM);
+		TextureFormat textureFormat = TextureFormat::R8G8B8A8_UNORM);
 	~Texture();
 
 	void setPS(UINT startSlot = 0);

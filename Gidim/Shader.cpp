@@ -89,7 +89,7 @@ bool Shader::loadFromFile(
 Shader::Shader(Renderer& renderer, 
 	std::string vertexShaderFilePath, std::string pixelShaderFilePath)
 	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
-	matrixBuffer(renderer.getDevice(), sizeof(MatrixBuffer))
+	matrixBuffer(renderer, sizeof(MatrixBuffer))
 {
 	this->loadFromFile(renderer.getDevice(), vertexShaderFilePath, pixelShaderFilePath);
 }
@@ -110,18 +110,13 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 
 	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
 
-	// Lock the constant buffer so it can be written to
-	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-	this->matrixBuffer.map(deviceContext, mappedSubResource);
+	// Update values in the structure before passing it to the shader
+	this->matrixBufferValues.projectionMatrix = projectionMatrix;
+	this->matrixBufferValues.viewMatrix = viewMatrix;
+	this->matrixBufferValues.worldMatrix = worldMatrix;
 
-	// Get a pointer to the data in the constant buffer
-	MatrixBuffer* dataPtr = (MatrixBuffer*) mappedSubResource.pData;
-	dataPtr->projectionMatrix = projectionMatrix;
-	dataPtr->viewMatrix = viewMatrix;
-	dataPtr->worldMatrix = worldMatrix;
-
-	// Unlock the constant buffer
-	this->matrixBuffer.unmap(deviceContext);
+	// Pass values to the shader buffer
+	this->matrixBuffer.update(&this->matrixBufferValues);
 }
 
 void Shader::set(ID3D11DeviceContext* context)

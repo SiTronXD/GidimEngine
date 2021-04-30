@@ -7,8 +7,7 @@ cbuffer InvPermBuffer : register(b0)
 };
 
 RWTexture2D<float4> displacementTexture : register(u0);
-RWTexture2D<float4> pingPong0 : register(u1);
-RWTexture2D<float4> pingPong1 : register(u2);
+RWTexture2D<float4> spectrumTexture : register(u1);
 
 
 #define _PI 3.14159265
@@ -52,23 +51,23 @@ complex complexMul(complex val1, complex val2)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	// int N = 256;
-
 	uint2 pos = dispatchThreadID.xy;
 
+	// Get permutation for this element
 	float perms[] = { 1.0, -1.0 };
 	int index = int(pos.x + pos.y) % 2;
 	float curPerm = perms[index];
 
 	float h = 0.0;
 
+	// Get the real component from correct channel
 	if (pingPong == 0)
 	{
-		h = pingPong0[pos].r;
+		h = spectrumTexture[pos].r;
 	}
 	else if (pingPong == 1)
 	{
-		h = pingPong1[pos].r;
+		h = spectrumTexture[pos].b;
 	}
 
 	float finalVal = curPerm * h / (float(gridSize) * float(gridSize));

@@ -124,6 +124,9 @@
     <ClCompile Include="Water.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderBuffer.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h">
@@ -194,6 +197,9 @@
     </ClInclude>
     <ClInclude Include="Water.h">
       <Filter>Gidim\Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderBuffer.h">
+      <Filter>Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

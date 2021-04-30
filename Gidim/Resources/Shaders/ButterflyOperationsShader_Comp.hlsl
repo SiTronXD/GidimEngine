@@ -8,8 +8,7 @@ cbuffer ButterflyOperationsBuffer : register(b0)
 };
 
 RWTexture2D<float4> butterflyTexture : register(u0);
-RWTexture2D<float4> pingPong0 : register(u1);
-RWTexture2D<float4> pingPong1 : register(u2);
+RWTexture2D<float4> spectrumTexture : register(u1);
 
 
 #define _PI 3.14159265
@@ -49,71 +48,54 @@ complex complexMul(complex val1, complex val2)
 	return createdComplex;
 }
 
-void horizontalButterfly(uint2 pos)
+complex butterflyOperation(float2 _p, float2 _q, float2 _w)
 {
-	float4 data = butterflyTexture[uint2(stage, pos.x)];
+	complex compP = createComplex(_p);
+	complex compQ = createComplex(_q);
+	complex compW = createComplex(_w);
+
+	return complexAdd(compP, complexMul(compW, compQ));
+}
+
+void horizontalButterfly(uint2 threadPos)
+{
+	float4 data = butterflyTexture[uint2(stage, threadPos.x)];
+	float2 _w = data.xy;
+	float4 _p = spectrumTexture[uint2(data.z, threadPos.y)];
+	float4 _q = spectrumTexture[uint2(data.w, threadPos.y)];
 
 	if (pingPong == 0)
 	{
-		float2 _p = pingPong0[uint2(data.z, pos.y)].rg;
-		float2 _q = pingPong0[uint2(data.w, pos.y)].rg;
-		float2 _w = data.xy;
+		complex h = butterflyOperation(_p.rg, _q.rg, _w);
 
-		complex compP = createComplex(_p);
-		complex compQ = createComplex(_q);
-		complex compW = createComplex(_w);
-
-		complex h = complexAdd(compP, complexMul(compW, compQ));
-
-		pingPong1[pos] = float4(h.realNum, h.imgNum, 0.0, 1.0);
+		spectrumTexture[threadPos] = float4(spectrumTexture[threadPos].rg, h.realNum, h.imgNum);
 	}
 	else if (pingPong == 1)
 	{
-		float2 _p = pingPong1[uint2(data.z, pos.y)].rg;
-		float2 _q = pingPong1[uint2(data.w, pos.y)].rg;
-		float2 _w = data.xy;
+		complex h = butterflyOperation(_p.ba, _q.ba, _w);
 
-		complex compP = createComplex(_p);
-		complex compQ = createComplex(_q);
-		complex compW = createComplex(_w);
-
-		complex h = complexAdd(compP, complexMul(compW, compQ));
-
-		pingPong0[pos] = float4(h.realNum, h.imgNum, 0.0, 1.0);
+		spectrumTexture[threadPos] = float4(h.realNum, h.imgNum, spectrumTexture[threadPos].ba);
 	}
 }
 
-void verticalButterfly(uint2 pos)
+void verticalButterfly(uint2 threadPos)
 {
-	float4 data = butterflyTexture[uint2(stage, pos.y)];
+	float4 data = butterflyTexture[uint2(stage, threadPos.y)];
+	float2 _w = data.xy;
+	float4 _p = spectrumTexture[uint2(threadPos.x, data.z)];
+	float4 _q = spectrumTexture[uint2(threadPos.x, data.w)];
 
 	if (pingPong == 0)
 	{
-		float2 _p = pingPong0[uint2(pos.x, data.z)].rg;
-		float2 _q = pingPong0[uint2(pos.x, data.w)].rg;
-		float2 _w = data.xy;
+		complex h = butterflyOperation(_p.rg, _q.rg, _w);
 
-		complex compP = createComplex(_p);
-		complex compQ = createComplex(_q);
-		complex compW = createComplex(_w);
-
-		complex h = complexAdd(compP, complexMul(compW, compQ));
-
-		pingPong1[pos] = float4(h.realNum, h.imgNum, 0.0, 1.0);
+		spectrumTexture[threadPos] = float4(spectrumTexture[threadPos].rg, h.realNum, h.imgNum);
 	}
 	else if (pingPong == 1)
 	{
-		float2 _p = pingPong1[uint2(pos.x, data.z)].rg;
-		float2 _q = pingPong1[uint2(pos.x, data.w)].rg;
-		float2 _w = data.xy;
+		complex h = butterflyOperation(_p.ba, _q.ba, _w);
 
-		complex compP = createComplex(_p);
-		complex compQ = createComplex(_q);
-		complex compW = createComplex(_w);
-
-		complex h = complexAdd(compP, complexMul(compW, compQ));
-
-		pingPong0[pos] = float4(h.realNum, h.imgNum, 0.0, 1.0);
+		spectrumTexture[threadPos] = float4(h.realNum, h.imgNum, spectrumTexture[threadPos].ba);
 	}
 }
 
