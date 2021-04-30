@@ -26,7 +26,7 @@ bool Texture::createSamplerState(TextureFilter filter)
 	HRESULT result = this->device->CreateSamplerState(&samplerDesc, &this->samplerState);
 	if (FAILED(result))
 	{
-		Log::error("Could not create texture sampler state.");
+		Log::resultFailed("Could not create texture sampler state.", result);
 
 		return false;
 	}
@@ -75,7 +75,10 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 	result = this->device->CreateTexture2D(&textureDesc, NULL, &this->texture);
 	if (FAILED(result))
 	{
-		Log::error("Failed creating texture in compute shader.");
+		Log::resultFailed(
+			"Failed creating texture as render texture.",
+			result
+		);
 
 		return false;
 	}
@@ -90,7 +93,7 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 	result = this->device->CreateUnorderedAccessView(this->texture, &uavDesc, &this->textureUAV);
 	if (FAILED(result))
 	{
-		Log::error("Failed creating UAV for texture in compute shader.");
+		Log::resultFailed("Failed creating UAV for texture in compute shader.", result);
 
 		return false;
 	}
@@ -144,7 +147,7 @@ bool Texture::createFromFile(std::string path)
 	// Did the loading fail?
 	if (FAILED(result))
 	{
-		Log::error("Could not create texture from file path: " + path);
+		Log::resultFailed("Could not create texture from file path: " + path, result);
 
 		return false;
 	}
@@ -194,7 +197,7 @@ bool Texture::createSRVAsRenderTexture()
 	HRESULT result = this->device->CreateShaderResourceView(this->texture, &srvDesc, &this->textureSRV);
 	if (FAILED(result))
 	{
-		Log::error("Failed recreating SRV from texture.");
+		Log::resultFailed("Failed recreating SRV from texture.", result);
 
 		return false;
 	}

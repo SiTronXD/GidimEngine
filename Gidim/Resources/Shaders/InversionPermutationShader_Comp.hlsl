@@ -6,8 +6,10 @@ cbuffer InvPermBuffer : register(b0)
 	int padding[2];
 };
 
-RWTexture2D<float4> spectrumTexture : register(u0);
-RWTexture2D<float4> displacementTexture : register(u1);
+RWTexture2D<float4> spectrumTextureX : register(u0);
+RWTexture2D<float4> spectrumTextureY : register(u1);
+RWTexture2D<float4> spectrumTextureZ : register(u2);
+RWTexture2D<float4> displacementTexture : register(u3);
 
 
 #define _PI 3.14159265
@@ -58,24 +60,30 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	int index = int(pos.x + pos.y) % 2;
 	float curPerm = perms[index];
 
-	float h = 0.0;
+	float componentX = 0.0;
+	float componentY = 0.0;
+	float componentZ = 0.0;
 
 	// Get the real component from correct channel
 	if (pingPong == 0)
 	{
-		h = spectrumTexture[pos].r;
+		componentX = spectrumTextureX[pos].r;
+		componentY = spectrumTextureY[pos].r;
+		componentZ = spectrumTextureZ[pos].r;
 	}
 	else if (pingPong == 1)
 	{
-		h = spectrumTexture[pos].b;
+		componentX = spectrumTextureX[pos].b;
+		componentY = spectrumTextureY[pos].b;
+		componentZ = spectrumTextureZ[pos].b;
 	}
 
-	float finalVal = curPerm * h / (float(gridSize) * float(gridSize));
+	float invPermScalar = curPerm / (float(gridSize) * float(gridSize));
 
 	displacementTexture[pos] = float4(
-		finalVal,
-		finalVal,
-		finalVal,
+		componentX * invPermScalar,
+		componentY * invPermScalar,
+		componentZ * invPermScalar,
 		1.0
 	);
 }

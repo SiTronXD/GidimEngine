@@ -88,7 +88,9 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	// Get 4 random numbers
 	float4 rndGaussNums = randomBoxMuller(randomState);
 
-	// R: real component
-	// G: imaginary component
+	// R: real component of value 1
+	// G: imaginary component of value 1
+	// B: real component of value 2
+	// A: imaginary component of value 2
 	spectrumTexture[dispatchThreadID.xy] = rndGaussNums * spec;
 }

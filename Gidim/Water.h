@@ -77,9 +77,7 @@ private:
 	Texture finalSpectrumTextureX;
 	Texture finalSpectrumTextureY;
 	Texture finalSpectrumTextureZ;
-	Texture displacementTextureX;
-	Texture displacementTextureY;
-	Texture displacementTextureZ;
+	Texture displacementTexture;
 
 	ShaderBuffer spectrumCreatorShaderBuffer;
 	ShaderBuffer spectrumInterpolationShaderBuffer;
@@ -93,7 +91,7 @@ private:
 
 	bool displaceHorizontally;
 
-	void runIFFT(Texture& currentSpectrumTexture, Texture& currentDisplacementTexture);
+	void runIFFT(Texture& currentSpectrumTexture);
 
 public:
 	Water(Renderer& renderer);

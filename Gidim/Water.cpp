@@ -26,9 +26,7 @@ Water::Water(Renderer& renderer)
 	finalSpectrumTextureY(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 	finalSpectrumTextureZ(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 	butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
-	displacementTextureX(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
-	displacementTextureY(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
-	displacementTextureZ(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
+	displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 
 	// Shader buffers
 	spectrumCreatorShaderBuffer(renderer, sizeof(SpectrumCreatorBuffer)),
@@ -47,9 +45,7 @@ Water::Water(Renderer& renderer)
 	this->finalSpectrumTextureY.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->finalSpectrumTextureZ.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->butterflyTexture.createAsRenderTexture(this->numMultiplicationStages, GRID_HEIGHT);
-	this->displacementTextureX.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
-	this->displacementTextureY.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
-	this->displacementTextureZ.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
+	this->displacementTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 
 	// Update spectrum creator constant buffer
 	this->scb.gridWidth = GRID_WIDTH;
@@ -93,6 +89,10 @@ Water::Water(Renderer& renderer)
 
 	// Inversion and permutation shader
 	this->invPermShader.createFromFile(renderer, "InversionPermutationShader_Comp.cso");
+	this->invPermShader.addRenderTexture(this->finalSpectrumTextureX);
+	this->invPermShader.addRenderTexture(this->finalSpectrumTextureY);
+	this->invPermShader.addRenderTexture(this->finalSpectrumTextureZ);
+	this->invPermShader.addRenderTexture(this->displacementTexture);
 	this->invPermShader.addShaderBuffer(this->invPermShaderBuffer);
 
 	// Scale up plane
@@ -104,12 +104,10 @@ void Water::toggleHorizontalDisplacement()
 	this->displaceHorizontally = !this->displaceHorizontally;
 }
 
-void Water::runIFFT(Texture& currentSpectrumTexture, Texture& currentDisplacementTexture)
+void Water::runIFFT(Texture& currentSpectrumTexture)
 {
 	// Add textures to perform and store IFFT in
 	this->butterflyOperationsShader.addRenderTexture(currentSpectrumTexture);
-	this->invPermShader.addRenderTexture(currentSpectrumTexture);
-	this->invPermShader.addRenderTexture(currentDisplacementTexture);
 
 	// Update butterfly operations shader
 	int pingPong = 0;
@@ -129,17 +127,11 @@ void Water::runIFFT(Texture& currentSpectrumTexture, Texture& currentDisplacemen
 		}
 	}
 
-	// Update inversion and permutation shader buffer
-	this->ipb.gridSize = GRID_WIDTH;
-	this->ipb.pingPong = pingPong;
-	invPermShaderBuffer.update(&this->ipb);
-
-	// Run inversion and permutation constant buffer
-	invPermShader.run(renderer);
-
 	// Remove added textures
 	butterflyOperationsShader.removeRenderTextureAt(1);
-	invPermShader.removeAllRenderTextures();
+
+	// Update ping pong
+	this->ipb.pingPong = pingPong;
 }
 
 Water::~Water() {}
@@ -149,9 +141,7 @@ void Water::draw()
 	this->timer += Time::getDeltaTime() * 2.0f;
 
 	// Clear displacement textures
-	this->displacementTextureX.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
-	this->displacementTextureY.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
-	this->displacementTextureZ.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
+	this->displacementTexture.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Update spectrum interpolation shader
 	this->sib.gridWidth = GRID_WIDTH;
@@ -164,17 +154,22 @@ void Water::draw()
 	spectrumInterpolatorShader.run(renderer);
 
 	// FFTs
-	this->runIFFT(finalSpectrumTextureY, displacementTextureY);
+	this->runIFFT(finalSpectrumTextureY);
 	if (this->displaceHorizontally)
 	{
-		this->runIFFT(finalSpectrumTextureX, displacementTextureX);
-		this->runIFFT(finalSpectrumTextureZ, displacementTextureZ);
+		this->runIFFT(finalSpectrumTextureX);
+		this->runIFFT(finalSpectrumTextureZ);
 	}
 
+	// Update inversion and permutation shader buffer
+	this->ipb.gridSize = GRID_WIDTH;
+	invPermShaderBuffer.update(&this->ipb);
+
+	// Run inversion and permutation constant buffer
+	invPermShader.run(renderer);
+
 	// Set displacement texture
-	displacementTextureX.setVS(0);
-	displacementTextureY.setVS(1);
-	displacementTextureZ.setVS(2);
+	displacementTexture.setVS(0);
 
 	// Update water shader
 	this->shader.update(renderer, this->mesh.getWorldMatrix());
