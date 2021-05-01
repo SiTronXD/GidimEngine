@@ -1,4 +1,8 @@
 
+// This ocean implementation are based on these papers:
+// Fynn-Jorin Flügge. "Realtime GPGPU FFT Ocean Water Simulation". (https://tore.tuhh.de/handle/11420/1439?locale=en, accessed April 24, 2021)
+// Jerry Tessendorf. "Simulating Ocean Water". (https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.161.9102&rep=rep1&type=pdf, accessed April 28, 2021)
+
 cbuffer CreatorBuffer : register(b0)
 {
 	int gridWidth;
