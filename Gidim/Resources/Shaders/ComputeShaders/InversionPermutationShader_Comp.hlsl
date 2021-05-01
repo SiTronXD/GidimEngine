@@ -57,7 +57,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	// Get permutation for this element
 	float perms[] = { 1.0, -1.0 };
-	int index = int(pos.x + pos.y) % 2;
+	uint index = uint(pos.x + pos.y) % 2;
 	float curPerm = perms[index];
 
 	float componentX = 0.0;

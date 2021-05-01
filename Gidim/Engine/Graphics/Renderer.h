@@ -2,8 +2,8 @@
 
 #include <d3d11.h>
 #include "../Application/Window.h"
-#include "Camera.h"
 #include "../Dev/Helpers.h"
+#include "Camera.h"
 
 class Renderer
 {

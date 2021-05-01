@@ -1,6 +1,5 @@
 #include "ComputeShader.h"
 #include "../Dev/Helpers.h"
-#include <fstream>
 
 ComputeShader::ComputeShader(int threadGroupX, int threadGroupY)
 	: threadGroupX(threadGroupX), threadGroupY(threadGroupY),

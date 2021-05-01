@@ -1,5 +1,4 @@
 #include "Log.h"
-#include <Windows.h>
 #include <comdef.h>
 
 void Log::print(std::string message)

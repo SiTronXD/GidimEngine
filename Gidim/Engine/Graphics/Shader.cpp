@@ -1,7 +1,5 @@
 #include "Shader.h"
 #include "../Dev/Log.h"
-#include <fstream>
-#include <vector>
 
 bool Shader::loadFromFile(
 	ID3D11Device* device,

@@ -127,6 +127,7 @@
     <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\CameraController.h">
@@ -201,6 +202,7 @@
     <ClInclude Include="Engine\Graphics\ShaderBuffer.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">

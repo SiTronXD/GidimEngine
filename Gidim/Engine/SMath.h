@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-#include <math.h>
-
 class SMath
 {
 private:
@@ -15,8 +12,6 @@ private:
 public:
 	static const float PI;
 
-	static float min(const float _val1, const float _val2);
-	static float max(const float _val1, const float _val2);
 	static float clamp(const float _val, const float _min, const float _max);
 
 	// static void vectorCross(const sf::Vector3f& vectorA, const sf::Vector3f& vectorB, sf::Vector3f& resultVector);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Windows.h>
+#include "../../pch.h"
 
 #include "Input.h"
 #include "../Dev/Log.h"
