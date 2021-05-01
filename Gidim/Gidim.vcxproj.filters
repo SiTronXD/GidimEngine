@@ -58,22 +58,22 @@
     <ClCompile Include="Main.cpp">
       <Filter>Gidim</Filter>
     </ClCompile>
-    <ClCompile Include="CameraController.cpp">
+    <ClCompile Include="Examples\CameraController.cpp">
       <Filter>Gidim</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
+    <ClCompile Include="Engine\Graphics\Mesh.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
+    <ClCompile Include="Engine\Graphics\Renderer.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="Engine\Graphics\Shader.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="Engine\Graphics\Texture.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="Engine\Graphics\Camera.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="External\DDSTextureLoader11.cpp">
@@ -82,69 +82,69 @@
     <ClCompile Include="External\WICTextureLoader11.cpp">
       <Filter>ExternalLibraries\Microsoft</Filter>
     </ClCompile>
-    <ClCompile Include="Log.cpp">
+    <ClCompile Include="Engine\Dev\Log.cpp">
       <Filter>Engine\Dev</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
+    <ClCompile Include="Engine\Application\Input.cpp">
       <Filter>Engine\Application</Filter>
     </ClCompile>
-    <ClCompile Include="Time.cpp">
+    <ClCompile Include="Engine\Application\Time.cpp">
       <Filter>Engine\Application</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
+    <ClCompile Include="Engine\Application\Window.cpp">
       <Filter>Engine\Application</Filter>
     </ClCompile>
-    <ClCompile Include="SkyboxShader.cpp">
+    <ClCompile Include="ShaderHandlers\SkyboxShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
-    <ClCompile Include="MeshData.cpp">
+    <ClCompile Include="Engine\Graphics\MeshData.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="WaterRendering.cpp">
+    <ClCompile Include="Examples\WaterRendering.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
-    <ClCompile Include="ComputeShader.cpp">
+    <ClCompile Include="Engine\Graphics\ComputeShader.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="ColorShader.cpp">
+    <ClCompile Include="ShaderHandlers\ColorShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
-    <ClCompile Include="TextureShader.cpp">
+    <ClCompile Include="ShaderHandlers\TextureShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
-    <ClCompile Include="SMath.cpp">
+    <ClCompile Include="Engine\SMath.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="SDXBuffer.cpp">
+    <ClCompile Include="Engine\Graphics\DirectX11\SDXBuffer.cpp">
       <Filter>Engine\Graphics\DirectX</Filter>
     </ClCompile>
-    <ClCompile Include="WaterShader.cpp">
+    <ClCompile Include="ShaderHandlers\WaterShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
-    <ClCompile Include="Water.cpp">
+    <ClCompile Include="Examples\Water.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderBuffer.cpp">
+    <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CameraController.h">
+    <ClInclude Include="Examples\CameraController.h">
       <Filter>Gidim</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
+    <ClInclude Include="Engine\Graphics\Mesh.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
+    <ClInclude Include="Engine\Graphics\Renderer.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="Engine\Graphics\Shader.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="Engine\Graphics\Texture.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="Engine\Graphics\Camera.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="External\DDSTextureLoader11.h">
@@ -153,94 +153,94 @@
     <ClInclude Include="External\WICTextureLoader11.h">
       <Filter>ExternalLibraries\Microsoft</Filter>
     </ClInclude>
-    <ClInclude Include="Log.h">
+    <ClInclude Include="Engine\Dev\Log.h">
       <Filter>Engine\Dev</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
+    <ClInclude Include="Engine\Application\Input.h">
       <Filter>Engine\Application</Filter>
     </ClInclude>
-    <ClInclude Include="Time.h">
+    <ClInclude Include="Engine\Application\Time.h">
       <Filter>Engine\Application</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
+    <ClInclude Include="Engine\Application\Window.h">
       <Filter>Engine\Application</Filter>
     </ClInclude>
-    <ClInclude Include="SkyboxShader.h">
+    <ClInclude Include="ShaderHandlers\SkyboxShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
-    <ClInclude Include="MeshData.h">
+    <ClInclude Include="Engine\Graphics\MeshData.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="WaterRendering.h">
+    <ClInclude Include="Examples\WaterRendering.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
-    <ClInclude Include="ComputeShader.h">
+    <ClInclude Include="Engine\Graphics\ComputeShader.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="ColorShader.h">
+    <ClInclude Include="ShaderHandlers\ColorShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
-    <ClInclude Include="TextureShader.h">
+    <ClInclude Include="ShaderHandlers\TextureShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
-    <ClInclude Include="SMath.h">
+    <ClInclude Include="Engine\SMath.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="SDXBuffer.h">
+    <ClInclude Include="Engine\Graphics\DirectX11\SDXBuffer.h">
       <Filter>Engine\Graphics\DirectX</Filter>
     </ClInclude>
-    <ClInclude Include="WaterShader.h">
+    <ClInclude Include="ShaderHandlers\WaterShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
-    <ClInclude Include="Helpers.h">
+    <ClInclude Include="Engine\Dev\Helpers.h">
       <Filter>Engine\Dev</Filter>
     </ClInclude>
-    <ClInclude Include="Water.h">
+    <ClInclude Include="Examples\Water.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderBuffer.h">
+    <ClInclude Include="Engine\Graphics\ShaderBuffer.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resources\Shaders\DefaultShader_Pix.hlsl">
+    <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\DefaultShader_Vert.hlsl">
+    <FxCompile Include="Resources\Shaders\PixelShaders\DefaultShader_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SkyboxShader_Vert.hlsl">
+    <FxCompile Include="Resources\Shaders\PixelShaders\SkyboxShader_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SkyboxShader_Pix.hlsl">
+    <FxCompile Include="Resources\Shaders\PixelShaders\WaterShader_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="DefaultColorShader_Pix.hlsl">
+    <FxCompile Include="Resources\Shaders\VertexShaders\DefaultColorShader_Vert.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="DefaultColorShader_Vert.hlsl">
+    <FxCompile Include="Resources\Shaders\VertexShaders\DefaultShader_Vert.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\SpectrumCreatorShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\VertexShaders\SkyboxShader_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\VertexShaders\WaterShader_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\SpectrumCreatorShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 1</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\SpectrumInterpolatorShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\ComputeShaders\SpectrumInterpolatorShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 2</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\ButterflyTextureShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyTextureShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 3</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\ButterflyOperationsShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyOperationsShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 4</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\InversionPermutationShader_Comp.hlsl">
+    <FxCompile Include="Resources\Shaders\ComputeShaders\InversionPermutationShader_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Stage 5</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\WaterShader_Vert.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\WaterShader_Pix.hlsl">
-      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
