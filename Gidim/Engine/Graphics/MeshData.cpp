@@ -43,7 +43,7 @@ void MeshData::createTetrahedron()
 		this->indices.push_back(i);
 }
 
-void MeshData::createCube(bool invertFaces)
+void MeshData::createCube()
 {
 	// Vertices
 
@@ -222,9 +222,13 @@ MeshData::MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices)
 	: vertices(vertices), indices(indices)
 { }
 
-MeshData::MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY)
+MeshData::MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY, 
+	bool shouldInvertFaces)
 {
 	this->createDefault(defaultMeshType, resolutionX, resolutionY);
+
+	if(shouldInvertFaces)
+		this->invertFaces();
 }
 
 void MeshData::createDefault(DefaultMesh defaultMeshType, int resolutionX, int resolutionY)
@@ -249,7 +253,7 @@ void MeshData::createDefault(DefaultMesh defaultMeshType, int resolutionX, int r
 
 	case DefaultMesh::CUBE:
 
-		this->createCube(false);
+		this->createCube();
 
 		break;
 

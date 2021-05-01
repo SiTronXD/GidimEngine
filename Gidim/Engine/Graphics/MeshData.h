@@ -28,7 +28,7 @@ private:
 
 	void createTriangle();
 	void createTetrahedron();
-	void createCube(bool invertFaces);
+	void createCube();
 	void createPlane(int resX, int resY);
 	void createSphere(int resX, int resY);
 
@@ -37,7 +37,10 @@ private:
 public:
 	MeshData();
 	MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices);
-	MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY);
+	MeshData(
+		DefaultMesh defaultMeshType, int resolutionX, int resolutionY, 
+		bool shouldInvertFaces = false
+	);
 
 	void createDefault(DefaultMesh defaultMeshType, int resolutionX = 0, int resolutionY = 0);
 	void invertFaces();

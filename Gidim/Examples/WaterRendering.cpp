@@ -7,6 +7,7 @@
 #include "../Engine/Application/Time.h"
 #include "../ShaderHandlers/SkyboxShader.h"
 #include "../Examples/CameraController.h"
+#include "Skybox.h"
 #include "Water.h"
 
 WaterRendering::WaterRendering()
@@ -31,18 +32,9 @@ void WaterRendering::run()
 	renderer.setCamera(cameraController.getCamera());
 	Time time;
 
+	Skybox skybox(renderer);
 	Water water(renderer);
 
-	// Create skybox mesh
-	MeshData skyboxMeshData;
-	skyboxMeshData.createDefault(DefaultMesh::SPHERE, 20, 20);
-	skyboxMeshData.invertFaces();
-	Mesh skyboxMesh(renderer, skyboxMeshData);
-	skyboxMesh.setWorldMatrix(XMMatrixRotationY(3.1415) * XMMatrixScaling(4.0f, 4.0f, 4.0f));
-
-	// Create vertex- and pixel shaders for standard mesh rendering
-	SkyboxShader skyboxShader(renderer);
-	
 
 	// Update once before starting loop
 	window.update();
@@ -98,16 +90,9 @@ void WaterRendering::run()
 		// Clear color and depth buffers
 		renderer.clear(clearColor);
 
-
-		// Update buffers in shader
-		//skyboxShader.update(renderer, skyboxMesh.getWorldMatrix());
-
-		// Set shader to render mesh with
-		//skyboxShader.set(renderer.getDeviceContext());
-		//skyboxMesh.draw();
-
+		// Render meshes
+		skybox.draw();
 		water.draw();
-
 
 		// Present frame
 		renderer.endFrame();

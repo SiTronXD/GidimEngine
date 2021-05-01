@@ -18,6 +18,8 @@ public:
 	~ShaderBuffer();
 
 	void update(void* bufferStruct);
+	void setVS(UINT slot = 0);
+	void setPS(UINT slot = 0);
 
 	const SDXBuffer& getSDXBuffer() const;
 	ID3D11Buffer* getBuffer() const;

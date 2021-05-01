@@ -16,6 +16,18 @@ void ShaderBuffer::update(void* bufferStruct)
 	buffer.unmap(this->deviceContext);
 }
 
+void ShaderBuffer::setVS(UINT slot)
+{
+	ID3D11Buffer* buf = this->buffer.getBuffer();
+	deviceContext->VSSetConstantBuffers(slot, 1, &buf);
+}
+
+void ShaderBuffer::setPS(UINT slot)
+{
+	ID3D11Buffer* buf = this->buffer.getBuffer();
+	deviceContext->PSSetConstantBuffers(slot, 1, &buf);
+}
+
 const SDXBuffer& ShaderBuffer::getSDXBuffer() const
 {
 	return this->buffer;

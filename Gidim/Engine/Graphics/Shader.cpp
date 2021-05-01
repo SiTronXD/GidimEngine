@@ -120,8 +120,7 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 void Shader::set(ID3D11DeviceContext* context)
 {
 	// Set the current constant buffer in the vertex shader
-	ID3D11Buffer* buf = matrixBuffer.getBuffer();
-	context->VSSetConstantBuffers(0, 1, &buf);
+	matrixBuffer.setVS();
 
 	// Set current input layout
 	context->IASetInputLayout(this->inputLayout);

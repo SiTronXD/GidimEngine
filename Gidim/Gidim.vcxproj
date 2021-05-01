@@ -189,6 +189,7 @@
     <ClCompile Include="Examples\WaterRendering.cpp" />
     <ClCompile Include="ShaderHandlers\WaterShader.cpp" />
     <ClCompile Include="Engine\Application\Window.cpp" />
+    <ClCompile Include="Examples\Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Graphics\Camera.h" />
@@ -216,6 +217,7 @@
     <ClInclude Include="Examples\WaterRendering.h" />
     <ClInclude Include="ShaderHandlers\WaterShader.h" />
     <ClInclude Include="Engine\Application\Window.h" />
+    <ClInclude Include="Examples\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyOperationsShader_Comp.hlsl">

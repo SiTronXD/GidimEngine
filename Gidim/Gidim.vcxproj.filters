@@ -127,7 +127,12 @@
     <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="pch.cpp">
+      <Filter>Gidim</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\Skybox.cpp">
+      <Filter>Gidim\Examples</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\CameraController.h">
@@ -202,7 +207,12 @@
     <ClInclude Include="Engine\Graphics\ShaderBuffer.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="pch.h">
+      <Filter>Gidim</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples\Skybox.h">
+      <Filter>Gidim\Examples</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">
