@@ -87,6 +87,7 @@ bool Shader::loadFromFile(
 Shader::Shader(Renderer& renderer, 
 	std::string vertexShaderFilePath, std::string pixelShaderFilePath)
 	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
+	deviceContext(renderer.getDeviceContext()), 
 	matrixBuffer(renderer, sizeof(MatrixBuffer))
 {
 	this->loadFromFile(renderer.getDevice(), vertexShaderFilePath, pixelShaderFilePath);
@@ -106,8 +107,6 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 	XMMATRIX viewMatrix = XMMatrixTranspose(renderer.getViewMatrix());
 	XMMATRIX worldMatrix = XMMatrixTranspose(currentWorldMatrix);
 
-	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
-
 	// Update values in the structure before passing it to the shader
 	this->matrixBufferValues.projectionMatrix = projectionMatrix;
 	this->matrixBufferValues.viewMatrix = viewMatrix;
@@ -117,15 +116,15 @@ void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 	this->matrixBuffer.update(&this->matrixBufferValues);
 }
 
-void Shader::set(ID3D11DeviceContext* context)
+void Shader::set()
 {
 	// Set the current constant buffer in the vertex shader
 	matrixBuffer.setVS();
 
 	// Set current input layout
-	context->IASetInputLayout(this->inputLayout);
+	this->deviceContext->IASetInputLayout(this->inputLayout);
 
 	// Set current vertex and pixel shaders
-	context->VSSetShader(this->vertexShader, nullptr, 0);
-	context->PSSetShader(this->pixelShader, nullptr, 0);
+	this->deviceContext->VSSetShader(this->vertexShader, nullptr, 0);
+	this->deviceContext->PSSetShader(this->pixelShader, nullptr, 0);
 }

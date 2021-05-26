@@ -4,13 +4,13 @@
 #include "../Dev/Log.h"
 #include "../Dev/Helpers.h"
 
-bool Texture::createSamplerState(TextureFilter filter)
+bool Texture::createSamplerState()
 {
 	// Create texture sampler desc for the sampler state
 	D3D11_SAMPLER_DESC samplerDesc;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressU = this->textureEdgeSamplingMode;
+	samplerDesc.AddressV = this->textureEdgeSamplingMode;
+	samplerDesc.AddressW = this->textureEdgeSamplingMode;
 	samplerDesc.MipLODBias = 0.0f;
 	samplerDesc.MaxAnisotropy = 1;
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
@@ -20,7 +20,7 @@ bool Texture::createSamplerState(TextureFilter filter)
 	samplerDesc.BorderColor[3] = 0;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	samplerDesc.Filter = (D3D11_FILTER) filter;
+	samplerDesc.Filter = this->textureFilter;
 
 	// Create the texture sampler state
 	HRESULT result = this->device->CreateSamplerState(&samplerDesc, &this->samplerState);
@@ -34,12 +34,14 @@ bool Texture::createSamplerState(TextureFilter filter)
 	return true;
 }
 
-Texture::Texture(Renderer& renderer, TextureFilter filter, TextureFormat textureFormat)
+Texture::Texture(Renderer& renderer, TextureFilter filter, 
+	TextureFormat textureFormat, TextureEdgeSampling textureEdgeSampling)
 	: device(renderer.getDevice()), deviceContext(renderer.getDeviceContext()),
 	samplerState(nullptr), texture(nullptr), textureUAV(nullptr), textureSRV(nullptr),
-	textureFormat((DXGI_FORMAT) textureFormat)
+	textureFilter((D3D11_FILTER) filter), textureFormat((DXGI_FORMAT) textureFormat),
+	textureEdgeSamplingMode((D3D11_TEXTURE_ADDRESS_MODE) textureEdgeSampling)
 {
-	this->createSamplerState(filter);
+	this->createSamplerState();
 }
 
 Texture::~Texture()

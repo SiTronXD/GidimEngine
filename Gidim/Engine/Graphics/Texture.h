@@ -19,6 +19,12 @@ enum class TextureFormat
 	R32G32B32A32_FLOAT = DXGI_FORMAT_R32G32B32A32_FLOAT
 };
 
+enum class TextureEdgeSampling
+{
+	CLAMP = D3D11_TEXTURE_ADDRESS_CLAMP,
+	REPEAT = D3D11_TEXTURE_ADDRESS_WRAP
+};
+
 class Texture
 {
 private:
@@ -28,16 +34,20 @@ private:
 	ID3D11UnorderedAccessView* textureUAV;
 	ID3D11ShaderResourceView* textureSRV;
 
+	// Texture options
+	D3D11_FILTER textureFilter;
 	DXGI_FORMAT textureFormat;
+	D3D11_TEXTURE_ADDRESS_MODE textureEdgeSamplingMode;
 
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
 
-	bool createSamplerState(TextureFilter filter);
+	bool createSamplerState();
 
 public:
 	Texture(Renderer& renderer, TextureFilter filter = TextureFilter::BILINEAR, 
-		TextureFormat textureFormat = TextureFormat::R8G8B8A8_UNORM);
+		TextureFormat textureFormat = TextureFormat::R8G8B8A8_UNORM,
+		TextureEdgeSampling textureEdgeSampling = TextureEdgeSampling::CLAMP);
 	~Texture();
 
 	void setPS(UINT startSlot = 0);

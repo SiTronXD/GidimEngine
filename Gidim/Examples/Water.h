@@ -59,6 +59,13 @@ private:
 		int padding[2];
 	} ipb{};
 
+	struct HeightToNormalBuffer
+	{
+		int gridWidth;
+		int gridHeight;
+		int padding[2];
+	} htnb{};
+
 	Renderer& renderer;
 
 	MeshData meshData;
@@ -66,11 +73,14 @@ private:
 
 	WaterShader shader;
 
+	// Water FFT
 	ComputeShader spectrumCreatorShader;
 	ComputeShader spectrumInterpolatorShader;
 	ComputeShader butterflyTextureShader;
 	ComputeShader butterflyOperationsShader;
 	ComputeShader invPermShader;
+
+	ComputeShader displacementToNormalShader;
 
 	Texture initialSpectrumTexture;
 	Texture butterflyTexture;
@@ -79,11 +89,15 @@ private:
 	Texture finalSpectrumTextureZ;
 	Texture displacementTexture;
 
+	Texture normalMapTexture;
+
 	ShaderBuffer spectrumCreatorShaderBuffer;
 	ShaderBuffer spectrumInterpolationShaderBuffer;
 	ShaderBuffer butterflyTextureShaderBuffer;
 	ShaderBuffer butterflyOperationShaderBuffer;
 	ShaderBuffer invPermShaderBuffer;
+
+	ShaderBuffer disToNormShaderBuffer;
 
 	int numMultiplicationStages;
 

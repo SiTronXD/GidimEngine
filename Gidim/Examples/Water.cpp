@@ -14,11 +14,13 @@ Water::Water(Renderer& renderer)
 	mesh(renderer, meshData), shader(renderer),
 
 	// Compute shaders
-	spectrumCreatorShader(GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	spectrumInterpolatorShader(GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	butterflyTextureShader((int) (log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
-	butterflyOperationsShader(GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	invPermShader(GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	spectrumInterpolatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	butterflyTextureShader(renderer, (int) (log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
+	butterflyOperationsShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	invPermShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+
+	displacementToNormalShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
 	// Render textures
 	initialSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
@@ -26,7 +28,9 @@ Water::Water(Renderer& renderer)
 	finalSpectrumTextureY(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 	finalSpectrumTextureZ(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 	butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
-	displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
+	displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT, TextureEdgeSampling::REPEAT),
+
+	normalMapTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM),
 
 	// Shader buffers
 	spectrumCreatorShaderBuffer(renderer, sizeof(SpectrumCreatorBuffer)),
@@ -34,6 +38,8 @@ Water::Water(Renderer& renderer)
 	butterflyTextureShaderBuffer(renderer, sizeof(ButterflyTextureBuffer)),
 	butterflyOperationShaderBuffer(renderer, sizeof(ButterflyOperationBuffer)),
 	invPermShaderBuffer(renderer, sizeof(InvPermBuffer)),
+
+	disToNormShaderBuffer(renderer, sizeof(HeightToNormalBuffer)),
 
 	numMultiplicationStages((int) log2(GRID_WIDTH)),
 	timer(0.0f),
@@ -46,6 +52,7 @@ Water::Water(Renderer& renderer)
 	this->finalSpectrumTextureZ.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->butterflyTexture.createAsRenderTexture(this->numMultiplicationStages, GRID_HEIGHT);
 	this->displacementTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
+	this->normalMapTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 
 	// Update spectrum creator constant buffer
 	this->scb.gridWidth = GRID_WIDTH;
@@ -58,14 +65,20 @@ Water::Water(Renderer& renderer)
 	this->scb.waveDirectionTendency = 6.0f;
 	this->spectrumCreatorShaderBuffer.update(&this->scb);
 
-	// Initial spectrum texture creator shader
-	this->spectrumCreatorShader.createFromFile(renderer, "CompiledShaders/SpectrumCreatorShader_Comp.cso");
+	// Spectrum texture creator shader
+	this->spectrumCreatorShader.createFromFile("CompiledShaders/SpectrumCreatorShader_Comp.cso");
 	this->spectrumCreatorShader.addRenderTexture(this->initialSpectrumTexture);
 	this->spectrumCreatorShader.addShaderBuffer(this->spectrumCreatorShaderBuffer);
-	this->spectrumCreatorShader.run(renderer);
+	this->spectrumCreatorShader.run();
+
+
+	// Spectrum interpolator buffer parameters
+	this->sib.gridWidth = GRID_WIDTH;
+	this->sib.gridHeight = GRID_HEIGHT;
+	this->sib.horizontalSize = HORIZONTAL_SIZE;
 
 	// Spectrum interpolator shader
-	this->spectrumInterpolatorShader.createFromFile(renderer, "CompiledShaders/SpectrumInterpolatorShader_Comp.cso");
+	this->spectrumInterpolatorShader.createFromFile("CompiledShaders/SpectrumInterpolatorShader_Comp.cso");
 	this->spectrumInterpolatorShader.addRenderTexture(this->initialSpectrumTexture);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureX);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureY);
@@ -74,26 +87,41 @@ Water::Water(Renderer& renderer)
 
 	// Update butterfly texture shader constant buffer
 	this->btb.gridSize = GRID_WIDTH;
-	butterflyTextureShaderBuffer.update(&this->btb);
+	this->butterflyTextureShaderBuffer.update(&this->btb);
 
 	// Butterfly texture shader
-	this->butterflyTextureShader.createFromFile(renderer, "CompiledShaders/ButterflyTextureShader_Comp.cso");
+	this->butterflyTextureShader.createFromFile("CompiledShaders/ButterflyTextureShader_Comp.cso");
 	this->butterflyTextureShader.addRenderTexture(this->butterflyTexture);
 	this->butterflyTextureShader.addShaderBuffer(this->butterflyTextureShaderBuffer);
-	this->butterflyTextureShader.run(renderer);
+	this->butterflyTextureShader.run();
 
 	// Butterfly operations shader
-	this->butterflyOperationsShader.createFromFile(renderer, "CompiledShaders/ButterflyOperationsShader_Comp.cso");
+	this->butterflyOperationsShader.createFromFile("CompiledShaders/ButterflyOperationsShader_Comp.cso");
 	this->butterflyOperationsShader.addRenderTexture(this->butterflyTexture);
 	this->butterflyOperationsShader.addShaderBuffer(this->butterflyOperationShaderBuffer);
 
+	// Update inversion and permutation shader buffer
+	this->ipb.gridSize = GRID_WIDTH;
+	this->invPermShaderBuffer.update(&this->ipb);
+
 	// Inversion and permutation shader
-	this->invPermShader.createFromFile(renderer, "CompiledShaders/InversionPermutationShader_Comp.cso");
+	this->invPermShader.createFromFile("CompiledShaders/InversionPermutationShader_Comp.cso");
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureX);
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureY);
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureZ);
 	this->invPermShader.addRenderTexture(this->displacementTexture);
 	this->invPermShader.addShaderBuffer(this->invPermShaderBuffer);
+
+	// Update heightmap to normal map shader buffer
+	this->htnb.gridWidth = GRID_WIDTH;
+	this->htnb.gridHeight = GRID_HEIGHT;
+	this->disToNormShaderBuffer.update(&this->htnb);
+
+	// Heightmap to normal map shader
+	this->displacementToNormalShader.createFromFile("CompiledShaders/HeightToNormal_Comp.cso");
+	this->displacementToNormalShader.addRenderTexture(this->displacementTexture);
+	this->displacementToNormalShader.addRenderTexture(this->normalMapTexture);
+	this->displacementToNormalShader.addShaderBuffer(this->disToNormShaderBuffer);
 
 	// Scale up plane
 	this->mesh.setWorldMatrix(XMMatrixScaling(3.0f, 3.0f, 3.0f));
@@ -122,7 +150,7 @@ void Water::runIFFT(Texture& currentSpectrumTexture)
 			butterflyOperationShaderBuffer.update(&this->bob);
 
 			// Run butterfly operation shader
-			butterflyOperationsShader.run(renderer);
+			butterflyOperationsShader.run();
 			pingPong = (pingPong + 1) % 2;
 		}
 	}
@@ -144,14 +172,11 @@ void Water::draw()
 	this->displacementTexture.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Update spectrum interpolation shader
-	this->sib.gridWidth = GRID_WIDTH;
-	this->sib.gridHeight = GRID_HEIGHT;
-	this->sib.horizontalSize = HORIZONTAL_SIZE;
 	this->sib.time = this->timer;
 	spectrumInterpolationShaderBuffer.update(&this->sib);
 
 	// Run spectrum interpolator shader
-	spectrumInterpolatorShader.run(renderer);
+	spectrumInterpolatorShader.run();
 
 	// FFTs
 	this->runIFFT(finalSpectrumTextureY);
@@ -161,20 +186,20 @@ void Water::draw()
 		this->runIFFT(finalSpectrumTextureZ);
 	}
 
-	// Update inversion and permutation shader buffer
-	this->ipb.gridSize = GRID_WIDTH;
-	invPermShaderBuffer.update(&this->ipb);
-
 	// Run inversion and permutation constant buffer
-	invPermShader.run(renderer);
+	invPermShader.run();
 
-	// Set displacement texture
+	// Create normal map from heightmap
+	displacementToNormalShader.run();
+
+	// Set textures
 	displacementTexture.setVS(0);
+	normalMapTexture.setPS(0);
 
 	// Update water shader
 	this->shader.update(renderer, this->mesh.getWorldMatrix());
 
 	// Set shader to render mesh with
-	this->shader.set(renderer.getDeviceContext());
+	this->shader.set();
 	this->mesh.draw();
 }

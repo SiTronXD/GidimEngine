@@ -21,16 +21,19 @@ private:
 	std::vector<ID3D11UnorderedAccessView*> renderTextureUAVs;
 	std::vector<ID3D11Buffer*> constantBuffers;
 
+	ID3D11Device* device;
+	ID3D11DeviceContext* deviceContext;
+
 	int threadGroupX;
 	int threadGroupY;
 
 public:
-	ComputeShader(int threadGroupX, int threadGroupY);
+	ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY);
 	~ComputeShader();
 
-	bool createFromFile(Renderer& renderer, std::string path);
+	bool createFromFile(std::string path);
 
-	void run(Renderer& renderer);
+	void run();
 	void addRenderTexture(Texture& texture);
 	void addShaderBuffer(ShaderBuffer& buffer);
 

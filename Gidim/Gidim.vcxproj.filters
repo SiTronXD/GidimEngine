@@ -38,20 +38,23 @@
     <Filter Include="Engine\Graphics\DirectX">
       <UniqueIdentifier>{ba71a899-eadd-4e2c-b7df-90297e7d2835}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeShaders\Stage 1">
+    <Filter Include="Shaders\ComputeShaders\WaterFFT">
+      <UniqueIdentifier>{9f7660fe-19e0-4ed2-85e5-f6a22e097012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 5">
+      <UniqueIdentifier>{8b24de6d-26c5-454d-9002-b8517baa9973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 1">
       <UniqueIdentifier>{41f7205b-45d4-4269-af3b-e7616db82976}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeShaders\Stage 2">
+    <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 2">
       <UniqueIdentifier>{5256464d-dd8f-4eeb-a54e-eae4c91d4d21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeShaders\Stage 3">
+    <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 3">
       <UniqueIdentifier>{fe455bfe-de1d-4619-9579-5b6674c55e81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeShaders\Stage 4">
+    <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 4">
       <UniqueIdentifier>{aed1e930-8a48-4b17-8d4e-1a8d53e3cdc0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\ComputeShaders\Stage 5">
-      <UniqueIdentifier>{8b24de6d-26c5-454d-9002-b8517baa9973}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -240,19 +243,22 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\SpectrumCreatorShader_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders\Stage 1</Filter>
+      <Filter>Shaders\ComputeShaders\WaterFFT\Stage 1</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\SpectrumInterpolatorShader_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders\Stage 2</Filter>
+      <Filter>Shaders\ComputeShaders\WaterFFT\Stage 2</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyTextureShader_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders\Stage 3</Filter>
+      <Filter>Shaders\ComputeShaders\WaterFFT\Stage 3</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyOperationsShader_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders\Stage 4</Filter>
+      <Filter>Shaders\ComputeShaders\WaterFFT\Stage 4</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\InversionPermutationShader_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders\Stage 5</Filter>
+      <Filter>Shaders\ComputeShaders\WaterFFT\Stage 5</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\HeightToNormal_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

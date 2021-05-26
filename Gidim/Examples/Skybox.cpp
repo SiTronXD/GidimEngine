@@ -30,7 +30,7 @@ void Skybox::draw()
 	this->shaderBuffer.setPS();
 
 	// Set shader to render mesh with
-	this->shader.set(renderer.getDeviceContext());
+	this->shader.set();
 
 	// Render mesh
 	this->mesh.draw();

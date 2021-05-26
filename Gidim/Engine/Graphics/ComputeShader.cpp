@@ -1,9 +1,10 @@
 #include "ComputeShader.h"
 #include "../Dev/Helpers.h"
 
-ComputeShader::ComputeShader(int threadGroupX, int threadGroupY)
+ComputeShader::ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY)
 	: threadGroupX(threadGroupX), threadGroupY(threadGroupY),
-	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL }
+	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL },
+	device(renderer.getDevice()), deviceContext(renderer.getDeviceContext())
 { }
 
 ComputeShader::~ComputeShader()
@@ -11,14 +12,14 @@ ComputeShader::~ComputeShader()
 	S_RELEASE(this->computeShader);
 }
 
-bool ComputeShader::createFromFile(Renderer& renderer, std::string path)
+bool ComputeShader::createFromFile(std::string path)
 {
 	// Deallocate old texture, if it exists
 	S_RELEASE(this->computeShader);
 
 	// Only accept shader model 5.0 for best performance and features, ignore
 	// shader model 4.0 for now
-	if (renderer.getDevice()->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
+	if (this->device->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
 	{
 		Log::error(
 			"This GPU does not support shader model 5.0, compute shader will not be loaded."
@@ -44,7 +45,7 @@ bool ComputeShader::createFromFile(Renderer& renderer, std::string path)
 	};
 
 	// Create compute shader
-	HRESULT result = renderer.getDevice()->CreateComputeShader(
+	HRESULT result = this->device->CreateComputeShader(
 		csData.data(), csData.size(), nullptr, &this->computeShader
 	);
 	if (FAILED(result))
@@ -57,26 +58,24 @@ bool ComputeShader::createFromFile(Renderer& renderer, std::string path)
 	return true;
 }
 
-void ComputeShader::run(Renderer& renderer)
+void ComputeShader::run()
 {
-	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
-
 	// Set
-	deviceContext->CSSetShader(this->computeShader, NULL, 0);
-	deviceContext->CSSetUnorderedAccessViews(
+	this->deviceContext->CSSetShader(this->computeShader, NULL, 0);
+	this->deviceContext->CSSetUnorderedAccessViews(
 		0, this->renderTextureUAVs.size(), VECTOR_ADDRESS(this->renderTextureUAVs), NULL
 	);
-	deviceContext->CSSetConstantBuffers(
+	this->deviceContext->CSSetConstantBuffers(
 		0, this->constantBuffers.size(), VECTOR_ADDRESS(this->constantBuffers)
 	);
 
 	// Run
-	deviceContext->Dispatch(this->threadGroupX, this->threadGroupY, 1);
+	this->deviceContext->Dispatch(this->threadGroupX, this->threadGroupY, 1);
 
 	// Reset
-	deviceContext->CSSetShader(NULL, NULL, 0);
-	deviceContext->CSSetUnorderedAccessViews(0, NUM_MAX_RENDER_TEXTURES, uavNULL, NULL);
-	deviceContext->CSSetConstantBuffers(0, NUM_MAX_CONSTANT_BUFFERS, constantBufferNULL);
+	this->deviceContext->CSSetShader(NULL, NULL, 0);
+	this->deviceContext->CSSetUnorderedAccessViews(0, NUM_MAX_RENDER_TEXTURES, uavNULL, NULL);
+	this->deviceContext->CSSetConstantBuffers(0, NUM_MAX_CONSTANT_BUFFERS, constantBufferNULL);
 
 	// Recreate SRVs after dispatch
 	for(size_t i = 0; i < this->renderTextures.size(); ++i)

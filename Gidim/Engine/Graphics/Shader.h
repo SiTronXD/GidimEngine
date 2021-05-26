@@ -21,6 +21,8 @@ private:
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
 
+	ID3D11DeviceContext* deviceContext;
+
 	ShaderBuffer matrixBuffer;
 
 	bool loadFromFile(
@@ -36,5 +38,5 @@ public:
 	virtual void update(
 		Renderer& renderer, XMMATRIX currentWorldMatrix
 	);
-	virtual void set(ID3D11DeviceContext* context);
+	virtual void set();
 };
