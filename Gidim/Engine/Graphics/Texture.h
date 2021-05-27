@@ -42,7 +42,7 @@ private:
 	ID3D11Device* device;
 	ID3D11DeviceContext* deviceContext;
 
-	bool createSamplerState();
+	bool createSampler();
 
 public:
 	Texture(Renderer& renderer, TextureFilter filter = TextureFilter::BILINEAR, 
@@ -56,7 +56,7 @@ public:
 
 	bool createAsRenderTexture(unsigned int width, unsigned int height);
 	bool createFromFile(std::string path);
-	bool createSRVAsRenderTexture();
+	bool createSRVasRenderTexture();
 
 	ID3D11ShaderResourceView* getTextureSRV() const;
 	ID3D11UnorderedAccessView* getTextureUAV() const;

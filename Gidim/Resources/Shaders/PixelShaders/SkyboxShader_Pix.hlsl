@@ -149,6 +149,10 @@ float3 getSkyColor(float3 viewDir, float3 sunDir, float turbidity)
     return clamp(YxyToRGB(YP) * 0.05, 0.0, 1.0);
 }
 
+
+TextureCube cubeMapTexture : register(t0);
+SamplerState sampleType : register(s0);
+
 float4 main(Input input) : SV_TARGET
 {
     // View
@@ -159,6 +163,8 @@ float4 main(Input input) : SV_TARGET
 
 	// Color
     float3 col = getSkyColor(viewDir, sunDir, inputTurbidity);
+
+    col = cubeMapTexture.Sample(sampleType, viewDir).rgb;
 
 	return float4(col, 1.0f);
 }

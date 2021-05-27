@@ -4,9 +4,13 @@
 Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
 	shader(renderer), shaderBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
-	timer(0.0f)
+	timer(0.0f), skyCubeMap(renderer), preethamCreatorShader(renderer, 256 / 16, 256 / 16)
 {
 	this->mesh.setWorldMatrix(XMMatrixScaling(1000.0f, 1000.0f, 1000.0f));
+
+	this->preethamCreatorShader.createFromFile("CompiledShaders/PreethamSkyCreator_Comp.cso");
+	this->preethamCreatorShader.addRenderCubeMap(this->skyCubeMap);
+	this->preethamCreatorShader.run();
 }
 
 Skybox::~Skybox()
@@ -28,6 +32,8 @@ void Skybox::draw()
 	this->sb.turbidity = 2.0f;
 	this->shaderBuffer.update(&this->sb);
 	this->shaderBuffer.setPS();
+
+	this->skyCubeMap.setPS();
 
 	// Set shader to render mesh with
 	this->shader.set();

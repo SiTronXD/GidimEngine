@@ -169,7 +169,7 @@ Water::~Water() {}
 void Water::draw()
 {
 	// Animate
-	//this->timer += Time::getDeltaTime() * 2.0f;
+	this->timer += Time::getDeltaTime() * 2.0f;
 
 	// Clear displacement textures
 	this->displacementTexture.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);

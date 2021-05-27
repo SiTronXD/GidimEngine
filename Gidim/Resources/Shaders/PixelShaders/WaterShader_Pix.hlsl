@@ -15,13 +15,15 @@ struct Input
 Texture2D normalMapTexture : register(t0);
 SamplerState normalMapSampler : register(s0);
 
-// Fresnel Shlick's approximation
 float calcFresnel(float3 viewDir, float3 normal)
 {
-	float r0 = 0.02;
-
+	// Refractive indices
+	// Air: 1.0
+	// Water: 1.333
+	float r0 = 0.02; // ((1.333 - 1.0) / (1.333 + 1.0)) ^ 2
 	float cosTheta = saturate(dot(-viewDir, normal));
 
+	// Fresnel Shlick's approximation
 	return r0 + (1.0 - r0) * pow((1.0 - cosTheta), 5.0);
 }
 

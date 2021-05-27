@@ -4,7 +4,7 @@
 #include "../Dev/Log.h"
 #include "../Dev/Helpers.h"
 
-bool Texture::createSamplerState()
+bool Texture::createSampler()
 {
 	// Create texture sampler desc for the sampler state
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -41,7 +41,7 @@ Texture::Texture(Renderer& renderer, TextureFilter filter,
 	textureFilter((D3D11_FILTER) filter), textureFormat((DXGI_FORMAT) textureFormat),
 	textureEdgeSamplingMode((D3D11_TEXTURE_ADDRESS_MODE) textureEdgeSampling)
 {
-	this->createSamplerState();
+	this->createSampler();
 }
 
 Texture::~Texture()
@@ -95,12 +95,12 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 	result = this->device->CreateUnorderedAccessView(this->texture, &uavDesc, &this->textureUAV);
 	if (FAILED(result))
 	{
-		Log::resultFailed("Failed creating UAV for texture in compute shader.", result);
+		Log::resultFailed("Failed creating UAV for texture.", result);
 
 		return false;
 	}
 
-	this->createSRVAsRenderTexture();
+	this->createSRVasRenderTexture();
 
 	return true;
 }
@@ -123,10 +123,6 @@ bool Texture::createFromFile(std::string path)
 	// Load DDS
 	if (path.substr(path.size() - 3) == "dds")
 	{
-		/*result = DirectX::CreateDDSTextureFromFile(
-			this->device, widePath.c_str(), &texResource, &this->texture
-		);*/
-
 		result = DirectX::CreateDDSTextureFromFileEx(
 			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT, 
 			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
@@ -135,10 +131,6 @@ bool Texture::createFromFile(std::string path)
 	}
 	else // Load non-DDS
 	{
-		/*result = DirectX::CreateWICTextureFromFile(
-			this->device, widePath.c_str(), &texResource, &this->texture
-		);*/
-
 		result = DirectX::CreateWICTextureFromFileEx(
 			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
 			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
@@ -185,7 +177,7 @@ void Texture::clearRenderTexture(float red, float green, float blue, float alpha
 	);
 }
 
-bool Texture::createSRVAsRenderTexture()
+bool Texture::createSRVasRenderTexture()
 {
 	S_RELEASE(this->textureSRV);
 
