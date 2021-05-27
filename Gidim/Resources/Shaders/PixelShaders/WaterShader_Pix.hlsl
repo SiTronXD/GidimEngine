@@ -13,7 +13,8 @@ struct Input
 };
 
 Texture2D normalMapTexture : register(t0);
-TextureCube skyboxTexture : register(t1);
+Texture2D foamMaskTexture : register(t1);
+TextureCube skyboxTexture : register(t2);
 SamplerState textureSampler : register(s0);
 
 float calcFresnel(float3 viewDir, float3 normal)
@@ -49,6 +50,8 @@ float4 main(Input input) : SV_TARGET
 
 	// Color
 	float3 col = reflectedColor; // lerp(float3(0.0, 0.0, 0.0), reflectedColor, fresnel);
+
+	col = foamMaskTexture.Sample(textureSampler, input.uv).rgb;
 
 	return float4(col, 1.0);
 }

@@ -67,6 +67,13 @@ private:
 		int padding;
 	} htnb{};
 
+	struct FoamMaskBuffer
+	{
+		int gridWidth;
+		int gridHeight;
+		int padding[2];
+	} fmb{};
+
 	struct WaterBuffer
 	{
 		XMFLOAT3 cameraPosition;
@@ -80,7 +87,7 @@ private:
 
 	WaterShader shader;
 
-	// Water FFT
+	// FFT compute shaders
 	ComputeShader spectrumCreatorShader;
 	ComputeShader spectrumInterpolatorShader;
 	ComputeShader butterflyTextureShader;
@@ -88,7 +95,9 @@ private:
 	ComputeShader invPermShader;
 
 	ComputeShader displacementToNormalShader;
+	ComputeShader foamMaskShader;
 
+	// FFT texture
 	Texture initialSpectrumTexture;
 	Texture butterflyTexture;
 	Texture finalSpectrumTextureX;
@@ -97,7 +106,9 @@ private:
 	Texture displacementTexture;
 
 	Texture normalMapTexture;
+	Texture foamMaskTexture;
 
+	// FFT shader buffers
 	ShaderBuffer spectrumCreatorShaderBuffer;
 	ShaderBuffer spectrumInterpolationShaderBuffer;
 	ShaderBuffer butterflyTextureShaderBuffer;
@@ -105,6 +116,7 @@ private:
 	ShaderBuffer invPermShaderBuffer;
 
 	ShaderBuffer disToNormShaderBuffer;
+	ShaderBuffer foamMaskShaderBuffer;
 
 	ShaderBuffer waterShaderBuffer;
 

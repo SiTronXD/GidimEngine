@@ -2,8 +2,9 @@
 #include "../Dev/Log.h"
 #include "../Dev/Helpers.h"
 
-CubeMap::CubeMap(Renderer& renderer)
-	: Texture(renderer)
+CubeMap::CubeMap(Renderer& renderer, TextureFilter filter,
+	TextureFormat textureFormat, TextureEdgeSampling textureEdgeSampling)
+	: Texture(renderer, filter, textureFormat, textureEdgeSampling)
 {
 	
 }

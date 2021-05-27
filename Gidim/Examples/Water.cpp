@@ -16,11 +16,12 @@ Water::Water(Renderer& renderer)
 	// Compute shaders
 	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 	spectrumInterpolatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	butterflyTextureShader(renderer, (int) (log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
+	butterflyTextureShader(renderer, (int)(log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
 	butterflyOperationsShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 	invPermShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
 	displacementToNormalShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	foamMaskShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
 	// Render textures
 	initialSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
@@ -31,6 +32,7 @@ Water::Water(Renderer& renderer)
 	displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT, TextureEdgeSampling::REPEAT),
 
 	normalMapTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM),
+	foamMaskTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM, TextureEdgeSampling::REPEAT),
 
 	// Shader buffers
 	spectrumCreatorShaderBuffer(renderer, sizeof(SpectrumCreatorBuffer)),
@@ -40,6 +42,7 @@ Water::Water(Renderer& renderer)
 	invPermShaderBuffer(renderer, sizeof(InvPermBuffer)),
 
 	disToNormShaderBuffer(renderer, sizeof(HeightToNormalBuffer)),
+	foamMaskShaderBuffer(renderer, sizeof(FoamMaskBuffer)),
 
 	waterShaderBuffer(renderer, sizeof(WaterBuffer)),
 
@@ -55,6 +58,7 @@ Water::Water(Renderer& renderer)
 	this->butterflyTexture.createAsRenderTexture(this->numMultiplicationStages, GRID_HEIGHT);
 	this->displacementTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->normalMapTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
+	this->foamMaskTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 
 	// Update spectrum creator constant buffer
 	this->scb.gridWidth = GRID_WIDTH;
@@ -125,16 +129,27 @@ Water::Water(Renderer& renderer)
 	this->displacementToNormalShader.addRenderTexture(this->normalMapTexture);
 	this->displacementToNormalShader.addShaderBuffer(this->disToNormShaderBuffer);
 
+	// Update foam mask buffer
+	this->fmb.gridWidth = GRID_WIDTH;
+	this->fmb.gridHeight = GRID_HEIGHT;
+	this->foamMaskShaderBuffer.update(&this->fmb);
+
+	// Foam mask shader
+	this->foamMaskShader.createFromFile("CompiledShaders/FoamMaskCreator_Comp.cso");
+	this->foamMaskShader.addRenderTexture(this->displacementTexture);
+	this->foamMaskShader.addRenderTexture(this->foamMaskTexture);
+	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);
+
 	// Scale up plane
 	this->mesh.setWorldMatrix(XMMatrixScaling(3.0f, 3.0f, 3.0f));
 }
 
-	void Water::setReflectedCubeMap(CubeMap& reflectedCubeMap)
-	{
-		this->reflectedCubeMap = &reflectedCubeMap;
-	}
+void Water::setReflectedCubeMap(CubeMap& reflectedCubeMap)
+{
+	this->reflectedCubeMap = &reflectedCubeMap;
+}
 
-	void Water::toggleHorizontalDisplacement()
+void Water::toggleHorizontalDisplacement()
 {
 	this->displaceHorizontally = !this->displaceHorizontally;
 }
@@ -195,16 +210,22 @@ void Water::draw()
 	}
 
 	// Run inversion and permutation constant buffer
-	invPermShader.run();
+	this->invPermShader.run();
 
-	// Create normal map from heightmap
-	displacementToNormalShader.run();
 
-	// Set textures
+
+	// Create normal map from displacement map
+	this->displacementToNormalShader.run();
+
+	// Create foam mask from displacement map
+	this->foamMaskShader.run();
+
+	// Set textures for regular pixel shader
 	this->displacementTexture.setVS(0);
 	this->normalMapTexture.setPS(0);
+	this->foamMaskTexture.setPS(1);
 	if (this->reflectedCubeMap != nullptr)
-		this->reflectedCubeMap->setPS(1);
+		this->reflectedCubeMap->setPS(2);
 
 	// Update water pixel shader buffer
 	XMFLOAT3 camPos = renderer.getCameraPosition();

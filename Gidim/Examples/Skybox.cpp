@@ -4,9 +4,10 @@
 Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
 	shader(renderer), shaderBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
-	timer(0.0f), skyCubeMap(renderer), 
+	timer(0.0f), skyCubeMap(renderer/*, TextureFilter::NEAREST_NEIGHBOR*/), 
 	preethamCreatorShader(renderer, CUBE_FACE_WIDTH / 16, CUBE_FACE_HEIGHT / 16, 6 / 2)
 {
+	// Make the mesh big enough to not clip into another mesh
 	this->mesh.setWorldMatrix(XMMatrixScaling(1000.0f, 1000.0f, 1000.0f));
 
 	// Create cube map as render texture
