@@ -28,9 +28,11 @@ private:
 
 	int threadGroupX;
 	int threadGroupY;
+	int threadGroupZ;
 
 public:
-	ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY);
+	ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY, 
+		int threadGroupZ = 1);
 	~ComputeShader();
 
 	bool createFromFile(std::string path);

@@ -13,7 +13,8 @@ struct Input
 };
 
 Texture2D normalMapTexture : register(t0);
-SamplerState normalMapSampler : register(s0);
+TextureCube skyboxTexture : register(t1);
+SamplerState textureSampler : register(s0);
 
 float calcFresnel(float3 viewDir, float3 normal)
 {
@@ -29,16 +30,25 @@ float calcFresnel(float3 viewDir, float3 normal)
 
 float4 main(Input input) : SV_TARGET
 {
+	// Get normal from normal map
 	float3 normal = 
 		normalize(
-			normalMapTexture.Sample(normalMapSampler, input.uv.xy).rgb * 2.0 - 
+			normalMapTexture.Sample(textureSampler, input.uv.xy).rgb * 2.0 -
 			1.0
 		);
 
-	// float lambert = saturate(dot(normal, normalize(-float3(1.0, -0.0, 0.0))));
-
+	// View direction and fresnel
 	float3 viewDir = normalize(input.worldPos - cameraPosition);
 	float fresnel = calcFresnel(viewDir, normal);
 
-	return float4(float3(fresnel, fresnel, fresnel), 1.0);
+	// Reflected skybox color
+	float3 reflectedColor = skyboxTexture.Sample(
+		textureSampler, 
+		reflect(viewDir, normal)
+	);
+
+	// Color
+	float3 col = reflectedColor; // lerp(float3(0.0, 0.0, 0.0), reflectedColor, fresnel);
+
+	return float4(col, 1.0);
 }

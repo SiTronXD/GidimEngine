@@ -9,10 +9,18 @@
 class Skybox
 {
 private:
+	static const int CUBE_FACE_WIDTH = 256;
+	static const int CUBE_FACE_HEIGHT = 256;
+
 	struct SkyboxBuffer
 	{
-		float sunDir[3];
+		XMFLOAT3 sunDir;
 		float turbidity;
+
+		int faceWidth;
+		int faceHeight;
+
+		int padding[2];
 	} sb{};
 
 	MeshData meshData;
@@ -34,4 +42,6 @@ public:
 	~Skybox();
 
 	void draw();
+
+	CubeMap& getCubeMap();
 };

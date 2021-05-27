@@ -34,7 +34,7 @@ void WaterRendering::run()
 
 	Skybox skybox(renderer);
 	Water water(renderer);
-
+	water.setReflectedCubeMap(skybox.getCubeMap());
 
 	// Update once before starting loop
 	window.update();

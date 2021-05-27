@@ -21,7 +21,7 @@ public:
 	CubeMap(Renderer& renderer);
 	~CubeMap();
 
-	void setPS();
+	void setPS(UINT startSlot = 0);
 
 	bool createSRVasRenderTexture();
 

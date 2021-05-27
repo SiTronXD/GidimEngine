@@ -97,13 +97,13 @@ CubeMap::~CubeMap()
 	S_RELEASE(this->textureSRV);
 }
 
-void CubeMap::setPS()
+void CubeMap::setPS(UINT startSlot)
 {
 	// Set sampler state in the pixel shader
-	this->deviceContext->PSSetSamplers(0, 1, &this->samplerState);
+	this->deviceContext->PSSetSamplers(startSlot, 1, &this->samplerState);
 
 	// Set shader texture resource in the pixel shader
-	this->deviceContext->PSSetShaderResources(0, 1, &this->textureSRV);
+	this->deviceContext->PSSetShaderResources(startSlot, 1, &this->textureSRV);
 }
 
 bool CubeMap::createSRVasRenderTexture()

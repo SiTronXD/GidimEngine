@@ -108,6 +108,8 @@ private:
 
 	ShaderBuffer waterShaderBuffer;
 
+	CubeMap* reflectedCubeMap;
+
 	int numMultiplicationStages;
 
 	float timer;
@@ -120,6 +122,7 @@ public:
 	Water(Renderer& renderer);
 	~Water();
 
+	void setReflectedCubeMap(CubeMap& reflectedCubeMap);
 	void toggleHorizontalDisplacement();
 
 	void draw();

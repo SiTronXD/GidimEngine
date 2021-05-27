@@ -11,7 +11,7 @@ const float Water::AMPLITUDE = 4.0f;
 
 Water::Water(Renderer& renderer)
 	: renderer(renderer), meshData(DefaultMesh::PLANE, GRID_WIDTH, GRID_HEIGHT),
-	mesh(renderer, meshData), shader(renderer),
+	mesh(renderer, meshData), shader(renderer), reflectedCubeMap(nullptr),
 
 	// Compute shaders
 	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
@@ -129,7 +129,12 @@ Water::Water(Renderer& renderer)
 	this->mesh.setWorldMatrix(XMMatrixScaling(3.0f, 3.0f, 3.0f));
 }
 
-void Water::toggleHorizontalDisplacement()
+	void Water::setReflectedCubeMap(CubeMap& reflectedCubeMap)
+	{
+		this->reflectedCubeMap = &reflectedCubeMap;
+	}
+
+	void Water::toggleHorizontalDisplacement()
 {
 	this->displaceHorizontally = !this->displaceHorizontally;
 }
@@ -198,6 +203,8 @@ void Water::draw()
 	// Set textures
 	this->displacementTexture.setVS(0);
 	this->normalMapTexture.setPS(0);
+	if (this->reflectedCubeMap != nullptr)
+		this->reflectedCubeMap->setPS(1);
 
 	// Update water pixel shader buffer
 	XMFLOAT3 camPos = renderer.getCameraPosition();

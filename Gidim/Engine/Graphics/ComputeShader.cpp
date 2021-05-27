@@ -1,8 +1,9 @@
 #include "ComputeShader.h"
 #include "../Dev/Helpers.h"
 
-ComputeShader::ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY)
-	: threadGroupX(threadGroupX), threadGroupY(threadGroupY),
+ComputeShader::ComputeShader(Renderer& renderer, 
+	int threadGroupX, int threadGroupY, int threadGroupZ)
+	: threadGroupX(threadGroupX), threadGroupY(threadGroupY), threadGroupZ(threadGroupZ),
 	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL },
 	device(renderer.getDevice()), deviceContext(renderer.getDeviceContext())
 { }
@@ -70,7 +71,11 @@ void ComputeShader::run()
 	);
 
 	// Run
-	this->deviceContext->Dispatch(this->threadGroupX, this->threadGroupY, 1);
+	this->deviceContext->Dispatch(
+		this->threadGroupX, 
+		this->threadGroupY, 
+		this->threadGroupZ
+	);
 
 	// Reset
 	this->deviceContext->CSSetShader(NULL, NULL, 0);

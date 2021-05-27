@@ -4,13 +4,19 @@
 Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
 	shader(renderer), shaderBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
-	timer(0.0f), skyCubeMap(renderer), preethamCreatorShader(renderer, 256 / 16, 256 / 16)
+	timer(0.0f), skyCubeMap(renderer), 
+	preethamCreatorShader(renderer, CUBE_FACE_WIDTH / 16, CUBE_FACE_HEIGHT / 16, 6 / 2)
 {
 	this->mesh.setWorldMatrix(XMMatrixScaling(1000.0f, 1000.0f, 1000.0f));
 
+	// Preetham creator shader
 	this->preethamCreatorShader.createFromFile("CompiledShaders/PreethamSkyCreator_Comp.cso");
 	this->preethamCreatorShader.addRenderCubeMap(this->skyCubeMap);
-	this->preethamCreatorShader.run();
+	this->preethamCreatorShader.addShaderBuffer(this->shaderBuffer);
+
+	// Set constants in shader buffer struct
+	this->sb.faceWidth = CUBE_FACE_WIDTH;
+	this->sb.faceHeight = CUBE_FACE_HEIGHT;
 }
 
 Skybox::~Skybox()
@@ -22,22 +28,28 @@ void Skybox::draw()
 	// Update timer
 	timer += Time::getDeltaTime() * 0.2f;
 
-	// Update buffers in shader
-	this->shader.update(renderer, this->mesh.getWorldMatrix());
-
 	// Update and set shader buffer
-	this->sb.sunDir[0] = 0.0f;
-	this->sb.sunDir[1] = cos(timer);
-	this->sb.sunDir[2] = sin(timer);
+	this->sb.sunDir = XMFLOAT3(0.0f, cos(timer), sin(timer));
 	this->sb.turbidity = 2.0f;
 	this->shaderBuffer.update(&this->sb);
-	this->shaderBuffer.setPS();
 
+	// Render sky box
+	this->preethamCreatorShader.run();
+
+	// Set sky box
 	this->skyCubeMap.setPS();
+
+	// Update shader
+	this->shader.update(renderer, this->mesh.getWorldMatrix());
 
 	// Set shader to render mesh with
 	this->shader.set();
 
 	// Render mesh
 	this->mesh.draw();
+}
+
+CubeMap& Skybox::getCubeMap()
+{
+	return this->skyCubeMap;
 }
