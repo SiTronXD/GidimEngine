@@ -9,9 +9,12 @@ Skybox::Skybox(Renderer& renderer)
 {
 	this->mesh.setWorldMatrix(XMMatrixScaling(1000.0f, 1000.0f, 1000.0f));
 
+	// Create cube map as render texture
+	this->skyCubeMap.createAsRenderTexture(CUBE_FACE_WIDTH, CUBE_FACE_HEIGHT);
+
 	// Preetham creator shader
 	this->preethamCreatorShader.createFromFile("CompiledShaders/PreethamSkyCreator_Comp.cso");
-	this->preethamCreatorShader.addRenderCubeMap(this->skyCubeMap);
+	this->preethamCreatorShader.addRenderTexture(this->skyCubeMap);
 	this->preethamCreatorShader.addShaderBuffer(this->shaderBuffer);
 
 	// Set constants in shader buffer struct

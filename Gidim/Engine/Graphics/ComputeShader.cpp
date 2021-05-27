@@ -84,9 +84,7 @@ void ComputeShader::run()
 
 	// Recreate SRVs after dispatch
 	for(size_t i = 0; i < this->renderTextures.size(); ++i)
-		this->renderTextures[i]->createSRVasRenderTexture();
-	for (size_t i = 0; i < this->renderCubeMaps.size(); ++i)
-		this->renderCubeMaps[i]->createSRVasRenderTexture();
+		this->renderTextures[i]->createSRV();
 }
 
 void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
@@ -107,18 +105,6 @@ void ComputeShader::addRenderTexture(Texture& texture)
 	{
 		this->renderTextures.push_back(&texture);
 		this->renderTextureUAVs.push_back(texture.getTextureUAV());
-	}
-	else
-		Log::error("Too many render textures were attempted to be added for this compute shader.");
-}
-
-void ComputeShader::addRenderCubeMap(CubeMap& cubeMap)
-{
-	// Add render texture, if we haven't reached the maximum yet
-	if (this->renderTextureUAVs.size() < NUM_MAX_RENDER_TEXTURES)
-	{
-		this->renderCubeMaps.push_back(&cubeMap);
-		this->renderTextureUAVs.push_back(cubeMap.getTextureUAV());
 	}
 	else
 		Log::error("Too many render textures were attempted to be added for this compute shader.");

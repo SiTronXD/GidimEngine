@@ -269,5 +269,8 @@
     <FxCompile Include="Resources\Shaders\ComputeShaders\PreethamSkyCreator_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\FoamMaskCreator_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

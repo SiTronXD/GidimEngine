@@ -26,7 +26,7 @@ bool Texture::createSampler()
 	HRESULT result = this->device->CreateSamplerState(&samplerDesc, &this->samplerState);
 	if (FAILED(result))
 	{
-		Log::resultFailed("Could not create texture sampler state.", result);
+		Log::resultFailed("Could not create texture sampler.", result);
 
 		return false;
 	}
@@ -52,6 +52,50 @@ Texture::~Texture()
 	S_RELEASE(this->textureSRV);
 }
 
+bool Texture::createFromFile(std::string path)
+{
+	// Deallocate old texture, if it exists
+	S_RELEASE(this->texture);
+	S_RELEASE(this->textureUAV);
+	S_RELEASE(this->textureSRV);
+
+
+	HRESULT result;
+
+	// Remake path as wstring
+	std::wstring widePath;
+	for (int i = 0; i < path.length(); ++i)
+		widePath += wchar_t(path[i]);
+
+	// Load DDS
+	if (path.substr(path.size() - 3) == "dds")
+	{
+		result = DirectX::CreateDDSTextureFromFileEx(
+			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
+			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
+			0, 0, false, (ID3D11Resource**)&this->texture, &this->textureSRV
+		);
+	}
+	else // Load non-DDS
+	{
+		result = DirectX::CreateWICTextureFromFileEx(
+			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
+			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
+			0, 0, false, (ID3D11Resource**)&this->texture, &this->textureSRV
+		);
+	}
+
+	// Did the loading fail?
+	if (FAILED(result))
+	{
+		Log::resultFailed("Could not create texture from file path: " + path, result);
+
+		return false;
+	}
+
+	return true;
+}
+
 bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 {
 	HRESULT result;
@@ -59,7 +103,6 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 	// Deallocate old texture, if it exists
 	S_RELEASE(this->texture);
 	S_RELEASE(this->textureUAV);
-	S_RELEASE(this->textureSRV);
 
 	// Create texture
 	D3D11_TEXTURE2D_DESC textureDesc;
@@ -100,51 +143,7 @@ bool Texture::createAsRenderTexture(unsigned int width, unsigned int height)
 		return false;
 	}
 
-	this->createSRVasRenderTexture();
-
-	return true;
-}
-
-bool Texture::createFromFile(std::string path)
-{
-	// Deallocate old texture, if it exists
-	S_RELEASE(this->texture);
-	S_RELEASE(this->textureUAV);
-	S_RELEASE(this->textureSRV);
-
-
-	HRESULT result;
-
-	// Remake path as wstring
-	std::wstring widePath;
-	for (int i = 0; i < path.length(); ++i)
-		widePath += wchar_t(path[i]);
-
-	// Load DDS
-	if (path.substr(path.size() - 3) == "dds")
-	{
-		result = DirectX::CreateDDSTextureFromFileEx(
-			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT, 
-			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
-			0, 0, false, (ID3D11Resource**) &this->texture, &this->textureSRV
-		);
-	}
-	else // Load non-DDS
-	{
-		result = DirectX::CreateWICTextureFromFileEx(
-			this->device, widePath.c_str(), 0U, D3D11_USAGE_DEFAULT,
-			D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
-			0, 0, false, (ID3D11Resource**) &this->texture, &this->textureSRV
-		);
-	}
-
-	// Did the loading fail?
-	if (FAILED(result))
-	{
-		Log::resultFailed("Could not create texture from file path: " + path, result);
-
-		return false;
-	}
+	this->createSRV();
 
 	return true;
 }
@@ -177,7 +176,7 @@ void Texture::clearRenderTexture(float red, float green, float blue, float alpha
 	);
 }
 
-bool Texture::createSRVasRenderTexture()
+bool Texture::createSRV()
 {
 	S_RELEASE(this->textureSRV);
 
@@ -191,7 +190,10 @@ bool Texture::createSRVasRenderTexture()
 	HRESULT result = this->device->CreateShaderResourceView(this->texture, &srvDesc, &this->textureSRV);
 	if (FAILED(result))
 	{
-		Log::resultFailed("Failed recreating SRV from texture.", result);
+		if (!this->texture)
+			Log::resultFailed("Failed creating SRV from texture, since a texture object has not been created...", result);
+		else
+			Log::resultFailed("Failed creating SRV from texture.", result);
 
 		return false;
 	}

@@ -1,29 +1,19 @@
 #pragma once
 
-#include "Renderer.h"
+#include "Texture.h"
 
-class CubeMap
+class CubeMap : public Texture
 {
 private:
-	ID3D11SamplerState* samplerState;
-	ID3D11Texture2D* texture;
-
-	ID3D11UnorderedAccessView* textureUAV;
-
-	ID3D11ShaderResourceView* textureSRV;
-
-	ID3D11Device* device;
-	ID3D11DeviceContext* deviceContext;
-
-	bool createSampler();
+	// These functions does not have or need an implementation
+	// at the moment.
+	using Texture::clearRenderTexture;
+	using Texture::createFromFile;
 
 public:
 	CubeMap(Renderer& renderer);
 	~CubeMap();
 
-	void setPS(UINT startSlot = 0);
-
-	bool createSRVasRenderTexture();
-
-	ID3D11UnorderedAccessView* getTextureUAV() const;
+	virtual bool createAsRenderTexture(unsigned int faceWidth, unsigned int faceHeight) override;
+	virtual bool createSRV() override;
 };

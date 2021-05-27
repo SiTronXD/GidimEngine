@@ -19,7 +19,6 @@ private:
 	ID3D11Buffer* constantBufferNULL[NUM_MAX_CONSTANT_BUFFERS];
 
 	std::vector<Texture*> renderTextures;
-	std::vector<CubeMap*> renderCubeMaps;
 	std::vector<ID3D11UnorderedAccessView*> renderTextureUAVs;
 	std::vector<ID3D11Buffer*> constantBuffers;
 
@@ -39,7 +38,6 @@ public:
 
 	void run();
 	void addRenderTexture(Texture& texture);
-	void addRenderCubeMap(CubeMap& cubeMap);
 	void addShaderBuffer(ShaderBuffer& buffer);
 
 	void removeRenderTextureAt(int index);
