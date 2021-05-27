@@ -21,7 +21,7 @@ private:
 		int gridWidth;
 		int gridHeight;
 
-		float windDirection[2];
+		XMFLOAT2 windDirection;
 
 		float horizontalSize;
 		float windSpeed;
@@ -63,8 +63,15 @@ private:
 	{
 		int gridWidth;
 		int gridHeight;
-		int padding[2];
+		float unitLength;
+		int padding;
 	} htnb{};
+
+	struct WaterBuffer
+	{
+		XMFLOAT3 cameraPosition;
+		float padding;
+	} wb{};
 
 	Renderer& renderer;
 
@@ -98,6 +105,8 @@ private:
 	ShaderBuffer invPermShaderBuffer;
 
 	ShaderBuffer disToNormShaderBuffer;
+
+	ShaderBuffer waterShaderBuffer;
 
 	int numMultiplicationStages;
 

@@ -377,3 +377,8 @@ XMMATRIX Renderer::getViewMatrix()
 {
 	return this->viewMatrix;
 }
+
+XMFLOAT3 Renderer::getCameraPosition() const
+{
+	return this->camera->getPosition();
+}

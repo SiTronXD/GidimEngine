@@ -48,4 +48,6 @@ public:
 
 	XMMATRIX getProjectionMatrix();
 	XMMATRIX getViewMatrix();
+
+	XMFLOAT3 getCameraPosition() const;
 };

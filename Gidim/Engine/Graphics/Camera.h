@@ -32,5 +32,6 @@ public:
 
 	const XMMATRIX& getProjectionMatrix() const;
 	const XMMATRIX& getViewMatrix();
-	//const XMMATRIX getViewProjectionMatrix() const;
+	
+	const XMFLOAT3 getPosition() const;
 };

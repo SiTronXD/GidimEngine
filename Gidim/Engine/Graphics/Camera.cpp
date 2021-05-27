@@ -100,6 +100,15 @@ const XMMATRIX& Camera::getViewMatrix()
 	return this->viewMatrix;
 }
 
+const XMFLOAT3 Camera::getPosition() const
+{
+	XMFLOAT3 tempFloat3;
+
+	XMStoreFloat3(&tempFloat3, this->position);
+
+	return tempFloat3;
+}
+
 /*const XMMATRIX Camera::getViewProjectionMatrix() const
 {
 	return XMMATRIX();

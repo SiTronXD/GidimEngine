@@ -41,6 +41,8 @@ Water::Water(Renderer& renderer)
 
 	disToNormShaderBuffer(renderer, sizeof(HeightToNormalBuffer)),
 
+	waterShaderBuffer(renderer, sizeof(WaterBuffer)),
+
 	numMultiplicationStages((int) log2(GRID_WIDTH)),
 	timer(0.0f),
 	displaceHorizontally(true)
@@ -57,8 +59,7 @@ Water::Water(Renderer& renderer)
 	// Update spectrum creator constant buffer
 	this->scb.gridWidth = GRID_WIDTH;
 	this->scb.gridHeight = GRID_HEIGHT;
-	this->scb.windDirection[0] = WIND_DIR_X;
-	this->scb.windDirection[1] = WIND_DIR_Y;
+	this->scb.windDirection = XMFLOAT2(WIND_DIR_X, WIND_DIR_Y);
 	this->scb.horizontalSize = HORIZONTAL_SIZE;
 	this->scb.windSpeed = WIND_SPEED;
 	this->scb.amplitude = AMPLITUDE;
@@ -115,6 +116,7 @@ Water::Water(Renderer& renderer)
 	// Update heightmap to normal map shader buffer
 	this->htnb.gridWidth = GRID_WIDTH;
 	this->htnb.gridHeight = GRID_HEIGHT;
+	this->htnb.unitLength = (float)GRID_WIDTH / (float)HORIZONTAL_SIZE;
 	this->disToNormShaderBuffer.update(&this->htnb);
 
 	// Heightmap to normal map shader
@@ -166,7 +168,8 @@ Water::~Water() {}
 
 void Water::draw()
 {
-	this->timer += Time::getDeltaTime() * 2.0f;
+	// Animate
+	//this->timer += Time::getDeltaTime() * 2.0f;
 
 	// Clear displacement textures
 	this->displacementTexture.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
@@ -193,8 +196,16 @@ void Water::draw()
 	displacementToNormalShader.run();
 
 	// Set textures
-	displacementTexture.setVS(0);
-	normalMapTexture.setPS(0);
+	this->displacementTexture.setVS(0);
+	this->normalMapTexture.setPS(0);
+
+	// Update water pixel shader buffer
+	XMFLOAT3 camPos = renderer.getCameraPosition();
+	this->wb.cameraPosition = camPos;
+	this->waterShaderBuffer.update(&this->wb);
+
+	// Set water pixel shader buffer
+	this->waterShaderBuffer.setPS();
 
 	// Update water shader
 	this->shader.update(renderer, this->mesh.getWorldMatrix());

@@ -15,7 +15,8 @@ struct Input
 struct Output
 {
 	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD;
+	float2 uv : TEXCOORD0;
+	float3 worldPos : TEXCOORD1;
 };
 
 Texture2D displacementTexture : register(t0);
@@ -36,6 +37,8 @@ Output main(Input input)
 	float4 p = float4(input.position.xyz, 1.0);
 	output.position = mul(p, worldMatrix);
 	output.position.xyz += displacementPos;	// World space displacement
+	output.worldPos = output.position.xyz;
+
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 
