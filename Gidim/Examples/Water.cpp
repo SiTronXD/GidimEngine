@@ -33,6 +33,7 @@ Water::Water(Renderer& renderer)
 
 	normalMapTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM),
 	foamMaskTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM, TextureEdgeSampling::REPEAT),
+	foamTexture(renderer),
 
 	// Shader buffers
 	spectrumCreatorShaderBuffer(renderer, sizeof(SpectrumCreatorBuffer)),
@@ -59,6 +60,8 @@ Water::Water(Renderer& renderer)
 	this->displacementTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->normalMapTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->foamMaskTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
+
+	this->foamTexture.createFromFile("Resources/Textures/OceanFoam.png");
 
 	// Update spectrum creator constant buffer
 	this->scb.gridWidth = GRID_WIDTH;
@@ -224,8 +227,9 @@ void Water::draw()
 	this->displacementTexture.setVS(0);
 	this->normalMapTexture.setPS(0);
 	this->foamMaskTexture.setPS(1);
+	this->foamTexture.setPS(2);
 	if (this->reflectedCubeMap != nullptr)
-		this->reflectedCubeMap->setPS(2);
+		this->reflectedCubeMap->setPS(3);
 
 	// Update water pixel shader buffer
 	XMFLOAT3 camPos = renderer.getCameraPosition();

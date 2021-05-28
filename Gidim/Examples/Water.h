@@ -107,6 +107,7 @@ private:
 
 	Texture normalMapTexture;
 	Texture foamMaskTexture;
+	Texture foamTexture;
 
 	// FFT shader buffers
 	ShaderBuffer spectrumCreatorShaderBuffer;
