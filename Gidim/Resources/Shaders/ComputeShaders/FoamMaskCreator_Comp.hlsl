@@ -32,7 +32,7 @@ uint2 repPos(uint2 pos)
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	const float foamScale = 1.0;
-	const float foamBias = 0.6;
+	const float foamBias = 0.5;
 
 	uint2 pos = dispatchThreadID.xy;
 
