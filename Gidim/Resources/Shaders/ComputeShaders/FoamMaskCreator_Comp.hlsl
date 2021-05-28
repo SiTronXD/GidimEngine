@@ -31,17 +31,22 @@ uint2 repPos(uint2 pos)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
+	const float foamScale = 1.0;
+	const float foamBias = 0.6;
+
 	uint2 pos = dispatchThreadID.xy;
 
+	// Estimate partial derivatives
 	float2 dX =	(displacementTexture[repPos(pos + uint2(-1, 0))].rb -
 				displacementTexture[repPos(pos + uint2(1, 0))].rb) * 0.5 * LAMBDA * U_SCALE;
 	float2 dY = (displacementTexture[repPos(pos + uint2(0, -1))].rb -
 				displacementTexture[repPos(pos + uint2(0, 1))].rb) * 0.5 * LAMBDA * U_SCALE;
 
+	// Calculate the determinant of the jacobian matrix
 	float jacobianDet = (1.0 + dX.x) * (1.0 + dY.y) - dX.y * dY.x;
-	float k = 1.0;
-	float m = 0.6;
-	float col = saturate(k * (-jacobianDet + m)); //jacobianDet < m ? 1.0 : 0.0;
+
+	// Interpret determinant to create mask
+	float col = saturate(foamScale * (-jacobianDet + foamBias)); //jacobianDet < foamBias ? 1.0 : 0.0;
 
 	foamMaskTexture[dispatchThreadID.xy] = float4(col, col, col, 1.0);
 }

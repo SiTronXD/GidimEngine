@@ -26,7 +26,7 @@ float calcFresnel(float3 viewDir, float3 normal)
 	float r0 = 0.02; // ((1.333 - 1.0) / (1.333 + 1.0)) ^ 2
 	float cosTheta = saturate(dot(-viewDir, normal));
 
-	// Avoid pow() with floats
+	// Optimized integer exponent
 	float invTheta = (1.0 - cosTheta);
 
 	// Fresnel Shlick's approximation
@@ -52,8 +52,19 @@ float4 main(Input input) : SV_TARGET
 		reflect(viewDir, normal)
 	);
 
-	// Refracted color
+	// "Fake" refracted color
 	float3 refractedColor = float3(6.0, 48.0, 64.0) / 255.0;
+	//refractedColor *= min(saturate(input.worldPos.y + 0.1) + 1.0, 2.5);
+	
+	// Interpolation was inspired by this shader:
+	// https://www.shadertoy.com/view/Ms2SD1
+	float3 dist = input.worldPos - cameraPosition;
+	float distFalloff = max(1.0 - dot(dist, dist) * 0.001, 0.0);
+	refractedColor = lerp(
+		refractedColor,
+		float3(0.8, 0.9, 0.6) * 0.6,
+		(input.worldPos.y + 0.1) * 0.5 * distFalloff
+	);
 
 	// Foam
 	float foamMask = foamMaskTexture.Sample(textureSampler, input.uv).r;
