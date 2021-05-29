@@ -54,7 +54,7 @@ float calcFresnel(float3 viewDir, float3 normal)
 
 float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float foamMask, float camToPosDist)
 {
-	const float specGloss = 24.0;
+	const float specGloss = 18.0;
 	const float specIntensity = 0.9;
 
 	// Reflect
@@ -63,7 +63,7 @@ float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float foamMask,
 
 	// Falloff distance to point
 	float distFalloff = lerp(
-		0.3, 
+		0.2, 
 		1.0, 
 		1 / (1 + camToPosDist * 0.01)
 	);

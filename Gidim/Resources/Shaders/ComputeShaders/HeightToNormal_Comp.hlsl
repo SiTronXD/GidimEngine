@@ -12,6 +12,16 @@ cbuffer HeightToNormalBuffer : register(b0)
 RWTexture2D<float4> heightmapTexture : register(u0);
 RWTexture2D<float4> normalMapTexture : register(u1);
 
+// Repeat position within grid
+uint2 repPos(uint2 pos)
+{
+	pos += uint2(gridWidth, gridHeight);
+	pos.x = pos.x % gridWidth;
+	pos.y = pos.y % gridHeight;
+
+	return pos;
+}
+
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
@@ -25,10 +35,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		int y = j / 3;
 
 		// Keep position within the texture, and avoid negative positions
-		uint2 pos = uint2(gridWidth, gridHeight) +
-			dispatchThreadID.xy + uint2(x, y);
-		pos.x = pos.x % gridWidth;
-		pos.y = pos.y % gridHeight;
+		uint2 pos = repPos(dispatchThreadID.xy + uint2(x, y));
 
 		displacements[i] = heightmapTexture[pos].xyz;
 	}
@@ -43,6 +50,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	normalMapTexture[dispatchThreadID.xy] = 
 		float4(
 			(normal + 1.0) * 0.5,
-			1.0
+			0.0
 		);
 }
