@@ -54,8 +54,8 @@ float calcFresnel(float3 viewDir, float3 normal)
 
 float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float foamMask, float camToPosDist)
 {
-	const float specGloss = 18.0;
-	const float specIntensity = 0.9;
+	const float specGloss = 64.0;// 18.0;
+	const float specIntensity = 0.75;
 
 	// Reflect
 	float3 reflectedDir = reflect(sunDir, normal);
@@ -103,9 +103,10 @@ float4 main(Input input) : SV_TARGET
 	float distFalloff = max(1.0 - dot(dist, dist) * 0.001, 0.0);
 	refractedColor = lerp(
 		refractedColor,
-		float3(0.8, 0.9, 0.6) * 0.6,
+		float3(0.8, 0.9, 0.6) * 0.4,
 		(input.worldPos.y + 0.2) * 0.5 * distFalloff + bandingRemoval
 	);
+	refractedColor *= 0.6;
 
 	// Foam
 	float foamMask = foamMaskTexture.Sample(textureSampler, input.uv).r;

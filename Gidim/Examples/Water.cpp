@@ -5,7 +5,7 @@ const int Water::GRID_WIDTH = 256;
 const int Water::GRID_HEIGHT = 256;
 const float Water::WIND_DIR_X = 1.0f;
 const float Water::WIND_DIR_Y = 1.0f;
-const float Water::HORIZONTAL_SIZE = 1000.0f * 0.9f;
+const float Water::HORIZONTAL_SIZE = 1000.0f * 0.85f;
 const float Water::WIND_SPEED = 40.0f;
 const float Water::AMPLITUDE = 4.0f;
 
