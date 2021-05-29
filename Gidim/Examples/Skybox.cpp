@@ -29,11 +29,12 @@ Skybox::~Skybox()
 
 void Skybox::draw()
 {
-	// Update timer
+	// Update timer and sun
 	timer += Time::getDeltaTime() * 0.2f;
+	this->sunDir = XMFLOAT3(0.0f, cos(timer), sin(timer));
 
 	// Update and set shader buffer
-	this->sb.sunDir = XMFLOAT3(0.0f, cos(timer), sin(timer));
+	this->sb.sunDir = this->sunDir;
 	this->sb.turbidity = 2.0f;
 	this->shaderBuffer.update(&this->sb);
 
@@ -56,4 +57,9 @@ void Skybox::draw()
 CubeMap& Skybox::getCubeMap()
 {
 	return this->skyCubeMap;
+}
+
+const XMFLOAT3& Skybox::getSunDir() const
+{
+	return this->sunDir;
 }

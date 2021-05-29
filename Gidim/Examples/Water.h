@@ -4,6 +4,7 @@
 #include "../Engine/Graphics/ComputeShader.h"
 #include "../Engine/Graphics/ShaderBuffer.h"
 #include "../ShaderHandlers/WaterShader.h"
+#include "Skybox.h"
 
 class Water
 {
@@ -77,7 +78,9 @@ private:
 	struct WaterBuffer
 	{
 		XMFLOAT3 cameraPosition;
-		float padding;
+		float padding1;
+		XMFLOAT3 sunDirection;
+		float padding2;
 	} wb{};
 
 	Renderer& renderer;
@@ -85,7 +88,7 @@ private:
 	MeshData meshData;
 	Mesh mesh;
 
-	WaterShader shader;
+	WaterShader meshShader;
 
 	// FFT compute shaders
 	ComputeShader spectrumCreatorShader;
@@ -121,10 +124,13 @@ private:
 
 	ShaderBuffer waterShaderBuffer;
 
+	Skybox* skybox;
 	CubeMap* reflectedCubeMap;
 
 	int numMultiplicationStages;
+	int numPlaneRepetitions;
 
+	float planeLength;
 	float timer;
 
 	bool displaceHorizontally;
@@ -135,7 +141,7 @@ public:
 	Water(Renderer& renderer);
 	~Water();
 
-	void setReflectedCubeMap(CubeMap& reflectedCubeMap);
+	void setSkybox(Skybox& skybox);
 	void toggleHorizontalDisplacement();
 
 	void draw();

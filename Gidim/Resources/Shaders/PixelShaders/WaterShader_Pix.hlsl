@@ -2,7 +2,9 @@
 cbuffer WaterBuffer
 {
 	float3 cameraPosition;
-	float padding;
+	float padding1;
+	float3 sunDirection;
+	float padding2;
 };
 
 struct Input
@@ -50,6 +52,25 @@ float calcFresnel(float3 viewDir, float3 normal)
 	return r0 + (1.0 - r0) * invTheta * invTheta * invTheta * invTheta * invTheta;
 }
 
+float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float foamMask, float camToPosDist)
+{
+	const float specGloss = 24.0;
+	const float specIntensity = 0.9;
+
+	// Reflect
+	float3 reflectedDir = reflect(sunDir, normal);
+	float specular = saturate(dot(-reflectedDir, viewDir)) * (1.0 - foamMask);
+
+	// Falloff distance to point
+	float distFalloff = lerp(
+		0.3, 
+		1.0, 
+		1 / (1 + camToPosDist * 0.01)
+	);
+
+	return pow(specular, specGloss * distFalloff) * specIntensity;
+}
+
 float4 main(Input input) : SV_TARGET
 {
 	// Get normal from normal map
@@ -60,7 +81,9 @@ float4 main(Input input) : SV_TARGET
 		);
 
 	// View direction and fresnel
-	float3 viewDir = normalize(input.worldPos - cameraPosition);
+	float3 camToPos = input.worldPos - cameraPosition;
+	float camToPosDist = length(camToPos);
+	float3 viewDir = camToPos / camToPosDist;
 	float fresnel = calcFresnel(viewDir, normal);
 
 	// Reflected skybox color
@@ -89,8 +112,9 @@ float4 main(Input input) : SV_TARGET
 	float3 foamColor = foamTexture.Sample(textureSampler, input.uv).rgb;
 
 	// Color
-	float3 col = lerp(refractedColor, reflectedColor, fresnel);
-	col = lerp(col, foamColor, foamMask);
+	float3 col = lerp(refractedColor, reflectedColor, fresnel); // Reflection/refraction
+	col = lerp(col, foamColor, foamMask); // Foam
+	col += calcSpecular(-sunDirection, normal, viewDir, foamMask, camToPosDist); // Specular
 
 	return float4(col, 1.0);
 }

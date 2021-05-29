@@ -35,6 +35,8 @@ private:
 
 	Renderer& renderer;
 
+	XMFLOAT3 sunDir;
+
 	float timer;
 
 public:
@@ -44,4 +46,6 @@ public:
 	void draw();
 
 	CubeMap& getCubeMap();
+
+	const XMFLOAT3& getSunDir() const;
 };

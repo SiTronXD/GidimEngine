@@ -11,7 +11,7 @@ const float Water::AMPLITUDE = 4.0f;
 
 Water::Water(Renderer& renderer)
 	: renderer(renderer), meshData(DefaultMesh::PLANE, GRID_WIDTH, GRID_HEIGHT),
-	mesh(renderer, meshData), shader(renderer), reflectedCubeMap(nullptr),
+	mesh(renderer, meshData), meshShader(renderer), skybox(nullptr), reflectedCubeMap(nullptr),
 
 	// Compute shaders
 	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
@@ -144,12 +144,15 @@ Water::Water(Renderer& renderer)
 	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);
 
 	// Scale up plane
-	this->mesh.setWorldMatrix(XMMatrixScaling(3.0f, 3.0f, 3.0f));
+	this->numPlaneRepetitions = 7;
+	this->planeLength = 2.0;
+	this->mesh.setWorldMatrix(XMMatrixScaling(planeLength, planeLength, planeLength));
 }
 
-void Water::setReflectedCubeMap(CubeMap& reflectedCubeMap)
+void Water::setSkybox(Skybox& skybox)
 {
-	this->reflectedCubeMap = &reflectedCubeMap;
+	this->skybox = &skybox;
+	this->reflectedCubeMap = &skybox.getCubeMap();
 }
 
 void Water::toggleHorizontalDisplacement()
@@ -234,15 +237,25 @@ void Water::draw()
 	// Update water pixel shader buffer
 	XMFLOAT3 camPos = renderer.getCameraPosition();
 	this->wb.cameraPosition = camPos;
+	this->wb.sunDirection = this->skybox->getSunDir();
 	this->waterShaderBuffer.update(&this->wb);
 
 	// Set water pixel shader buffer
 	this->waterShaderBuffer.setPS();
 
-	// Update water shader
-	this->shader.update(renderer, this->mesh.getWorldMatrix());
-
 	// Set shader to render mesh with
-	this->shader.set();
-	this->mesh.draw();
+	this->meshShader.set();
+
+	for (int z = -this->numPlaneRepetitions / 2; z <= this->numPlaneRepetitions / 2; ++z)
+	{
+		for (int x = -this->numPlaneRepetitions / 2; x <= this->numPlaneRepetitions / 2; ++x)
+		{
+			// Update water shader
+			this->meshShader.update(renderer, this->mesh.getWorldMatrix() *
+				XMMatrixTranslation(x * planeLength, 0.0, z * planeLength));
+
+			// Draw
+			this->mesh.draw();
+		}
+	}
 }
