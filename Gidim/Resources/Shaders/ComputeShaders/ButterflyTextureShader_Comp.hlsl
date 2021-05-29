@@ -26,17 +26,45 @@ complex createComplex(float value1, float value2)
 }
 
 // Preprocessor directives for creating an array with reversed bits at each index
-#define R2(n) n, n + 2*64, n + 1*64, n + 3*64
+/*#define R2(n) n, n + 2*64, n + 1*64, n + 3*64
 #define R4(n) R2(n), R2(n + 2*16), R2(n + 1*16), R2(n + 3*16)
 #define R6(n) R4(n), R4(n + 2*4 ), R4(n + 1*4 ), R4(n + 3*4 )
-#define REVERSE_BITS R6(0), R6(2), R6(1), R6(3)
+#define REVERSE_BITS R6(0), R6(2), R6(1), R6(3)*/
 
-// Reverse the bits. Only works for indices [0, 255] at the moment...
-int bitReversed(int i)
+// Reverse the bits
+uint bitReversed(int input)
 {
-	int lookup[256] = { REVERSE_BITS };
+	// Fast and simple lookup table
+	/*uint lookup[256] = { REVERSE_BITS };
 
-	return lookup[i];
+	return lookup[input];*/
+
+
+	// Move each individual bit
+	uint numBits = log2(gridSize);
+	uint num = uint(input);
+	uint createdNum = 0;
+
+	for (uint i = 0; i < numBits; ++i)
+	{
+		// Get current bit
+		uint mask = 1 << i;
+		uint maskResult = mask & num;
+
+		// Calculate amount to move
+		int moveAmount = ((numBits - 2 * i) - 1);
+
+		// Don't move in a negative direction
+		if (moveAmount > 0)
+			maskResult = maskResult << moveAmount;
+		else
+			maskResult = maskResult >> -moveAmount;
+
+		// Combine the new bit
+		createdNum = createdNum | maskResult;
+	}
+
+	return createdNum;
 }
 
 [numthreads(2, 16, 1)]

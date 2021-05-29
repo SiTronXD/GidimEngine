@@ -16,7 +16,7 @@ Water::Water(Renderer& renderer)
 	// Compute shaders
 	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 	spectrumInterpolatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	butterflyTextureShader(renderer, (int)(log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
+	butterflyTextureShader(renderer, (int) ceil(log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
 	butterflyOperationsShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 	invPermShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
@@ -49,7 +49,9 @@ Water::Water(Renderer& renderer)
 
 	numMultiplicationStages((int) log2(GRID_WIDTH)),
 	timer(0.0f),
-	displaceHorizontally(true)
+	displaceHorizontally(true),
+	numPlaneRepetitions(7),
+	planeLength(2.0)
 {
 	// Set textures as render textures
 	this->initialSpectrumTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
@@ -144,8 +146,6 @@ Water::Water(Renderer& renderer)
 	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);
 
 	// Scale up plane
-	this->numPlaneRepetitions = 7;
-	this->planeLength = 2.0;
 	this->mesh.setWorldMatrix(XMMatrixScaling(planeLength, planeLength, planeLength));
 }
 

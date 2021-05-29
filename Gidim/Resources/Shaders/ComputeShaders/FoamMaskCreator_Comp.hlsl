@@ -31,8 +31,9 @@ uint2 repPos(uint2 pos)
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
+	// Increase bias for larger grid resolutions
+	const float foamBias = 0.5 * ((gridWidth - 256.0) / 768.0 + 1.0); 
 	const float foamScale = 1.0;
-	const float foamBias = 0.5;
 
 	uint2 pos = dispatchThreadID.xy;
 
