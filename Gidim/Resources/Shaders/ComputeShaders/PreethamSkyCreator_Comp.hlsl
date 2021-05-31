@@ -219,6 +219,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             saturate(dot(sunDir, float3(0.0, 1.0, 0.0)))
     );
 
-    // Set color in sky box
+    // Set color in skybox
     destTexture[dispatchThreadID.xyz] = float4(col, 1.0);
 }
