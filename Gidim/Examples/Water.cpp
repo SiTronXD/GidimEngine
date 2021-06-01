@@ -9,6 +9,8 @@ const float Water::HORIZONTAL_SIZE = 1000.0f * 0.85f;
 const float Water::WIND_SPEED = 40.0f;
 const float Water::AMPLITUDE = 4.0f;
 
+const int Water::NORMAL_MAP_SIZE_SCALE = 1;
+
 Water::Water(Renderer& renderer)
 	: renderer(renderer), meshData(DefaultMesh::PLANE, GRID_WIDTH, GRID_HEIGHT),
 	mesh(renderer, meshData), meshShader(renderer), skybox(nullptr), reflectedCubeMap(nullptr),
@@ -20,7 +22,7 @@ Water::Water(Renderer& renderer)
 	butterflyOperationsShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 	invPermShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
-	displacementToNormalShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	displacementToNormalShader(renderer, GRID_WIDTH / 16 * NORMAL_MAP_SIZE_SCALE, GRID_HEIGHT / 16 * NORMAL_MAP_SIZE_SCALE),
 	foamMaskShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
 	// Render textures
@@ -60,7 +62,7 @@ Water::Water(Renderer& renderer)
 	this->finalSpectrumTextureZ.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 	this->butterflyTexture.createAsRenderTexture(this->numMultiplicationStages, GRID_HEIGHT);
 	this->displacementTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
-	this->normalMapTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
+	this->normalMapTexture.createAsRenderTexture(GRID_WIDTH * NORMAL_MAP_SIZE_SCALE, GRID_HEIGHT * NORMAL_MAP_SIZE_SCALE);
 	this->foamMaskTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
 
 	this->foamTexture.createFromFile("Resources/Textures/OceanFoam.png");
@@ -125,6 +127,8 @@ Water::Water(Renderer& renderer)
 	// Update heightmap to normal map shader buffer
 	this->htnb.gridWidth = GRID_WIDTH;
 	this->htnb.gridHeight = GRID_HEIGHT;
+	this->htnb.normalMapWidth = GRID_WIDTH * NORMAL_MAP_SIZE_SCALE;
+	this->htnb.normalMapHeight = GRID_HEIGHT * NORMAL_MAP_SIZE_SCALE;
 	this->htnb.unitLength = (float)GRID_WIDTH / (float)HORIZONTAL_SIZE;
 	this->disToNormShaderBuffer.update(&this->htnb);
 

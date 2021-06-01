@@ -17,6 +17,8 @@ private:
 	static const float WIND_SPEED;
 	static const float AMPLITUDE;
 
+	static const int NORMAL_MAP_SIZE_SCALE;
+
 	struct SpectrumCreatorBuffer
 	{
 		int gridWidth;
@@ -64,8 +66,11 @@ private:
 	{
 		int gridWidth;
 		int gridHeight;
+		int normalMapWidth;
+		int normalMapHeight;
 		float unitLength;
-		int padding;
+
+		int padding[3];
 	} htnb{};
 
 	struct FoamMaskBuffer
