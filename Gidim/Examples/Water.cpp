@@ -6,8 +6,8 @@ const int Water::GRID_HEIGHT = 256;
 const float Water::WIND_DIR_X = 1.0f;
 const float Water::WIND_DIR_Y = 1.0f;
 const float Water::HORIZONTAL_SIZE = 1000.0f * 0.85f;
-const float Water::WIND_SPEED = 40.0f;
-const float Water::AMPLITUDE = 4.0f;
+const float Water::WIND_SPEED = 30.0f;
+const float Water::AMPLITUDE = 3.0f;
 
 const int Water::NORMAL_MAP_SIZE_SCALE = 1;
 
@@ -33,7 +33,7 @@ Water::Water(Renderer& renderer)
 	butterflyTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
 	displacementTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT, TextureEdgeSampling::REPEAT),
 
-	normalMapTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM),
+	normalMapTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM, TextureEdgeSampling::REPEAT),
 	foamMaskTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R16G16B16A16_UNORM, TextureEdgeSampling::REPEAT),
 	foamTexture(renderer, TextureFilter::BILINEAR, TextureFormat::R8G8B8A8_UNORM, TextureEdgeSampling::REPEAT),
 
@@ -124,12 +124,12 @@ Water::Water(Renderer& renderer)
 	this->invPermShader.addRenderTexture(this->displacementTexture);
 	this->invPermShader.addShaderBuffer(this->invPermShaderBuffer);
 
-	// Update heightmap to normal map shader buffer
+	// Update displacementmap to normalmap shader buffer
 	this->htnb.gridWidth = GRID_WIDTH;
 	this->htnb.gridHeight = GRID_HEIGHT;
 	this->htnb.normalMapWidth = GRID_WIDTH * NORMAL_MAP_SIZE_SCALE;
 	this->htnb.normalMapHeight = GRID_HEIGHT * NORMAL_MAP_SIZE_SCALE;
-	this->htnb.unitLength = (float)GRID_WIDTH / (float)HORIZONTAL_SIZE;
+	this->htnb.unitLength = (float)GRID_WIDTH / (float)HORIZONTAL_SIZE * 0.8f;
 	this->disToNormShaderBuffer.update(&this->htnb);
 
 	// Heightmap to normal map shader
@@ -199,7 +199,7 @@ Water::~Water() {}
 void Water::draw()
 {
 	// Animate
-	this->timer += Time::getDeltaTime() * 2.0f;
+	this->timer += Time::getDeltaTime() * 3.0f;
 
 	// Clear displacement textures
 	this->displacementTexture.clearRenderTexture(0.0f, 0.0f, 0.0f, 1.0f);
@@ -230,13 +230,14 @@ void Water::draw()
 	// Create foam mask from displacement map
 	this->foamMaskShader.run();
 
-	// Set textures for regular pixel shader
+	// Set texture for vertex shader
 	this->displacementTexture.setVS(0);
+
+	// Set textures for pixel shader
 	this->normalMapTexture.setPS(0);
 	this->foamMaskTexture.setPS(1);
 	this->foamTexture.setPS(2);
-	if (this->reflectedCubeMap != nullptr)
-		this->reflectedCubeMap->setPS(3);
+	this->reflectedCubeMap->setPS(3);
 
 	// Update water pixel shader buffer
 	XMFLOAT3 camPos = renderer.getCameraPosition();
@@ -250,11 +251,12 @@ void Water::draw()
 	// Set shader to render mesh with
 	this->meshShader.set();
 
+	// Repeat mesh
 	for (int z = -this->numPlaneRepetitions / 2; z <= this->numPlaneRepetitions / 2; ++z)
 	{
 		for (int x = -this->numPlaneRepetitions / 2; x <= this->numPlaneRepetitions / 2; ++x)
 		{
-			// Update water shader
+			// Update water shader matrices
 			this->meshShader.update(renderer, this->mesh.getWorldMatrix() *
 				XMMatrixTranslation(x * planeLength, 0.0, z * planeLength));
 

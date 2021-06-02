@@ -66,10 +66,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
 
-	float2 k = float2(
-		2.0 * _PI * pos.x / horizontalSize, 
-		2.0 * _PI * pos.y / horizontalSize
-	);
+	float2 k = pos * 2.0 * _PI / horizontalSize;
 	float kMag = length(k);
 	kMag = max(0.0001, kMag); // Avoid division by 0
 	float w = sqrt(_G * kMag);
@@ -77,7 +74,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float sinWT = sin(w * time);
 
 	complex expIWT = createComplex(cosWT, sinWT);
-	complex expMinusIWT = createComplex(cosWT, -sinWT); // Negative angle
+	complex expMinusIWT = createComplex(cosWT, -sinWT);
 	complex hKT_Y = complexAdd(complexMul(h0K, expIWT), complexMul(h0MinusKConj, expMinusIWT));
 	complex hKT_X = complexMul(createComplex(0.0, -k.x / kMag), hKT_Y);
 	complex hKT_Z = complexMul(createComplex(0.0, -k.y / kMag), hKT_Y);

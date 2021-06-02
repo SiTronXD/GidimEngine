@@ -64,12 +64,14 @@ void horizontalButterfly(uint2 threadPos)
 	float4 _p = spectrumTexture[uint2(data.z, threadPos.y)];
 	float4 _q = spectrumTexture[uint2(data.w, threadPos.y)];
 
+	// Read RG, write BA
 	if (pingPong == 0)
 	{
 		complex h = butterflyOperation(_p.rg, _q.rg, _w);
 
 		spectrumTexture[threadPos] = float4(spectrumTexture[threadPos].rg, h.realNum, h.imgNum);
 	}
+	// Read BA, write RG
 	else if (pingPong == 1)
 	{
 		complex h = butterflyOperation(_p.ba, _q.ba, _w);
@@ -85,12 +87,14 @@ void verticalButterfly(uint2 threadPos)
 	float4 _p = spectrumTexture[uint2(threadPos.x, data.z)];
 	float4 _q = spectrumTexture[uint2(threadPos.x, data.w)];
 
+	// Read RG, write BA
 	if (pingPong == 0)
 	{
 		complex h = butterflyOperation(_p.rg, _q.rg, _w);
 
 		spectrumTexture[threadPos] = float4(spectrumTexture[threadPos].rg, h.realNum, h.imgNum);
 	}
+	// Read BA, write RG
 	else if (pingPong == 1)
 	{
 		complex h = butterflyOperation(_p.ba, _q.ba, _w);

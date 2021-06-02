@@ -81,9 +81,9 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float invPermScalar = curPerm / (float(gridSize) * float(gridSize));
 
 	displacementTexture[pos] = float4(
-		componentX * invPermScalar,
-		componentY * invPermScalar,
-		componentZ * invPermScalar,
-		1.0
-	);
+		componentX,
+		componentY,
+		componentZ,
+		0.0
+	) * invPermScalar;
 }

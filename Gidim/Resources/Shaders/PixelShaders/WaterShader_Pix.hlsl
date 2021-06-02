@@ -54,7 +54,7 @@ float calcFresnel(float3 viewDir, float3 normal)
 
 float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float camToPosDist)
 {
-	const float specGloss = 64.0;// 18.0;
+	const float specGloss = 96.0;
 	const float specIntensity = 0.75;
 
 	// Reflect

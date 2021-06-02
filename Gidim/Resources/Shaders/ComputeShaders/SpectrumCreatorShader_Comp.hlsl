@@ -67,10 +67,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float2 pos = dispatchThreadID.xy - (float2(gridWidth, gridHeight) * 0.5);
 	
 	// Variables required for the pillips spectrum
-	float2 k = float2(
-		2.0 * _PI * pos.x / horizontalSize,
-		2.0 * _PI * pos.y / horizontalSize
-	);
+	float2 k = pos * 2.0 * _PI / horizontalSize;
 	float L_ = windSpeed * windSpeed / _G;
 	float kMag = length(k);
 	float kMagSqrd = kMag * kMag;
@@ -78,15 +75,15 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	// Phillips spectrum
 	// abs(dot(normalize(-k), windDir)) == abs(dot(normalize(k), windDir))
-	float spec = amplitude * exp(-1.0 / (kMagSqrd * L_ * L_)) /
+	float phillSpec = amplitude * exp(-1.0 / (kMagSqrd * L_ * L_)) /
 		(kMagSqrd * kMagSqrd) *
 		pow(abs(dot(normalize(k), normalize(windDirection))), waveDirectionTendency);
 
 	// Suppress small waves
-	spec *= exp(-kMagSqrd * pow(horizontalSize / 2000.0, 2.0));
+	//phillSpec *= exp(-kMagSqrd * pow(horizontalSize / 2000.0, 2.0));
 
 	// Square root and clamp
-	spec = clamp(sqrt(spec * 0.5), -4000.0, 4000.0);
+	phillSpec = clamp(sqrt(phillSpec * 0.5), -4000.0, 4000.0);
 
 
 	// Get 4 random numbers
@@ -96,5 +93,5 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	// G: imaginary component of value 1
 	// B: real component of value 2
 	// A: imaginary component of value 2
-	spectrumTexture[dispatchThreadID.xy] = rndGaussNums * spec;
+	spectrumTexture[dispatchThreadID.xy] = rndGaussNums * phillSpec;
 }
