@@ -6,6 +6,7 @@
 * Basic ocean shading
 * Procedural skybox using the Preetham sky model
 * Rendering and reflections with cube maps
+* Abstraction of compute shaders
 * Ability to generate normalmap from displacementmap or heightmap
 
 # Screenshots
