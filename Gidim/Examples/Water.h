@@ -77,8 +77,18 @@ private:
 	{
 		int gridWidth;
 		int gridHeight;
-		int padding[2];
+
+		float lambdaDispScale;
+
+		int padding;
 	} fmb{};
+
+	struct WaterVertexBuffer 
+	{
+		float lambdaDispScale;
+
+		float padding[3];
+	} wvb;
 
 	struct WaterBuffer
 	{
@@ -127,6 +137,7 @@ private:
 	ShaderBuffer disToNormShaderBuffer;
 	ShaderBuffer foamMaskShaderBuffer;
 
+	ShaderBuffer waterVertexShaderBuffer;
 	ShaderBuffer waterShaderBuffer;
 
 	Skybox* skybox;
@@ -136,6 +147,7 @@ private:
 	int numPlaneRepetitions;
 
 	float planeLength;
+	float lambdaDisplacementScale;
 	float timer;
 
 	bool displaceHorizontally;

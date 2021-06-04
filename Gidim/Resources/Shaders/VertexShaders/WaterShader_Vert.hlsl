@@ -1,10 +1,17 @@
 
-cbuffer MatrixBuffer
+cbuffer MatrixBuffer : register(b0)
 {
 	matrix projectionMatrix;
 	matrix viewMatrix;
 	matrix worldMatrix;
 };
+
+cbuffer WaterVertexBuffer : register(b1)
+{
+	float lambdaDispScale;
+
+	float padding[3];
+}
 
 struct Input
 {
@@ -31,7 +38,7 @@ Output main(Input input)
 		displacementSampler,
 		input.uv,
 		0
-	).rgb * 0.15;
+	).rgb * lambdaDispScale;
 
 	// Position
 	float4 p = float4(input.position.xyz, 1.0);

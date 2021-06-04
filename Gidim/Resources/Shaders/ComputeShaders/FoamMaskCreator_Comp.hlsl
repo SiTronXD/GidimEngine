@@ -9,7 +9,9 @@ cbuffer FoamMaskBuffer : register(b0)
 	int gridWidth;
 	int gridHeight;
 
-	int padding[2];
+	float lambdaDispScale;
+
+	int padding;
 };
 
 RWTexture2D<float4> displacementTexture : register(u0);
@@ -25,8 +27,7 @@ uint2 repPos(uint2 pos)
 	return pos;
 }
 
-#define LAMBDA 1.2
-#define U_SCALE 8.0
+#define U_SCALE 75.0
 
 [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
@@ -39,9 +40,9 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	// Estimate partial derivatives
 	float2 dX =	(displacementTexture[repPos(pos + uint2(-1, 0))].rb -
-				displacementTexture[repPos(pos + uint2(1, 0))].rb) * 0.5 * LAMBDA * U_SCALE;
+				displacementTexture[repPos(pos + uint2(1, 0))].rb) * 0.5 * lambdaDispScale * U_SCALE;
 	float2 dY = (displacementTexture[repPos(pos + uint2(0, -1))].rb -
-				displacementTexture[repPos(pos + uint2(0, 1))].rb) * 0.5 * LAMBDA * U_SCALE;
+				displacementTexture[repPos(pos + uint2(0, 1))].rb) * 0.5 * lambdaDispScale * U_SCALE;
 
 	// Calculate the determinant of the jacobian matrix
 	float jacobianDet = (1.0 + dX.x) * (1.0 + dY.y) - dX.y * dY.x;

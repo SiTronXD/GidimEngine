@@ -47,13 +47,15 @@ Water::Water(Renderer& renderer)
 	disToNormShaderBuffer(renderer, sizeof(HeightToNormalBuffer)),
 	foamMaskShaderBuffer(renderer, sizeof(FoamMaskBuffer)),
 
+	waterVertexShaderBuffer(renderer, sizeof(WaterVertexBuffer)),
 	waterShaderBuffer(renderer, sizeof(WaterBuffer)),
 
 	numMultiplicationStages((int) log2(GRID_WIDTH)),
 	timer(0.0f),
 	displaceHorizontally(true),
 	numPlaneRepetitions(7),
-	planeLength(2.0)
+	planeLength(2.0),
+	lambdaDisplacementScale(0.14f)
 {
 	// Set textures as render textures
 	this->initialSpectrumTexture.createAsRenderTexture(GRID_WIDTH, GRID_HEIGHT);
@@ -141,6 +143,7 @@ Water::Water(Renderer& renderer)
 	// Update foam mask buffer
 	this->fmb.gridWidth = GRID_WIDTH;
 	this->fmb.gridHeight = GRID_HEIGHT;
+	this->fmb.lambdaDispScale = this->lambdaDisplacementScale;
 	this->foamMaskShaderBuffer.update(&this->fmb);
 
 	// Foam mask shader
@@ -148,6 +151,11 @@ Water::Water(Renderer& renderer)
 	this->foamMaskShader.addRenderTexture(this->displacementTexture);
 	this->foamMaskShader.addRenderTexture(this->foamMaskTexture);
 	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);
+
+	// Update water vertex shader buffer
+	this->wvb.lambdaDispScale = this->lambdaDisplacementScale;
+	this->waterVertexShaderBuffer.update(&this->wvb);
+
 
 	// Scale up plane
 	this->mesh.setWorldMatrix(XMMatrixScaling(planeLength, planeLength, planeLength));
@@ -229,6 +237,9 @@ void Water::draw()
 
 	// Create foam mask from displacement map
 	this->foamMaskShader.run();
+
+	// Set water vertex shader buffer
+	this->waterVertexShaderBuffer.setVS(1);
 
 	// Set texture for vertex shader
 	this->displacementTexture.setVS(0);

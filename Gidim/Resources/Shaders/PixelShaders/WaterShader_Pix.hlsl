@@ -54,6 +54,8 @@ float calcFresnel(float3 viewDir, float3 normal)
 
 float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float camToPosDist)
 {
+	// -- Phong specular --
+
 	const float specGloss = 128.0;
 	const float specIntensity = 0.75;
 
@@ -69,6 +71,21 @@ float calcSpecular(float3 sunDir, float3 normal, float3 viewDir, float camToPosD
 	);
 
 	return pow(specular, specGloss * distFalloff) * specIntensity;
+
+
+	// -- Blinn-phong specular --
+
+	/*const float specularPower = 1.5f;
+	const float specularHardness = 64.0f;
+
+	float3 H = normalize(-sunDir - viewDir);
+
+	//Intensity of the specular light
+	float NdotH = dot(normal, H);
+	float intensity = pow(saturate(NdotH), specularHardness);
+
+	//Sum up the specular light factoring
+	return intensity * float3(1.0, 1.0, 1.0) * specularPower / camToPosDist;*/
 }
 
 float4 main(Input input) : SV_TARGET
