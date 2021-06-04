@@ -1,7 +1,7 @@
 ![github-small](Gidim/Resources/Textures/Showcase1.png)
 
 # Features
-* Automatic mesh construction of different geometric shapes (triangle, tetrahedron, cube, plane and sphere)
+* Automatic mesh construction of different predetermined geometric shapes (triangle, tetrahedron, cube, plane and sphere)
 * Procedural ocean wave animations through GPU-based IFFTs
 * Basic ocean shading
 * Procedural skybox using the Preetham sky model
