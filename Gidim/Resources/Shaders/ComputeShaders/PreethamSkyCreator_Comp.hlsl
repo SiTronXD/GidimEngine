@@ -211,12 +211,12 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     // Color
     float3 col = getSkyColor(viewDir, sunDir, inputTurbidity);
 
-    // "Sun"
+    // "Sun color"
+    float sunDotUp = saturate(dot(sunDir, float3(0.0, 1.0, 0.0)));
     col = lerp(
         col, 
-        float3(1.0, 1.0, 1.0), 
-        smoothstep(0.993, 1.0, saturate(dot(sunDir, viewDir))) * 
-            saturate(dot(sunDir, float3(0.0, 1.0, 0.0)))
+        float3(1.0, 1.0, 1.0),
+        smoothstep(0.993, 1.0, saturate(dot(sunDir, viewDir))) * sunDotUp
     );
 
     // Set color in skybox
