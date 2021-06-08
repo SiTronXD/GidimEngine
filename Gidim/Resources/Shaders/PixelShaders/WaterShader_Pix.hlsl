@@ -107,7 +107,7 @@ float4 main(Input input) : SV_TARGET
 	float3 reflectedColor = skyboxTexture.Sample(
 		textureSampler, 
 		reflect(viewDir, normal)
-	);
+	).rgb;
 
 	// "Fake" refracted color
 	float3 refractedColor = float3(0.0235, 0.1882, 0.251);
@@ -129,10 +129,16 @@ float4 main(Input input) : SV_TARGET
 	float foamMask = foamMaskTexture.Sample(textureSampler, input.uv).r;
 	float3 foamColor = foamTexture.Sample(textureSampler, input.uv).rgb;
 
+	// Get sun color from the sky
+	float3 sunColor = skyboxTexture.Sample(
+		textureSampler,
+		sunDirection
+	).rgb;
+
 	// Color
 	float3 col = lerp(refractedColor, reflectedColor, fresnel); // Reflection/refraction
 	col = lerp(col, foamColor, foamMask); // Foam
-	col += calcSpecular(-sunDirection, normal, viewDir, camToPosDist); // Specular
+	col += sunColor * calcSpecular(-sunDirection, normal, viewDir, camToPosDist); // Specular
 
 	return float4(col, 1.0);
 }
