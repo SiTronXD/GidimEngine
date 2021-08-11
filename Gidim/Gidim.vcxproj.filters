@@ -61,7 +61,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>Gidim</Filter>
     </ClCompile>
-    <ClCompile Include="Examples\CameraController.cpp">
+    <ClCompile Include="Examples\GameObjects\CameraController.cpp">
       <Filter>Gidim</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Mesh.cpp">
@@ -124,7 +124,7 @@
     <ClCompile Include="ShaderHandlers\WaterShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
-    <ClCompile Include="Examples\Water.cpp">
+    <ClCompile Include="Examples\GameObjects\Water.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp">
@@ -133,15 +133,18 @@
     <ClCompile Include="pch.cpp">
       <Filter>Gidim</Filter>
     </ClCompile>
-    <ClCompile Include="Examples\Skybox.cpp">
+    <ClCompile Include="Examples\GameObjects\Skybox.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\CubeMap.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Examples\RunnableExample.cpp" />
+    <ClCompile Include="Examples\BoidsExample.cpp" />
+    <ClCompile Include="Examples\GameObjects\Boid.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Examples\CameraController.h">
+    <ClInclude Include="Examples\GameObjects\CameraController.h">
       <Filter>Gidim</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Mesh.h">
@@ -207,7 +210,7 @@
     <ClInclude Include="Engine\Dev\Helpers.h">
       <Filter>Engine\Dev</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\Water.h">
+    <ClInclude Include="Examples\GameObjects\Water.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\ShaderBuffer.h">
@@ -216,12 +219,15 @@
     <ClInclude Include="pch.h">
       <Filter>Gidim</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\Skybox.h">
+    <ClInclude Include="Examples\GameObjects\Skybox.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\CubeMap.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Examples\RunnableExample.h" />
+    <ClInclude Include="Examples\BoidsExample.h" />
+    <ClInclude Include="Examples\GameObjects\Boid.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">

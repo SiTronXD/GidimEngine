@@ -1,7 +1,7 @@
 #include "CameraController.h"
-#include "../Engine/Application/Input.h"
-#include "../Engine/Application/Time.h"
-#include "../Engine/Dev/Log.h"
+#include "../../Engine/Application/Input.h"
+#include "../../Engine/Application/Time.h"
+#include "../../Engine/Dev/Log.h"
 
 CameraController::CameraController(int windowWidth, int windowHeight)
     : camera(

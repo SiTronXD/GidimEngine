@@ -1,4 +1,5 @@
-#include "WaterRendering.h"
+#include "../pch.h"
+#include "BoidsExample.h"
 #include "../Engine/Application/Window.h"
 #include "../Engine/Graphics/Renderer.h"
 #include "../Engine/Graphics/Texture.h"
@@ -8,16 +9,17 @@
 #include "../ShaderHandlers/SkyboxShader.h"
 #include "GameObjects/CameraController.h"
 #include "GameObjects/Skybox.h"
-#include "GameObjects/Water.h"
+#include "GameObjects/Boid.h"
 
-WaterRendering::WaterRendering()
-	: RunnableExample()
-{ }
+BoidsExample::BoidsExample()
+{
+}
 
-WaterRendering::~WaterRendering()
-{ }
+BoidsExample::~BoidsExample()
+{
+}
 
-void WaterRendering::run()
+void BoidsExample::run()
 {
 	// Create window
 	int windowWidth = 1280;
@@ -34,13 +36,11 @@ void WaterRendering::run()
 	Time time;
 
 	Skybox skybox(renderer);
-	Water water(renderer);
-	water.setSkybox(skybox);
 
 	// Update once before starting loop
 	window.update();
 
-	bool isWireframe = false;
+	Boid boid(renderer);
 
 	// Main game loop
 	while (window.isRunning())
@@ -64,18 +64,6 @@ void WaterRendering::run()
 			Log::print("FPS: " + std::to_string(fps) + " (" + std::to_string(1000.0f / fps) + " ms)");
 		}
 
-		if (Input::isKeyJustPressed(Keys::R))
-		{
-			isWireframe = !isWireframe;
-
-			renderer.setWireframe(isWireframe);
-		}
-
-		if (Input::isKeyJustPressed(Keys::T))
-		{
-			water.toggleHorizontalDisplacement();
-		}
-
 		/////////////////////////////////////////////////////////////////////////
 
 		// Prepare for rendering frame
@@ -93,7 +81,7 @@ void WaterRendering::run()
 
 		// Render meshes
 		skybox.draw();
-		water.draw();
+		boid.draw();
 
 		// Present frame
 		renderer.endFrame();

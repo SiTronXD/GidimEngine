@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../Engine/Graphics/Mesh.h"
-#include "../Engine/Graphics/ComputeShader.h"
-#include "../Engine/Graphics/ShaderBuffer.h"
-#include "../ShaderHandlers/WaterShader.h"
+#include "../../Engine/Graphics/Mesh.h"
+#include "../../Engine/Graphics/ComputeShader.h"
+#include "../../Engine/Graphics/ShaderBuffer.h"
+#include "../../ShaderHandlers/WaterShader.h"
 #include "Skybox.h"
 
 class Water

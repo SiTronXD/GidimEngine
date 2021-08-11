@@ -1,5 +1,5 @@
 #include "Skybox.h"
-#include "../Engine/Application/Time.h"
+#include "../../Engine/Application/Time.h"
 
 Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
@@ -41,7 +41,7 @@ void Skybox::draw()
 	// Render sky box
 	this->preethamCreatorShader.run();
 
-	// Set sky box
+	// Set sky box to use in pixel shader
 	this->skyCubeMap.setPS();
 
 	// Update shader

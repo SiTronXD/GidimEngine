@@ -155,9 +155,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Examples\GameObjects\Boid.cpp" />
+    <ClCompile Include="Examples\BoidsExample.cpp" />
     <ClCompile Include="Engine\Graphics\CubeMap.cpp" />
     <ClCompile Include="Engine\Graphics\Camera.cpp" />
-    <ClCompile Include="Examples\CameraController.cpp" />
+    <ClCompile Include="Examples\GameObjects\CameraController.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
@@ -168,6 +170,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Examples\RunnableExample.cpp" />
     <ClCompile Include="ShaderHandlers\ColorShader.cpp" />
     <ClCompile Include="Engine\Graphics\ComputeShader.cpp" />
     <ClCompile Include="Engine\Graphics\DirectX11\SDXBuffer.cpp" />
@@ -186,17 +189,20 @@
     <ClCompile Include="Engine\Graphics\Texture.cpp" />
     <ClCompile Include="ShaderHandlers\TextureShader.cpp" />
     <ClCompile Include="Engine\Application\Time.cpp" />
-    <ClCompile Include="Examples\Water.cpp" />
+    <ClCompile Include="Examples\GameObjects\Water.cpp" />
     <ClCompile Include="Examples\WaterRendering.cpp" />
     <ClCompile Include="ShaderHandlers\WaterShader.cpp" />
     <ClCompile Include="Engine\Application\Window.cpp" />
-    <ClCompile Include="Examples\Skybox.cpp" />
+    <ClCompile Include="Examples\GameObjects\Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Examples\GameObjects\Boid.h" />
+    <ClInclude Include="Examples\BoidsExample.h" />
     <ClInclude Include="Engine\Graphics\CubeMap.h" />
     <ClInclude Include="Engine\Graphics\Camera.h" />
-    <ClInclude Include="Examples\CameraController.h" />
+    <ClInclude Include="Examples\GameObjects\CameraController.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Examples\RunnableExample.h" />
     <ClInclude Include="ShaderHandlers\ColorShader.h" />
     <ClInclude Include="Engine\Graphics\ComputeShader.h" />
     <ClInclude Include="Engine\Graphics\DirectX11\SDXBuffer.h" />
@@ -215,11 +221,11 @@
     <ClInclude Include="Engine\Graphics\Texture.h" />
     <ClInclude Include="ShaderHandlers\TextureShader.h" />
     <ClInclude Include="Engine\Application\Time.h" />
-    <ClInclude Include="Examples\Water.h" />
+    <ClInclude Include="Examples\GameObjects\Water.h" />
     <ClInclude Include="Examples\WaterRendering.h" />
     <ClInclude Include="ShaderHandlers\WaterShader.h" />
     <ClInclude Include="Engine\Application\Window.h" />
-    <ClInclude Include="Examples\Skybox.h" />
+    <ClInclude Include="Examples\GameObjects\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\ComputeShaders\ButterflyOperationsShader_Comp.hlsl">

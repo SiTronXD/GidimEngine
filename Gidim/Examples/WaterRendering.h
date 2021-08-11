@@ -1,10 +1,12 @@
 #pragma once
 
-class WaterRendering
+#include "RunnableExample.h"
+
+class WaterRendering : public RunnableExample
 {
 public:
 	WaterRendering();
 	~WaterRendering();
 
-	void run();
+	void run() override;
 };
