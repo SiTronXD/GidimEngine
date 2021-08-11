@@ -82,7 +82,7 @@ void BoidsExample::run()
 		renderer.clear(clearColor);
 
 		// Render meshes
-		skybox.draw();
+		//skybox.draw();
 		boidHandler.drawBoids();
 
 		// Present frame

@@ -1,6 +1,22 @@
 #include "../../pch.h"
 #include "BoidHandler.h"
 
+unsigned int BoidHandler::getWangHash(unsigned int seed)
+{
+	seed = ((unsigned int) (seed ^ 61)) ^ ((unsigned int)(seed >> 16));
+	seed *= 9;
+	seed = seed ^ (seed >> 4);
+	seed *= (unsigned int) 0x27d4eb2d;
+	seed = seed ^ (seed >> 15);
+
+	return seed;
+}
+
+float BoidHandler::getWangHashFloat(unsigned int state)
+{
+	return this->getWangHash(state) / 4294967296.0;
+}
+
 void BoidHandler::createGPUBuffer()
 {
 	ID3D11Device* device = renderer.getDevice();
@@ -8,70 +24,53 @@ void BoidHandler::createGPUBuffer()
 	// Buffer
 	D3D11_BUFFER_DESC descGPUBuffer;
 	ZeroMemory(&descGPUBuffer, sizeof(descGPUBuffer));
-	descGPUBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	descGPUBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
 	descGPUBuffer.ByteWidth = sizeof(float) * 3 * NUM_BOIDS;
 	descGPUBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	descGPUBuffer.StructureByteStride = sizeof(float) * 3;
 	HRESULT result = device->CreateBuffer(&descGPUBuffer, NULL, &this->boidsBuffer);
 	if (FAILED(result))
 	{
-		Log::resultFailed("Failed creating dest gpu buffer.", result);
+		Log::resultFailed("Failed creating boids buffer.", result);
 	}
 
-
+	// Get description from buffer
 	D3D11_BUFFER_DESC descBuf;
 	ZeroMemory(&descBuf, sizeof(descBuf));
 	this->boidsBuffer->GetDesc(&descBuf);
+
 
 	// Buffer UAV
 	D3D11_UNORDERED_ACCESS_VIEW_DESC descView;
 	ZeroMemory(&descView, sizeof(descView));
 	descView.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	descView.Buffer.FirstElement = 0;
 	descView.Format = DXGI_FORMAT_UNKNOWN;
+	descView.Buffer.FirstElement = 0;
 	descView.Buffer.NumElements = descBuf.ByteWidth / descBuf.StructureByteStride;
 	result = device->CreateUnorderedAccessView(this->boidsBuffer, &descView, &this->boidsBufferUAV);
 	if (FAILED(result))
 	{
-		Log::resultFailed("Failed creating dest gpu buffer view.", result);
+		Log::resultFailed("Failed creating boids buffer UAV.", result);
 	}
-}
 
-BoidHandler::BoidHandler(Renderer& renderer)
-	: renderer(renderer),
-	boidsLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1)
-{
-	// Add all boids
-	for (int i = 0; i < this->NUM_BOIDS; ++i)
+
+	// Buffer SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC descSRV;
+	ZeroMemory(&descSRV, sizeof(descSRV));
+	descSRV.Format = DXGI_FORMAT_UNKNOWN;
+	descSRV.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	descSRV.Buffer.FirstElement = 0;
+	descSRV.Buffer.NumElements = descBuf.ByteWidth / descBuf.StructureByteStride;
+
+	result = device->CreateShaderResourceView(this->boidsBuffer, &descSRV, &this->boidsBufferSRV);
+	if (FAILED(result))
 	{
-		this->boids.push_back(new Boid(renderer));
+		Log::resultFailed("Failed creating boids buffer SRV.", result);
 	}
-
-	// Prepare buffer
-	this->createGPUBuffer();
-
-	// Add buffer to compute shader
-	this->boidsLogicShader.addUAV(this->boidsBufferUAV);
 }
 
-BoidHandler::~BoidHandler()
+void BoidHandler::debugBoidsBuffer()
 {
-	for (int i = this->boids.size() - 1; i >= 0; --i)
-	{
-		delete this->boids[i];
-
-		this->boids.erase(this->boids.begin() + i);
-	}
-
-	S_RELEASE(this->boidsBuffer);
-	S_RELEASE(this->boidsBufferUAV);
-}
-
-void BoidHandler::updateBoids()
-{
-	// Run boids logic shader
-	this->boidsLogicShader.run();
-
 	// --- Read buffer from GPU to CPU
 	ID3D11Device* device = this->renderer.getDevice();
 	ID3D11DeviceContext* deviceContext = this->renderer.getDeviceContext();
@@ -100,9 +99,9 @@ void BoidHandler::updateBoids()
 		}
 
 		// Use data
-		Log::print("X: " + 
+		Log::print("X: " +
 			std::to_string(
-				((float*) mappedResource.pData)[0]
+				((float*)mappedResource.pData)[0]
 			)
 		);
 
@@ -112,10 +111,70 @@ void BoidHandler::updateBoids()
 	}
 }
 
+BoidHandler::BoidHandler(Renderer& renderer)
+	: renderer(renderer),
+	boidsBuffer(nullptr),
+	boidsBufferUAV(nullptr),
+	boidsBufferSRV(nullptr),
+	boidsLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
+	boidIDShaderBuffer(renderer, sizeof(BoidIDBuffer))
+{
+	// Add all boids
+	for (int i = 0; i < this->NUM_BOIDS; ++i)
+	{
+		this->boids.push_back(new Boid(renderer));
+		this->boidColors.push_back(
+			{ 
+				this->getWangHashFloat(i * 3 + 0),
+				this->getWangHashFloat(i * 3 + 1),
+				this->getWangHashFloat(i * 3 + 2),
+			}
+		);
+	}
+
+	// Prepare buffer
+	this->createGPUBuffer();
+
+	// Add buffer to compute shader
+	this->boidsLogicShader.addUAV(this->boidsBufferUAV);
+}
+
+BoidHandler::~BoidHandler()
+{
+	for (int i = this->boids.size() - 1; i >= 0; --i)
+	{
+		delete this->boids[i];
+
+		this->boids.erase(this->boids.begin() + i);
+	}
+
+	S_RELEASE(this->boidsBuffer);
+	S_RELEASE(this->boidsBufferUAV);
+	S_RELEASE(this->boidsBufferSRV);
+}
+
+void BoidHandler::updateBoids()
+{
+	// Run boids logic shader
+	this->boidsLogicShader.run();
+
+	//this->debugBoidsBuffer();
+}
+
 void BoidHandler::drawBoids()
 {
 	for (int i = 0; i < NUM_BOIDS; ++i)
 	{
+		// Set boid buffer
+		this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidsBufferSRV);
+
+		// Update boid ID buffer
+		bib.id = i;
+		bib.color = this->boidColors[i];
+		this->boidIDShaderBuffer.update(&bib);
+		this->boidIDShaderBuffer.setVS(1);
+
+		// Draw
 		this->boids[i]->draw();
 	}
 }
