@@ -64,7 +64,7 @@ void ComputeShader::run()
 	// Set
 	this->deviceContext->CSSetShader(this->computeShader, NULL, 0);
 	this->deviceContext->CSSetUnorderedAccessViews(
-		0, this->renderTextureUAVs.size(), VECTOR_ADDRESS(this->renderTextureUAVs), NULL
+		0, this->currentUAVs.size(), VECTOR_ADDRESS(this->currentUAVs), NULL
 	);
 	this->deviceContext->CSSetConstantBuffers(
 		0, this->constantBuffers.size(), VECTOR_ADDRESS(this->constantBuffers)
@@ -79,7 +79,7 @@ void ComputeShader::run()
 
 	// Reset
 	this->deviceContext->CSSetShader(NULL, NULL, 0);
-	this->deviceContext->CSSetUnorderedAccessViews(0, NUM_MAX_RENDER_TEXTURES, uavNULL, NULL);
+	this->deviceContext->CSSetUnorderedAccessViews(0, NUM_MAX_UAV, uavNULL, NULL);
 	this->deviceContext->CSSetConstantBuffers(0, NUM_MAX_CONSTANT_BUFFERS, constantBufferNULL);
 
 	// Recreate SRVs after dispatch
@@ -98,13 +98,18 @@ void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
 		Log::error("Too many shader buffers were attempted to be added for this compute shader.");
 }
 
+void ComputeShader::addUAV(ID3D11UnorderedAccessView* uavToAdd)
+{
+	this->currentUAVs.push_back(uavToAdd);
+}
+
 void ComputeShader::addRenderTexture(Texture& texture)
 {
 	// Add render texture, if we haven't reached the maximum yet
-	if (this->renderTextures.size() < NUM_MAX_RENDER_TEXTURES)
+	if (this->renderTextures.size() < NUM_MAX_UAV)
 	{
 		this->renderTextures.push_back(&texture);
-		this->renderTextureUAVs.push_back(texture.getTextureUAV());
+		this->addUAV(texture.getTextureUAV());
 	}
 	else
 		Log::error("Too many render textures were attempted to be added for this compute shader.");
@@ -113,11 +118,11 @@ void ComputeShader::addRenderTexture(Texture& texture)
 void ComputeShader::removeRenderTextureAt(int index)
 {
 	this->renderTextures.erase(this->renderTextures.begin() + index);
-	this->renderTextureUAVs.erase(this->renderTextureUAVs.begin() + index);
+	this->currentUAVs.erase(this->currentUAVs.begin() + index);
 }
 
 void ComputeShader::removeAllRenderTextures()
 {
 	this->renderTextures.clear();
-	this->renderTextureUAVs.clear();
+	this->currentUAVs.clear();
 }

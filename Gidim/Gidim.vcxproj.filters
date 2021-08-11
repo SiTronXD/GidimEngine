@@ -142,6 +142,7 @@
     <ClCompile Include="Examples\RunnableExample.cpp" />
     <ClCompile Include="Examples\BoidsExample.cpp" />
     <ClCompile Include="Examples\GameObjects\Boid.cpp" />
+    <ClCompile Include="Examples\GameObjects\BoidHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\GameObjects\CameraController.h">
@@ -228,6 +229,7 @@
     <ClInclude Include="Examples\RunnableExample.h" />
     <ClInclude Include="Examples\BoidsExample.h" />
     <ClInclude Include="Examples\GameObjects\Boid.h" />
+    <ClInclude Include="Examples\GameObjects\BoidHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">
@@ -276,6 +278,9 @@
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\FoamMaskCreator_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\Boid_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
   </ItemGroup>

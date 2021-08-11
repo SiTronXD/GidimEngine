@@ -34,12 +34,15 @@ private:
 
 	Vertex makeVert(float _x, float _y, float _z, float _u, float _v);
 
+	void transformVertices(const XMMATRIX& meshTransform);
+
 public:
 	MeshData();
 	MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices);
 	MeshData(
 		DefaultMesh defaultMeshType, int resolutionX, int resolutionY, 
-		bool shouldInvertFaces = false
+		bool shouldInvertFaces = false, 
+		const XMMATRIX meshTransform = XMMatrixIdentity()
 	);
 
 	void createDefault(DefaultMesh defaultMeshType, int resolutionX = 0, int resolutionY = 0);

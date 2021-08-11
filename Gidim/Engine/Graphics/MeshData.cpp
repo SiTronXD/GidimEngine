@@ -214,6 +214,25 @@ Vertex MeshData::makeVert(float _x, float _y, float _z, float _u, float _v)
 	return { _x, _y, _z, _u, _v };
 }
 
+void MeshData::transformVertices(const XMMATRIX& meshTransform)
+{
+	for (int i = 0; i < this->vertices.size(); ++i)
+	{
+		// Convert to XMVECTOR and transform
+		Vertex tempVert = this->vertices[i];
+		XMVECTOR vertexPos = XMVectorSet(tempVert.x, tempVert.y, tempVert.z, 1.0f);
+		vertexPos = XMVector4Transform(vertexPos, meshTransform);
+
+		// Convert to XMFLOAT3 and apply
+		XMFLOAT3 convertedVertexPos;
+		XMStoreFloat3(&convertedVertexPos, vertexPos);
+
+		this->vertices[i].x = convertedVertexPos.x;
+		this->vertices[i].y = convertedVertexPos.y;
+		this->vertices[i].z = convertedVertexPos.z;
+	}
+}
+
 MeshData::MeshData()
 {
 }
@@ -223,12 +242,14 @@ MeshData::MeshData(std::vector<Vertex>& vertices, std::vector<int>& indices)
 { }
 
 MeshData::MeshData(DefaultMesh defaultMeshType, int resolutionX, int resolutionY, 
-	bool shouldInvertFaces)
+	bool shouldInvertFaces, const XMMATRIX meshTransform)
 {
 	this->createDefault(defaultMeshType, resolutionX, resolutionY);
 
 	if(shouldInvertFaces)
 		this->invertFaces();
+
+	this->transformVertices(meshTransform);
 }
 
 void MeshData::createDefault(DefaultMesh defaultMeshType, int resolutionX, int resolutionY)

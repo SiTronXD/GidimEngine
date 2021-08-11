@@ -33,7 +33,7 @@ void SDXBuffer::map(ID3D11DeviceContext* deviceContext,
 	);
 	if (FAILED(result))
 	{
-		Log::error("Could not map matrix buffer.");
+		Log::error("Could not map buffer.");
 	}
 }
 

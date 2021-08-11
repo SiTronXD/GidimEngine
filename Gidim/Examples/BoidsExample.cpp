@@ -9,7 +9,7 @@
 #include "../ShaderHandlers/SkyboxShader.h"
 #include "GameObjects/CameraController.h"
 #include "GameObjects/Skybox.h"
-#include "GameObjects/Boid.h"
+#include "GameObjects/BoidHandler.h"
 
 BoidsExample::BoidsExample()
 {
@@ -40,7 +40,7 @@ void BoidsExample::run()
 	// Update once before starting loop
 	window.update();
 
-	Boid boid(renderer);
+	BoidHandler boidHandler(renderer);
 
 	// Main game loop
 	while (window.isRunning())
@@ -64,6 +64,8 @@ void BoidsExample::run()
 			Log::print("FPS: " + std::to_string(fps) + " (" + std::to_string(1000.0f / fps) + " ms)");
 		}
 
+		boidHandler.updateBoids();
+
 		/////////////////////////////////////////////////////////////////////////
 
 		// Prepare for rendering frame
@@ -81,7 +83,7 @@ void BoidsExample::run()
 
 		// Render meshes
 		skybox.draw();
-		boid.draw();
+		boidHandler.drawBoids();
 
 		// Present frame
 		renderer.endFrame();
