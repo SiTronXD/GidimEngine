@@ -1,18 +1,6 @@
 #include "ComputeShader.h"
 #include "../Dev/Helpers.h"
 
-ComputeShader::ComputeShader(Renderer& renderer, 
-	int threadGroupX, int threadGroupY, int threadGroupZ)
-	: threadGroupX(threadGroupX), threadGroupY(threadGroupY), threadGroupZ(threadGroupZ),
-	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL },
-	device(renderer.getDevice()), deviceContext(renderer.getDeviceContext())
-{ }
-
-ComputeShader::~ComputeShader()
-{
-	S_RELEASE(this->computeShader);
-}
-
 bool ComputeShader::createFromFile(std::string path)
 {
 	// Deallocate old texture, if it exists
@@ -57,6 +45,20 @@ bool ComputeShader::createFromFile(std::string path)
 	}
 
 	return true;
+}
+
+ComputeShader::ComputeShader(Renderer& renderer, const std::string path,
+	int threadGroupX, int threadGroupY, int threadGroupZ)
+	: threadGroupX(threadGroupX), threadGroupY(threadGroupY), threadGroupZ(threadGroupZ),
+	computeShader(nullptr), uavNULL{ NULL }, constantBufferNULL{ NULL },
+	device(renderer.getDevice()), deviceContext(renderer.getDeviceContext())
+{ 
+	this->createFromFile(path);
+}
+
+ComputeShader::~ComputeShader()
+{
+	S_RELEASE(this->computeShader);
 }
 
 void ComputeShader::run()

@@ -29,12 +29,12 @@ private:
 	int threadGroupY;
 	int threadGroupZ;
 
+	bool createFromFile(std::string path);
+
 public:
-	ComputeShader(Renderer& renderer, int threadGroupX, int threadGroupY, 
+	ComputeShader(Renderer& renderer, const std::string path, int threadGroupX, int threadGroupY, 
 		int threadGroupZ = 1);
 	~ComputeShader();
-
-	bool createFromFile(std::string path);
 
 	void run();
 	void addRenderTexture(Texture& texture);

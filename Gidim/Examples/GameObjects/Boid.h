@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../ShaderHandlers/ColorShader.h"
+#include "../../ShaderHandlers/BoidRenderShader.h"
 #include "../../Engine/Graphics/MeshData.h"
 #include "../../Engine/Graphics/Mesh.h"
 
@@ -9,7 +9,7 @@ class Boid
 private:
 	Renderer& renderer;
 
-	ColorShader shader;
+	BoidRenderShader shader;
 
 	MeshData meshData;
 	Mesh mesh;

@@ -5,7 +5,7 @@ Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
 	shader(renderer), shaderBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
 	timer(0.0f), skyCubeMap(renderer/*, TextureFilter::NEAREST_NEIGHBOR*/), 
-	preethamCreatorShader(renderer, CUBE_FACE_WIDTH / 16, CUBE_FACE_HEIGHT / 16, 6 / 2)
+	preethamCreatorShader(renderer, "CompiledShaders/PreethamSkyCreator_Comp.cso", CUBE_FACE_WIDTH / 16, CUBE_FACE_HEIGHT / 16, 6 / 2)
 {
 	// Make the mesh big enough to not clip into another mesh
 	this->mesh.setWorldMatrix(XMMatrixScaling(1000.0f, 1000.0f, 1000.0f));
@@ -14,7 +14,6 @@ Skybox::Skybox(Renderer& renderer)
 	this->skyCubeMap.createAsRenderTexture(CUBE_FACE_WIDTH, CUBE_FACE_HEIGHT);
 
 	// Preetham creator shader
-	this->preethamCreatorShader.createFromFile("CompiledShaders/PreethamSkyCreator_Comp.cso");
 	this->preethamCreatorShader.addRenderTexture(this->skyCubeMap);
 	this->preethamCreatorShader.addShaderBuffer(this->shaderBuffer);
 

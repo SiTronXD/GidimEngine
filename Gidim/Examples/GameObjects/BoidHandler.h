@@ -12,10 +12,12 @@ private:
 
 	std::vector<Boid*> boids;
 
-	ID3D11Buffer* destDataGPUBuffer;
-	ID3D11UnorderedAccessView* destDataGPUBufferView;
+	ID3D11Buffer* boidsBuffer;
+	ID3D11UnorderedAccessView* boidsBufferUAV;
 
 	ComputeShader boidsLogicShader;
+
+	void createGPUBuffer();
 
 public:
 	BoidHandler(Renderer& renderer);

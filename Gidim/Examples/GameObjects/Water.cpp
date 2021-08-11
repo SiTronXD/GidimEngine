@@ -16,14 +16,14 @@ Water::Water(Renderer& renderer)
 	mesh(renderer, meshData), meshShader(renderer), skybox(nullptr), reflectedCubeMap(nullptr),
 
 	// Compute shaders
-	spectrumCreatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	spectrumInterpolatorShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	butterflyTextureShader(renderer, (int) ceil(log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
-	butterflyOperationsShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
-	invPermShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	spectrumCreatorShader(		renderer, "CompiledShaders/SpectrumCreatorShader_Comp.cso", GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	spectrumInterpolatorShader(	renderer, "CompiledShaders/SpectrumInterpolatorShader_Comp.cso", GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	butterflyTextureShader(		renderer, "CompiledShaders/ButterflyTextureShader_Comp.cso", (int) ceil(log2(GRID_WIDTH) / 2), GRID_HEIGHT / 16),
+	butterflyOperationsShader(	renderer, "CompiledShaders/ButterflyOperationsShader_Comp.cso", GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	invPermShader(				renderer, "CompiledShaders/InversionPermutationShader_Comp.cso", GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
-	displacementToNormalShader(renderer, GRID_WIDTH / 16 * NORMAL_MAP_SIZE_SCALE, GRID_HEIGHT / 16 * NORMAL_MAP_SIZE_SCALE),
-	foamMaskShader(renderer, GRID_WIDTH / 16, GRID_HEIGHT / 16),
+	displacementToNormalShader(	renderer, "CompiledShaders/HeightToNormal_Comp.cso", GRID_WIDTH / 16 * NORMAL_MAP_SIZE_SCALE, GRID_HEIGHT / 16 * NORMAL_MAP_SIZE_SCALE),
+	foamMaskShader(				renderer, "CompiledShaders/FoamMaskCreator_Comp.cso", GRID_WIDTH / 16, GRID_HEIGHT / 16),
 
 	// Render textures
 	initialSpectrumTexture(renderer, TextureFilter::NEAREST_NEIGHBOR, TextureFormat::R32G32B32A32_FLOAT),
@@ -80,7 +80,6 @@ Water::Water(Renderer& renderer)
 	this->spectrumCreatorShaderBuffer.update(&this->scb);
 
 	// Spectrum texture creator shader
-	this->spectrumCreatorShader.createFromFile("CompiledShaders/SpectrumCreatorShader_Comp.cso");
 	this->spectrumCreatorShader.addRenderTexture(this->initialSpectrumTexture);
 	this->spectrumCreatorShader.addShaderBuffer(this->spectrumCreatorShaderBuffer);
 	this->spectrumCreatorShader.run();
@@ -92,7 +91,6 @@ Water::Water(Renderer& renderer)
 	this->sib.horizontalSize = HORIZONTAL_SIZE;
 
 	// Spectrum interpolator shader
-	this->spectrumInterpolatorShader.createFromFile("CompiledShaders/SpectrumInterpolatorShader_Comp.cso");
 	this->spectrumInterpolatorShader.addRenderTexture(this->initialSpectrumTexture);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureX);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureY);
@@ -104,13 +102,11 @@ Water::Water(Renderer& renderer)
 	this->butterflyTextureShaderBuffer.update(&this->btb);
 
 	// Butterfly texture shader
-	this->butterflyTextureShader.createFromFile("CompiledShaders/ButterflyTextureShader_Comp.cso");
 	this->butterflyTextureShader.addRenderTexture(this->butterflyTexture);
 	this->butterflyTextureShader.addShaderBuffer(this->butterflyTextureShaderBuffer);
 	this->butterflyTextureShader.run();
 
 	// Butterfly operations shader
-	this->butterflyOperationsShader.createFromFile("CompiledShaders/ButterflyOperationsShader_Comp.cso");
 	this->butterflyOperationsShader.addRenderTexture(this->butterflyTexture);
 	this->butterflyOperationsShader.addShaderBuffer(this->butterflyOperationShaderBuffer);
 
@@ -119,7 +115,6 @@ Water::Water(Renderer& renderer)
 	this->invPermShaderBuffer.update(&this->ipb);
 
 	// Inversion and permutation shader
-	this->invPermShader.createFromFile("CompiledShaders/InversionPermutationShader_Comp.cso");
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureX);
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureY);
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureZ);
@@ -135,7 +130,6 @@ Water::Water(Renderer& renderer)
 	this->disToNormShaderBuffer.update(&this->htnb);
 
 	// Heightmap to normal map shader
-	this->displacementToNormalShader.createFromFile("CompiledShaders/HeightToNormal_Comp.cso");
 	this->displacementToNormalShader.addRenderTexture(this->displacementTexture);
 	this->displacementToNormalShader.addRenderTexture(this->normalMapTexture);
 	this->displacementToNormalShader.addShaderBuffer(this->disToNormShaderBuffer);
@@ -147,7 +141,6 @@ Water::Water(Renderer& renderer)
 	this->foamMaskShaderBuffer.update(&this->fmb);
 
 	// Foam mask shader
-	this->foamMaskShader.createFromFile("CompiledShaders/FoamMaskCreator_Comp.cso");
 	this->foamMaskShader.addRenderTexture(this->displacementTexture);
 	this->foamMaskShader.addRenderTexture(this->foamMaskTexture);
 	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);

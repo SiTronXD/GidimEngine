@@ -143,6 +143,7 @@
     <ClCompile Include="Examples\BoidsExample.cpp" />
     <ClCompile Include="Examples\GameObjects\Boid.cpp" />
     <ClCompile Include="Examples\GameObjects\BoidHandler.cpp" />
+    <ClCompile Include="ShaderHandlers\BoidRenderShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\GameObjects\CameraController.h">
@@ -230,6 +231,7 @@
     <ClInclude Include="Examples\BoidsExample.h" />
     <ClInclude Include="Examples\GameObjects\Boid.h" />
     <ClInclude Include="Examples\GameObjects\BoidHandler.h" />
+    <ClInclude Include="ShaderHandlers\BoidRenderShader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">
@@ -282,6 +284,12 @@
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\Boid_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\VertexShaders\Boid_Vert.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\PixelShaders\Boid_Pix.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
