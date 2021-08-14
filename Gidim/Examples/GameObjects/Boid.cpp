@@ -20,7 +20,7 @@ Boid::~Boid()
 
 void Boid::draw()
 {
-	this->shader.update(this->renderer, this->mesh.getWorldMatrix());
+	this->shader.update(this->renderer, XMMatrixIdentity());
 
 	this->shader.set();
 

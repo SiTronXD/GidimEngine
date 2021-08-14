@@ -10,8 +10,9 @@ private:
 
 	Renderer& renderer;
 
-	std::vector<Boid*> boids;
 	std::vector<XMFLOAT3> boidColors;
+
+	Boid boidClone;
 
 	ID3D11Buffer* boidsBuffer;
 	ID3D11UnorderedAccessView* boidsBufferUAV;

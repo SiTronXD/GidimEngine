@@ -25,18 +25,15 @@ struct Output
 	float3 color : TEXCOORD1;
 };
 
-StructuredBuffer<float3> boidsBuffer : register(t0);
+StructuredBuffer<float4x4> boidsBuffer : register(t0);
 
 Output main(Input input)
 {
 	Output output;
 
-	float3 offsetPos = boidsBuffer[id].xyz;
-
 	// Position
 	float4 p = float4(input.position.xyz, 1.0f);
-	p += float4(offsetPos, 0.0f);
-	output.position = mul(p, worldMatrix);
+	output.position = mul(p, boidsBuffer[id]);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
 

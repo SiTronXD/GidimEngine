@@ -25,9 +25,9 @@ void BoidHandler::createGPUBuffer()
 	D3D11_BUFFER_DESC descGPUBuffer;
 	ZeroMemory(&descGPUBuffer, sizeof(descGPUBuffer));
 	descGPUBuffer.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	descGPUBuffer.ByteWidth = sizeof(float) * 3 * NUM_BOIDS;
+	descGPUBuffer.ByteWidth = sizeof(XMFLOAT4X4) * NUM_BOIDS;
 	descGPUBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	descGPUBuffer.StructureByteStride = sizeof(float) * 3;
+	descGPUBuffer.StructureByteStride = sizeof(XMFLOAT4X4);
 	HRESULT result = device->CreateBuffer(&descGPUBuffer, NULL, &this->boidsBuffer);
 	if (FAILED(result))
 	{
@@ -117,12 +117,12 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidsBufferUAV(nullptr),
 	boidsBufferSRV(nullptr),
 	boidsLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
-	boidIDShaderBuffer(renderer, sizeof(BoidIDBuffer))
+	boidIDShaderBuffer(renderer, sizeof(BoidIDBuffer)),
+	boidClone(renderer)
 {
 	// Add all boids
 	for (int i = 0; i < this->NUM_BOIDS; ++i)
 	{
-		this->boids.push_back(new Boid(renderer));
 		this->boidColors.push_back(
 			{ 
 				this->getWangHashFloat(i * 3 + 0),
@@ -141,13 +141,6 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 BoidHandler::~BoidHandler()
 {
-	for (int i = this->boids.size() - 1; i >= 0; --i)
-	{
-		delete this->boids[i];
-
-		this->boids.erase(this->boids.begin() + i);
-	}
-
 	S_RELEASE(this->boidsBuffer);
 	S_RELEASE(this->boidsBufferUAV);
 	S_RELEASE(this->boidsBufferSRV);
@@ -163,11 +156,11 @@ void BoidHandler::updateBoids()
 
 void BoidHandler::drawBoids()
 {
+	// Set boid buffer
+	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidsBufferSRV);
+
 	for (int i = 0; i < NUM_BOIDS; ++i)
 	{
-		// Set boid buffer
-		this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidsBufferSRV);
-
 		// Update boid ID buffer
 		bib.id = i;
 		bib.color = this->boidColors[i];
@@ -175,6 +168,6 @@ void BoidHandler::drawBoids()
 		this->boidIDShaderBuffer.setVS(1);
 
 		// Draw
-		this->boids[i]->draw();
+		this->boidClone.draw();
 	}
 }
