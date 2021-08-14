@@ -64,7 +64,7 @@ void BoidsExample::run()
 			Log::print("FPS: " + std::to_string(fps) + " (" + std::to_string(1000.0f / fps) + " ms)");
 		}
 
-		boidHandler.updateBoids();
+		boidHandler.updateBoids(Time::getDeltaTime());
 
 		/////////////////////////////////////////////////////////////////////////
 

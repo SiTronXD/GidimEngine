@@ -28,7 +28,7 @@ void BoidHandler::createGPUBuffer()
 	descGPUBuffer.ByteWidth = sizeof(XMFLOAT4X4) * NUM_BOIDS;
 	descGPUBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	descGPUBuffer.StructureByteStride = sizeof(XMFLOAT4X4);
-	HRESULT result = device->CreateBuffer(&descGPUBuffer, NULL, &this->boidsBuffer);
+	HRESULT result = device->CreateBuffer(&descGPUBuffer, NULL, &this->boidBuffer);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating boids buffer.", result);
@@ -37,7 +37,7 @@ void BoidHandler::createGPUBuffer()
 	// Get description from buffer
 	D3D11_BUFFER_DESC descBuf;
 	ZeroMemory(&descBuf, sizeof(descBuf));
-	this->boidsBuffer->GetDesc(&descBuf);
+	this->boidBuffer->GetDesc(&descBuf);
 
 
 	// Buffer UAV
@@ -47,7 +47,7 @@ void BoidHandler::createGPUBuffer()
 	descView.Format = DXGI_FORMAT_UNKNOWN;
 	descView.Buffer.FirstElement = 0;
 	descView.Buffer.NumElements = descBuf.ByteWidth / descBuf.StructureByteStride;
-	result = device->CreateUnorderedAccessView(this->boidsBuffer, &descView, &this->boidsBufferUAV);
+	result = device->CreateUnorderedAccessView(this->boidBuffer, &descView, &this->boidBufferUAV);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating boids buffer UAV.", result);
@@ -62,7 +62,7 @@ void BoidHandler::createGPUBuffer()
 	descSRV.Buffer.FirstElement = 0;
 	descSRV.Buffer.NumElements = descBuf.ByteWidth / descBuf.StructureByteStride;
 
-	result = device->CreateShaderResourceView(this->boidsBuffer, &descSRV, &this->boidsBufferSRV);
+	result = device->CreateShaderResourceView(this->boidBuffer, &descSRV, &this->boidBufferSRV);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating boids buffer SRV.", result);
@@ -79,7 +79,7 @@ void BoidHandler::debugBoidsBuffer()
 	ID3D11Buffer* debugbuf = nullptr;
 	D3D11_BUFFER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
-	this->boidsBuffer->GetDesc(&desc);
+	this->boidBuffer->GetDesc(&desc);
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.BindFlags = 0;
@@ -89,7 +89,7 @@ void BoidHandler::debugBoidsBuffer()
 	if (SUCCEEDED(device->CreateBuffer(&desc, NULL, &debugbuf)))
 	{
 		// Copy data from GPU buffer to readable buffer
-		deviceContext->CopyResource(debugbuf, this->boidsBuffer);
+		deviceContext->CopyResource(debugbuf, this->boidBuffer);
 
 		// Map data
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -113,12 +113,13 @@ void BoidHandler::debugBoidsBuffer()
 
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
-	boidsBuffer(nullptr),
-	boidsBufferUAV(nullptr),
-	boidsBufferSRV(nullptr),
-	boidsLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
+	boidBuffer(nullptr),
+	boidBufferUAV(nullptr),
+	boidBufferSRV(nullptr),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
 	boidIDShaderBuffer(renderer, sizeof(BoidIDBuffer)),
-	boidClone(renderer)
+	boidClone(renderer),
+	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
 	// Add all boids
 	for (int i = 0; i < this->NUM_BOIDS; ++i)
@@ -135,21 +136,26 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	// Prepare buffer
 	this->createGPUBuffer();
 
-	// Add buffer to compute shader
-	this->boidsLogicShader.addUAV(this->boidsBufferUAV);
+	// Add buffers to compute shader
+	this->boidLogicShader.addUAV(this->boidBufferUAV);
+	this->boidLogicShader.addShaderBuffer(this->boidLogicShaderBuffer);
 }
 
 BoidHandler::~BoidHandler()
 {
-	S_RELEASE(this->boidsBuffer);
-	S_RELEASE(this->boidsBufferUAV);
-	S_RELEASE(this->boidsBufferSRV);
+	S_RELEASE(this->boidBuffer);
+	S_RELEASE(this->boidBufferUAV);
+	S_RELEASE(this->boidBufferSRV);
 }
 
-void BoidHandler::updateBoids()
+void BoidHandler::updateBoids(float deltaTime)
 {
+	// Update logic shader buffer
+	this->blb.deltaTime = deltaTime;
+	this->boidLogicShaderBuffer.update(&this->blb.deltaTime);
+
 	// Run boids logic shader
-	this->boidsLogicShader.run();
+	this->boidLogicShader.run();
 
 	//this->debugBoidsBuffer();
 }
@@ -157,7 +163,7 @@ void BoidHandler::updateBoids()
 void BoidHandler::drawBoids()
 {
 	// Set boid buffer
-	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidsBufferSRV);
+	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidBufferSRV);
 
 	for (int i = 0; i < NUM_BOIDS; ++i)
 	{

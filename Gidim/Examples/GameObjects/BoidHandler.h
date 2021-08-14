@@ -14,13 +14,21 @@ private:
 
 	Boid boidClone;
 
-	ID3D11Buffer* boidsBuffer;
-	ID3D11UnorderedAccessView* boidsBufferUAV;
-	ID3D11ShaderResourceView* boidsBufferSRV;
+	ID3D11Buffer* boidBuffer;
+	ID3D11UnorderedAccessView* boidBufferUAV;
+	ID3D11ShaderResourceView* boidBufferSRV;
 
-	ComputeShader boidsLogicShader;
+	ComputeShader boidLogicShader;
 
+	ShaderBuffer boidLogicShaderBuffer;
 	ShaderBuffer boidIDShaderBuffer;
+
+	struct BoidLogicBuffer
+	{
+		float deltaTime;
+
+		XMFLOAT3 padding;
+	} blb{};
 
 	struct BoidIDBuffer
 	{
@@ -39,6 +47,6 @@ public:
 	BoidHandler(Renderer& renderer);
 	~BoidHandler();
 
-	void updateBoids();
+	void updateBoids(float deltaTime);
 	void drawBoids();
 };

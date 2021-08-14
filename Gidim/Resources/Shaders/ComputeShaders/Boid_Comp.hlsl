@@ -1,4 +1,10 @@
 
+cbuffer BoidBuffer : register(b0)
+{
+	float deltaTime;
+
+	float3 padding;
+};
 
 RWStructuredBuffer<float4x4> boidsOutput : register(u0);
 
@@ -26,19 +32,24 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		dispatchThreadID.z * 1024 * 1024;*/
 
 	// Offset direction and speed
-	float3 offset = float3(0.0002, 0.0, 0.0);
+	float3 offset = float3(0.1, 0.0, 0.0);
 	if (id >= 1)
-		offset = float3(-0.0003, 0.0001, 0.0);
+		offset = float3(-0.3, 0.3, 0.0);
 
 	// Apply offset
 	float3 oldPos = float3(boidsOutput[id]._41, boidsOutput[id]._42, boidsOutput[id]._43);
-	float3 newPos = oldPos + offset;
+	float3 newPos = oldPos + offset * deltaTime;
+
+	// Direction vectors
+	float3 forwardDir = normalize(newPos - oldPos);
+	float3 leftDir = normalize(cross(forwardDir, float3(0.0f, 1.0f, 0.0f)));
+	float3 upDir = cross(leftDir, forwardDir);
 
 	// Apply final matrix
 	boidsOutput[id] = float4x4(
-		float4(1.0f, 0.0f, 0.0f, 0.0f),
-		float4(0.0f, 1.0f, 0.0f, 0.0f),
-		float4(0.0f, 0.0f, 1.0f, 0.0f),
+		float4(leftDir.xyz, 0.0f),
+		float4(upDir.xyz, 0.0f),
+		float4(forwardDir.xyz, 0.0f),
 		float4(newPos, 1.0f)
 	);
 }
