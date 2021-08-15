@@ -14,7 +14,7 @@ void D3DBuffer::createBuffer(
 	UINT bindFlags,
 	UINT elementSize,
 	UINT numElements,
-	D3D11_SUBRESOURCE_DATA& initialBufferData
+	D3D11_SUBRESOURCE_DATA* initialBufferData
 )
 {
 	// Deallocate old buffer
@@ -31,7 +31,7 @@ void D3DBuffer::createBuffer(
 	descGPUBuffer.StructureByteStride = elementSize;
 
 	// Create buffer
-	HRESULT result = this->renderer.getDevice()->CreateBuffer(&descGPUBuffer, &initialBufferData, &this->buffer);
+	HRESULT result = this->renderer.getDevice()->CreateBuffer(&descGPUBuffer, initialBufferData, &this->buffer);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating buffer: " + this->debugName + ".", result);

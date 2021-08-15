@@ -15,6 +15,12 @@ private:
 
 	Boid boidClone;
 
+	D3DBuffer boidAccelBuffer;
+	D3DUAV boidAccelUAV;
+
+	D3DBuffer boidVelocBuffer;
+	D3DUAV boidVelocUAV;
+
 	D3DBuffer boidBuffer;
 	D3DUAV boidBufferUAV;
 	D3DSRV boidBufferSRV;

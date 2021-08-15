@@ -20,7 +20,7 @@ public:
 		UINT bindFlags,
 		UINT elementSize,
 		UINT numElements,
-		D3D11_SUBRESOURCE_DATA& initialBufferData
+		D3D11_SUBRESOURCE_DATA* initialBufferData = nullptr
 	);
 
 	D3D11_BUFFER_DESC getDesc();

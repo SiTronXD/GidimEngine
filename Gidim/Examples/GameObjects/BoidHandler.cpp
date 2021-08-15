@@ -21,6 +21,73 @@ void BoidHandler::createGPUBuffer()
 {
 	ID3D11Device* device = renderer.getDevice();
 
+	// ---------- Acceleration vectors ----------
+
+	// Buffer
+	this->boidAccelBuffer.createBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(XMFLOAT3),
+		NUM_BOIDS
+	);
+
+
+	// Get description from buffer
+	D3D11_BUFFER_DESC boidAccelDesc = this->boidAccelBuffer.getDesc();
+
+	// Buffer UAV
+	this->boidAccelUAV.createUAV(
+		this->boidAccelBuffer.getBuffer(),
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER,
+		boidAccelDesc.ByteWidth / boidAccelDesc.StructureByteStride
+	);
+
+	// ---------- Velocity vectors ----------
+
+	// Initial velocity vectors
+	XMFLOAT3* initialVeloc = new XMFLOAT3[NUM_BOIDS];
+	for (int i = 0; i < NUM_BOIDS; ++i)
+	{
+		// Create random unit vector
+		XMFLOAT3 tempVec;
+		XMStoreFloat3(
+			&tempVec,
+			XMVector3Normalize(XMVectorSet(
+				(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
+				(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
+				(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
+				0.0f
+			))
+		);
+
+		initialVeloc[i] = tempVec;
+	}
+	D3D11_SUBRESOURCE_DATA initialVelocData;
+	ZeroMemory(&initialVelocData, sizeof(initialVelocData));
+	initialVelocData.pSysMem = initialVeloc;
+
+	// Buffer
+	this->boidVelocBuffer.createBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(XMFLOAT3),
+		NUM_BOIDS,
+		&initialVelocData
+	);
+	delete[] initialVeloc;
+
+	// Get description from buffer
+	D3D11_BUFFER_DESC boidVelocDesc = this->boidVelocBuffer.getDesc();
+
+	// Buffer UAV
+	this->boidVelocUAV.createUAV(
+		this->boidVelocBuffer.getBuffer(),
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER,
+		boidVelocDesc.ByteWidth / boidVelocDesc.StructureByteStride
+	);
+
+	// ---------- Transformation matrices ----------
+
 	// Initial boid buffer data
 	XMFLOAT4X4* initialMatrices = new XMFLOAT4X4[NUM_BOIDS];
 	for (int i = 0; i < NUM_BOIDS; ++i)
@@ -48,13 +115,13 @@ void BoidHandler::createGPUBuffer()
 		D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 		sizeof(XMFLOAT4X4),
 		NUM_BOIDS,
-		initialBufferData
+		&initialBufferData
 	);
 
 	delete[] initialMatrices;
 
 	// Get description from buffer
-	D3D11_BUFFER_DESC descBuf = this->boidBuffer.getDesc();
+	D3D11_BUFFER_DESC boidBufferDesc = this->boidBuffer.getDesc();
 	
 
 	// Buffer UAV
@@ -62,7 +129,7 @@ void BoidHandler::createGPUBuffer()
 		this->boidBuffer.getBuffer(),
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER,
-		descBuf.ByteWidth / descBuf.StructureByteStride
+		boidBufferDesc.ByteWidth / boidBufferDesc.StructureByteStride
 	);
 
 	// Buffer SRV
@@ -70,7 +137,7 @@ void BoidHandler::createGPUBuffer()
 		this->boidBuffer.getBuffer(), 
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_SRV_DIMENSION_BUFFER,
-		descBuf.ByteWidth / descBuf.StructureByteStride
+		boidBufferDesc.ByteWidth / boidBufferDesc.StructureByteStride
 	);
 }
 
@@ -116,9 +183,17 @@ void BoidHandler::debugBoidsBuffer()
 
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
+
+	boidAccelBuffer(renderer, "boidAccelBuffer"),
+	boidAccelUAV(renderer, "boidAccelUAV"),
+
+	boidVelocBuffer(renderer, "boidVelocBuffer"),
+	boidVelocUAV(renderer, "boidVelocUAV"),
+
 	boidBuffer(renderer, "boidBuffer"),
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
+
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
 	boidClone(renderer),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
@@ -127,6 +202,8 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->createGPUBuffer();
 
 	// Add buffers to compute shader
+	this->boidLogicShader.addUAV(this->boidAccelUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidLogicShader.addShaderBuffer(this->boidLogicShaderBuffer);
 }

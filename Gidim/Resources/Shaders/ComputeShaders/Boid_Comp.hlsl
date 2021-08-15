@@ -6,7 +6,9 @@ cbuffer BoidBuffer : register(b0)
 	float3 padding;
 };
 
-RWStructuredBuffer<float4x4> boidTransforms : register(u0);
+RWStructuredBuffer<float3> boidAccelerations : register(u0);
+RWStructuredBuffer<float3> boidVelocities : register(u1);
+RWStructuredBuffer<float4x4> boidTransforms : register(u2);
 
 uint wang_hash(uint seed)
 {
@@ -29,17 +31,14 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;
 
-	// Offset direction and speed
-	float3 offset = float3(0.1, 0.0, 0.0);
-	if (id >= 1)
-		offset = float3(-0.3, 0.3, 0.0);
+	// Apply movement
+	boidVelocities[id] += boidAccelerations[id] * deltaTime;
 
-	// Apply offset
 	float3 oldPos = float3(boidTransforms[id]._41, boidTransforms[id]._42, boidTransforms[id]._43);
-	float3 newPos = oldPos +offset * deltaTime;
+	float3 newPos = oldPos + boidVelocities[id] * deltaTime;
 
 	// Direction vectors
-	float3 forwardDir = normalize(offset);
+	float3 forwardDir = normalize(boidVelocities[id]);
 	float3 leftDir = normalize(cross(forwardDir, float3(0.0f, 1.0f, 0.0f)));
 	float3 upDir = cross(leftDir, forwardDir);
 
