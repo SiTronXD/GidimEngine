@@ -6,16 +6,11 @@ cbuffer MatrixBuffer : register(b0)
 	matrix worldMatrix;
 };
 
-cbuffer BoidBuffer : register(b1)
-{
-	int id;
-	float3 vertexColor;
-}
-
 struct Input
 {
 	float3 position : POSITION;
 	float2 uv : TEXCOORD;
+	uint instanceID : SV_InstanceID;
 };
 
 struct Output
@@ -27,9 +22,27 @@ struct Output
 
 StructuredBuffer<float4x4> boidsBuffer : register(t0);
 
+uint wang_hash(uint seed)
+{
+	seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+	seed *= uint(9);
+	seed = seed ^ (seed >> 4);
+	seed *= uint(0x27d4eb2d);
+	seed = seed ^ (seed >> 15);
+
+	return seed;
+}
+
+float randomFloat(float state)
+{
+	return float(wang_hash(uint(state))) / 4294967296.0;
+}
+
 Output main(Input input)
 {
 	Output output;
+
+	uint id = input.instanceID;
 
 	// Position
 	float4 p = float4(input.position.xyz, 1.0f);
@@ -41,7 +54,11 @@ Output main(Input input)
 	output.uv = input.uv;
 
 	// Color
-	output.color = vertexColor;
+	output.color = float3(
+		randomFloat(id * 3 + 0),
+		randomFloat(id * 3 + 1),
+		randomFloat(id * 3 + 2)
+	);
 
 	return output;
 }

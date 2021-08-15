@@ -24,12 +24,10 @@ float randomFloat(float state)
 	return float(wang_hash(uint(state))) / 4294967296.0;
 }
 
-[numthreads(2, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	uint id = dispatchThreadID.x;/* +
-		dispatchThreadID.y * 1024 + 
-		dispatchThreadID.z * 1024 * 1024;*/
+	uint id = dispatchThreadID.x;
 
 	// Offset direction and speed
 	float3 offset = float3(0.1, 0.0, 0.0);

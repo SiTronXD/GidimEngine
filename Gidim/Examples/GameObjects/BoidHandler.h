@@ -6,11 +6,9 @@
 class BoidHandler
 {
 private:
-	static const int NUM_BOIDS = 2;
+	static const int NUM_BOIDS = 1024 * 1024 * 4;
 
 	Renderer& renderer;
-
-	std::vector<XMFLOAT3> boidColors;
 
 	Boid boidClone;
 
@@ -21,7 +19,6 @@ private:
 	ComputeShader boidLogicShader;
 
 	ShaderBuffer boidLogicShaderBuffer;
-	ShaderBuffer boidIDShaderBuffer;
 
 	struct BoidLogicBuffer
 	{
@@ -30,12 +27,6 @@ private:
 		XMFLOAT3 padding;
 	} blb{};
 
-	struct BoidIDBuffer
-	{
-		int id;
-
-		XMFLOAT3 color;
-	} bib{};
 
 	void createGPUBuffer();
 	void debugBoidsBuffer();

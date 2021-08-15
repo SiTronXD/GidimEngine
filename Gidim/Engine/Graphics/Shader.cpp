@@ -3,7 +3,8 @@
 
 bool Shader::loadFromFile(
 	ID3D11Device* device,
-	std::string vertexShaderFilePath, std::string pixelShaderFilePath
+	std::string vertexShaderFilePath, std::string pixelShaderFilePath,
+	std::vector<D3D11_INPUT_ELEMENT_DESC>& layout
 )
 {
 	HRESULT result;
@@ -65,15 +66,9 @@ bool Shader::loadFromFile(
 	}
 
 	// Create input layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
+	//unsigned int numLayoutElements = sizeof(layout) / sizeof(layout[0]);
 
-	unsigned int numLayoutElements = sizeof(layout) / sizeof(layout[0]);
-
-	result = device->CreateInputLayout(layout, numLayoutElements, vsData.data(), vsData.size(), &this->inputLayout);
+	result = device->CreateInputLayout(layout.data(), layout.size(), vsData.data(), vsData.size(), &this->inputLayout);
 	if (FAILED(result))
 	{
 		Log::error("Failed calling device->CreateInputLayout().");
@@ -84,13 +79,44 @@ bool Shader::loadFromFile(
 	return true;
 }
 
+Shader::Shader(Renderer& renderer,
+	std::string vertexShaderFilePath,
+	std::string pixelShaderFilePath
+)
+	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr),
+	deviceContext(renderer.getDeviceContext()),
+	matrixBuffer(renderer, sizeof(MatrixBuffer))
+{
+	// Default layout
+	std::vector<D3D11_INPUT_ELEMENT_DESC> defaultLayout
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	this->loadFromFile(
+		renderer.getDevice(),
+		vertexShaderFilePath,
+		pixelShaderFilePath,
+		defaultLayout
+	);
+}
+
 Shader::Shader(Renderer& renderer, 
-	std::string vertexShaderFilePath, std::string pixelShaderFilePath)
+	std::string vertexShaderFilePath, 
+	std::string pixelShaderFilePath,
+	std::vector<D3D11_INPUT_ELEMENT_DESC> layout
+	)
 	: vertexShader(nullptr), pixelShader(nullptr), inputLayout(nullptr), 
 	deviceContext(renderer.getDeviceContext()), 
 	matrixBuffer(renderer, sizeof(MatrixBuffer))
 {
-	this->loadFromFile(renderer.getDevice(), vertexShaderFilePath, pixelShaderFilePath);
+	this->loadFromFile(
+		renderer.getDevice(), 
+		vertexShaderFilePath, 
+		pixelShaderFilePath, 
+		layout
+	);
 }
 
 Shader::~Shader()

@@ -24,7 +24,7 @@ public:
 
 	void setWorldMatrix(XMMATRIX newWorldMatrix);
 
-	void draw();
+	void draw(bool callDrawCommand = true);
 
 	const XMMATRIX& getWorldMatrix() const;
 };

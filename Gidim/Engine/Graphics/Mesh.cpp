@@ -101,7 +101,7 @@ void Mesh::setWorldMatrix(XMMATRIX newWorldMatrix)
 	this->worldMatrix = newWorldMatrix;
 }
 
-void Mesh::draw()
+void Mesh::draw(bool callDrawCommand)
 {
 	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
 
@@ -118,7 +118,8 @@ void Mesh::draw()
 
 
 	// Draw
-	deviceContext->DrawIndexed(this->indexCount, 0, 0);
+	if(callDrawCommand)
+		deviceContext->DrawIndexed(this->indexCount, 0, 0);
 }
 
 const XMMATRIX& Mesh::getWorldMatrix() const

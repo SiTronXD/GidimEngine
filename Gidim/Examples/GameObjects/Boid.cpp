@@ -24,5 +24,5 @@ void Boid::draw()
 
 	this->shader.set();
 
-	this->mesh.draw();
+	this->mesh.draw(false);
 }

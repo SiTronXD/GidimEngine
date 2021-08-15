@@ -28,11 +28,22 @@ private:
 	bool loadFromFile(
 		ID3D11Device* device,
 		std::string vertexShaderFilePath,
-		std::string pixelShaderFilePath
+		std::string pixelShaderFilePath,
+		std::vector<D3D11_INPUT_ELEMENT_DESC>& layout
 	);
 
 public:
-	Shader(Renderer& renderer, std::string vertexShaderFilePath, std::string pixelShaderFilePath);
+	Shader(
+		Renderer& renderer,
+		std::string vertexShaderFilePath,
+		std::string pixelShaderFilePath
+	);
+	Shader(
+		Renderer& renderer, 
+		std::string vertexShaderFilePath, 
+		std::string pixelShaderFilePath,
+		std::vector<D3D11_INPUT_ELEMENT_DESC> layout
+	);
 	virtual ~Shader();
 
 	virtual void update(

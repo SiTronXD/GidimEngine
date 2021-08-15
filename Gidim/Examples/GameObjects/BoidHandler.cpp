@@ -30,7 +30,7 @@ void BoidHandler::createGPUBuffer()
 	descGPUBuffer.StructureByteStride = sizeof(XMFLOAT4X4);
 
 	// Initial data
-	XMFLOAT4X4 initialMatrices[NUM_BOIDS];
+	XMFLOAT4X4* initialMatrices = new XMFLOAT4X4[NUM_BOIDS];
 	for (int i = 0; i < NUM_BOIDS; ++i)
 	{
 		XMFLOAT4X4 tempMat;
@@ -55,6 +55,7 @@ void BoidHandler::createGPUBuffer()
 	{
 		Log::resultFailed("Failed creating boids buffer.", result);
 	}
+	delete[] initialMatrices;
 
 	// Get description from buffer
 	D3D11_BUFFER_DESC descBuf;
@@ -138,23 +139,10 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBuffer(nullptr),
 	boidBufferUAV(nullptr),
 	boidBufferSRV(nullptr),
-	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
-	boidIDShaderBuffer(renderer, sizeof(BoidIDBuffer)),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1024, 4, 1),
 	boidClone(renderer),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
-	// Add all boids
-	for (int i = 0; i < this->NUM_BOIDS; ++i)
-	{
-		this->boidColors.push_back(
-			{ 
-				this->getWangHashFloat(i * 3 + 0),
-				this->getWangHashFloat(i * 3 + 1),
-				this->getWangHashFloat(i * 3 + 2),
-			}
-		);
-	}
-
 	// Prepare buffer
 	this->createGPUBuffer();
 
@@ -187,15 +175,7 @@ void BoidHandler::drawBoids()
 	// Set boid buffer
 	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidBufferSRV);
 
-	for (int i = 0; i < NUM_BOIDS; ++i)
-	{
-		// Update boid ID buffer
-		bib.id = i;
-		bib.color = this->boidColors[i];
-		this->boidIDShaderBuffer.update(&bib);
-		this->boidIDShaderBuffer.setVS(1);
-
-		// Draw
-		this->boidClone.draw();
-	}
+	// Draw
+	this->boidClone.draw();
+	renderer.getDeviceContext()->DrawIndexedInstanced(12, NUM_BOIDS, 0, 0, 0);
 }
