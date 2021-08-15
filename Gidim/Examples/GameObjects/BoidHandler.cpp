@@ -28,7 +28,29 @@ void BoidHandler::createGPUBuffer()
 	descGPUBuffer.ByteWidth = sizeof(XMFLOAT4X4) * NUM_BOIDS;
 	descGPUBuffer.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	descGPUBuffer.StructureByteStride = sizeof(XMFLOAT4X4);
-	HRESULT result = device->CreateBuffer(&descGPUBuffer, NULL, &this->boidBuffer);
+
+	// Initial data
+	XMFLOAT4X4 initialMatrices[NUM_BOIDS];
+	for (int i = 0; i < NUM_BOIDS; ++i)
+	{
+		XMFLOAT4X4 tempMat;
+		XMStoreFloat4x4(
+			&tempMat, 
+			XMMatrixTranspose(
+				XMMatrixTranslation(
+					(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
+					(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
+					(rand() % 1000) / 1000.0f * 2.0f - 1.0f
+				)
+			)
+		);
+
+		initialMatrices[i] = tempMat;
+	}
+	D3D11_SUBRESOURCE_DATA initialBufferData;
+	ZeroMemory(&initialBufferData, sizeof(initialBufferData));
+	initialBufferData.pSysMem = initialMatrices;
+	HRESULT result = device->CreateBuffer(&descGPUBuffer, &initialBufferData, &this->boidBuffer);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating boids buffer.", result);

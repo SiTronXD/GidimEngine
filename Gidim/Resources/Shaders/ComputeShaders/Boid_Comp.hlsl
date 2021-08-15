@@ -38,10 +38,10 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
 	// Apply offset
 	float3 oldPos = float3(boidsOutput[id]._41, boidsOutput[id]._42, boidsOutput[id]._43);
-	float3 newPos = oldPos + offset * deltaTime;
+	float3 newPos = oldPos +offset * deltaTime;
 
 	// Direction vectors
-	float3 forwardDir = normalize(newPos - oldPos);
+	float3 forwardDir = normalize(offset);
 	float3 leftDir = normalize(cross(forwardDir, float3(0.0f, 1.0f, 0.0f)));
 	float3 upDir = cross(leftDir, forwardDir);
 
