@@ -139,7 +139,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBuffer(nullptr),
 	boidBufferUAV(nullptr),
 	boidBufferSRV(nullptr),
-	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1024, 4, 1),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1024, 1, 1),
 	boidClone(renderer),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
@@ -176,6 +176,5 @@ void BoidHandler::drawBoids()
 	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->boidBufferSRV);
 
 	// Draw
-	this->boidClone.draw();
-	renderer.getDeviceContext()->DrawIndexedInstanced(12, NUM_BOIDS, 0, 0, 0);
+	this->boidClone.draw(NUM_BOIDS);
 }

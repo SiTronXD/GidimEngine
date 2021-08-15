@@ -36,7 +36,6 @@ bool Mesh::createBuffers(MeshData& meshData)
 	}
 
 
-
 	// Create index buffer desc
 	CD3D11_BUFFER_DESC indexBufferDesc = CD3D11_BUFFER_DESC(
 		sizeof(meshData.getIndices()[0]) * this->indexCount, D3D11_BIND_INDEX_BUFFER
@@ -60,6 +59,58 @@ bool Mesh::createBuffers(MeshData& meshData)
 	}
 
 	return true;
+}
+
+void Mesh::prepareToDraw(ID3D11DeviceContext*& deviceContext)
+{
+	// Set topology
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Set vertex buffer
+	deviceContext->IASetVertexBuffers(
+		0, 1,
+		&this->vertexBuffer,
+		&this->vertexStride,
+		&this->vertexOffset
+	);
+
+	// Set index buffer
+	deviceContext->IASetIndexBuffer(this->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+}
+
+const Renderer& Mesh::getRenderer() const
+{
+	return this->renderer;
+}
+
+ID3D11Buffer*& Mesh::getVertexBuffer()
+{
+	return this->vertexBuffer;
+}
+
+ID3D11Buffer*& Mesh::getIndexBuffer()
+{
+	return this->indexBuffer;
+}
+
+const unsigned int& Mesh::getVertexCount() const
+{
+	return this->vertexCount;
+}
+
+const unsigned int& Mesh::getIndexCount() const
+{
+	return this->indexCount;
+}
+
+const UINT& Mesh::getVertexStride() const
+{
+	return this->vertexStride;
+}
+
+const UINT& Mesh::getVertexOffset() const
+{
+	return this->vertexOffset;
 }
 
 Mesh::Mesh(Renderer& renderer, MeshData& meshData)
@@ -101,25 +152,15 @@ void Mesh::setWorldMatrix(XMMATRIX newWorldMatrix)
 	this->worldMatrix = newWorldMatrix;
 }
 
-void Mesh::draw(bool callDrawCommand)
+void Mesh::draw()
 {
 	ID3D11DeviceContext* deviceContext = renderer.getDeviceContext();
 
-	// Set topology
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-	// Set the vertex buffer
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	deviceContext->IASetVertexBuffers(0, 1, &this->vertexBuffer, &stride, &offset);
-
-	// Set the index buffer
-	deviceContext->IASetIndexBuffer(this->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
+	// Set buffers
+	this->prepareToDraw(deviceContext);
 
 	// Draw
-	if(callDrawCommand)
-		deviceContext->DrawIndexed(this->indexCount, 0, 0);
+	deviceContext->DrawIndexed(this->indexCount, 0, 0);
 }
 
 const XMMATRIX& Mesh::getWorldMatrix() const

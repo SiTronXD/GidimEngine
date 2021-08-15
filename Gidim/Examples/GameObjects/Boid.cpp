@@ -10,7 +10,7 @@ Boid::Boid(Renderer& renderer)
 			XMMatrixRotationX(XM_PI * 0.5f)
 		)
 	), 
-	mesh(renderer, meshData)
+	meshInstancer(renderer, meshData)
 {
 }
 
@@ -18,11 +18,10 @@ Boid::~Boid()
 {
 }
 
-void Boid::draw()
+void Boid::draw(unsigned int numInstances)
 {
 	this->shader.update(this->renderer, XMMatrixIdentity());
-
 	this->shader.set();
 
-	this->mesh.draw(false);
+	this->meshInstancer.draw(numInstances);
 }

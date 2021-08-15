@@ -6,6 +6,9 @@
 class Mesh
 {
 private:
+	const UINT vertexStride = sizeof(Vertex);
+	const UINT vertexOffset = 0;
+
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
 
@@ -18,13 +21,27 @@ private:
 
 	bool createBuffers(MeshData& meshData);
 
+protected:
+	void prepareToDraw(ID3D11DeviceContext*& deviceContext);
+
+	const Renderer& getRenderer() const;
+
+	ID3D11Buffer*& getVertexBuffer();
+	ID3D11Buffer*& getIndexBuffer();
+
+	const unsigned int& getVertexCount() const;
+	const unsigned int& getIndexCount() const;
+
+	const UINT& getVertexStride() const;
+	const UINT& getVertexOffset() const;
+
 public:
 	Mesh(Renderer& renderer, MeshData& meshData);
-	~Mesh();
+	virtual ~Mesh();
 
 	void setWorldMatrix(XMMATRIX newWorldMatrix);
 
-	void draw(bool callDrawCommand = true);
+	virtual void draw();
 
 	const XMMATRIX& getWorldMatrix() const;
 };

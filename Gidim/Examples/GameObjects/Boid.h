@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../../ShaderHandlers/BoidRenderShader.h"
-#include "../../Engine/Graphics/MeshData.h"
-#include "../../Engine/Graphics/Mesh.h"
+#include "../../Engine/Graphics/MeshInstancer.h"
 
 class Boid
 {
@@ -12,11 +11,11 @@ private:
 	BoidRenderShader shader;
 
 	MeshData meshData;
-	Mesh mesh;
+	MeshInstancer meshInstancer;
 
 public:
 	Boid(Renderer& renderer);
 	~Boid();
 
-	void draw();
+	void draw(unsigned int numInstances);
 };

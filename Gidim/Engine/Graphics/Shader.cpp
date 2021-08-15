@@ -49,7 +49,7 @@ bool Shader::loadFromFile(
 	);
 	if (FAILED(result))
 	{
-		Log::error("Failed calling device->CreateVertexShader.");
+		Log::error("Failed creating vertex shader.");
 
 		return false;
 	}
@@ -60,18 +60,16 @@ bool Shader::loadFromFile(
 	);
 	if (FAILED(result))
 	{
-		Log::error("Failed calling device->CreatePixelShader().");
+		Log::error("Failed creating pixel shader.");
 
 		return false;
 	}
 
 	// Create input layout
-	//unsigned int numLayoutElements = sizeof(layout) / sizeof(layout[0]);
-
 	result = device->CreateInputLayout(layout.data(), layout.size(), vsData.data(), vsData.size(), &this->inputLayout);
 	if (FAILED(result))
 	{
-		Log::error("Failed calling device->CreateInputLayout().");
+		Log::error("Failed creating input layout.");
 
 		return false;
 	}
@@ -79,6 +77,7 @@ bool Shader::loadFromFile(
 	return true;
 }
 
+// Use default input layout
 Shader::Shader(Renderer& renderer,
 	std::string vertexShaderFilePath,
 	std::string pixelShaderFilePath
@@ -87,7 +86,6 @@ Shader::Shader(Renderer& renderer,
 	deviceContext(renderer.getDeviceContext()),
 	matrixBuffer(renderer, sizeof(MatrixBuffer))
 {
-	// Default layout
 	std::vector<D3D11_INPUT_ELEMENT_DESC> defaultLayout
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -102,6 +100,7 @@ Shader::Shader(Renderer& renderer,
 	);
 }
 
+// Use custom input layout
 Shader::Shader(Renderer& renderer, 
 	std::string vertexShaderFilePath, 
 	std::string pixelShaderFilePath,

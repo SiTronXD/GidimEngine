@@ -6,7 +6,7 @@
 class BoidHandler
 {
 private:
-	static const int NUM_BOIDS = 1024 * 1024 * 4;
+	static const unsigned int NUM_BOIDS = 1024 * 1024 * 1;
 
 	Renderer& renderer;
 
