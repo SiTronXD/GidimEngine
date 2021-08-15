@@ -145,6 +145,9 @@
     <ClCompile Include="Examples\GameObjects\BoidHandler.cpp" />
     <ClCompile Include="ShaderHandlers\BoidRenderShader.cpp" />
     <ClCompile Include="Engine\Graphics\MeshInstancer.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DSRV.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DUAV.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\GameObjects\CameraController.h">
@@ -234,6 +237,9 @@
     <ClInclude Include="Examples\GameObjects\BoidHandler.h" />
     <ClInclude Include="ShaderHandlers\BoidRenderShader.h" />
     <ClInclude Include="Engine\Graphics\MeshInstancer.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DSRV.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DUAV.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">

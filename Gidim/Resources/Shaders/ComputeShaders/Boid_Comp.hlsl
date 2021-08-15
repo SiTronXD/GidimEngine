@@ -6,7 +6,7 @@ cbuffer BoidBuffer : register(b0)
 	float3 padding;
 };
 
-RWStructuredBuffer<float4x4> boidsOutput : register(u0);
+RWStructuredBuffer<float4x4> boidTransforms : register(u0);
 
 uint wang_hash(uint seed)
 {
@@ -24,7 +24,7 @@ float randomFloat(float state)
 	return float(wang_hash(uint(state))) / 4294967296.0;
 }
 
-[numthreads(1024, 1, 1)]
+[numthreads(16, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;
@@ -35,7 +35,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 		offset = float3(-0.3, 0.3, 0.0);
 
 	// Apply offset
-	float3 oldPos = float3(boidsOutput[id]._41, boidsOutput[id]._42, boidsOutput[id]._43);
+	float3 oldPos = float3(boidTransforms[id]._41, boidTransforms[id]._42, boidTransforms[id]._43);
 	float3 newPos = oldPos +offset * deltaTime;
 
 	// Direction vectors
@@ -44,7 +44,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float3 upDir = cross(leftDir, forwardDir);
 
 	// Apply final matrix
-	boidsOutput[id] = float4x4(
+	boidTransforms[id] = float4x4(
 		float4(leftDir.xyz, 0.0f),
 		float4(upDir.xyz, 0.0f),
 		float4(forwardDir.xyz, 0.0f),

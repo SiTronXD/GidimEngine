@@ -155,6 +155,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DBuffer.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DSRV.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DUAV.cpp" />
     <ClCompile Include="Engine\Graphics\MeshInstancer.cpp" />
     <ClCompile Include="ShaderHandlers\BoidRenderShader.cpp" />
     <ClCompile Include="Examples\GameObjects\BoidHandler.cpp" />
@@ -199,6 +202,9 @@
     <ClCompile Include="Examples\GameObjects\Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DBuffer.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DSRV.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DUAV.h" />
     <ClInclude Include="Engine\Graphics\MeshInstancer.h" />
     <ClInclude Include="ShaderHandlers\BoidRenderShader.h" />
     <ClInclude Include="Examples\GameObjects\BoidHandler.h" />

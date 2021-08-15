@@ -9,4 +9,7 @@
 
 #include <Windows.h>
 
+#include "Engine\Dev\Helpers.h"
+#include "Engine\Dev\Log.h"
+
 using namespace DirectX;

@@ -2,19 +2,22 @@
 
 #include "Boid.h"
 #include "../../Engine/Graphics/ComputeShader.h"
+#include "../../Engine/Graphics/DirectX11/D3DBuffer.h"
+#include "../../Engine/Graphics/DirectX11/D3DUAV.h"
+#include "../../Engine/Graphics/DirectX11/D3DSRV.h"
 
 class BoidHandler
 {
 private:
-	static const unsigned int NUM_BOIDS = 1024 * 1024 * 1;
+	static const unsigned int NUM_BOIDS = 16;
 
 	Renderer& renderer;
 
 	Boid boidClone;
 
-	ID3D11Buffer* boidBuffer;
-	ID3D11UnorderedAccessView* boidBufferUAV;
-	ID3D11ShaderResourceView* boidBufferSRV;
+	D3DBuffer boidBuffer;
+	D3DUAV boidBufferUAV;
+	D3DSRV boidBufferSRV;
 
 	ComputeShader boidLogicShader;
 
