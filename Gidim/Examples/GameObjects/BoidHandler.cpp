@@ -21,27 +21,6 @@ void BoidHandler::createGPUBuffer()
 {
 	ID3D11Device* device = renderer.getDevice();
 
-	// ---------- Acceleration vectors ----------
-
-	// Buffer
-	this->boidAccelBuffer.createBuffer(
-		D3D11_BIND_UNORDERED_ACCESS,
-		sizeof(XMFLOAT3),
-		NUM_BOIDS
-	);
-
-
-	// Get description from buffer
-	D3D11_BUFFER_DESC boidAccelDesc = this->boidAccelBuffer.getDesc();
-
-	// Buffer UAV
-	this->boidAccelUAV.createUAV(
-		this->boidAccelBuffer.getBuffer(),
-		DXGI_FORMAT_UNKNOWN,
-		D3D11_UAV_DIMENSION_BUFFER,
-		boidAccelDesc.ByteWidth / boidAccelDesc.StructureByteStride
-	);
-
 	// ---------- Velocity vectors ----------
 
 	// Initial velocity vectors
@@ -97,9 +76,9 @@ void BoidHandler::createGPUBuffer()
 			&tempMat, 
 			XMMatrixTranspose(
 				XMMatrixTranslation(
-					(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
-					(rand() % 1000) / 1000.0f * 2.0f - 1.0f,
-					(rand() % 1000) / 1000.0f * 2.0f - 1.0f
+					(rand() % 1000) / 1000.0f * 2.0f * PLAY_HALF_VOLUME_SIZE - PLAY_HALF_VOLUME_SIZE,
+					(rand() % 1000) / 1000.0f * 2.0f * PLAY_HALF_VOLUME_SIZE - PLAY_HALF_VOLUME_SIZE,
+					(rand() % 1000) / 1000.0f * 2.0f * PLAY_HALF_VOLUME_SIZE - PLAY_HALF_VOLUME_SIZE
 				)
 			)
 		);
@@ -184,9 +163,6 @@ void BoidHandler::debugBoidsBuffer()
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
 
-	boidAccelBuffer(renderer, "boidAccelBuffer"),
-	boidAccelUAV(renderer, "boidAccelUAV"),
-
 	boidVelocBuffer(renderer, "boidVelocBuffer"),
 	boidVelocUAV(renderer, "boidVelocUAV"),
 
@@ -202,10 +178,12 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->createGPUBuffer();
 
 	// Add buffers to compute shader
-	this->boidLogicShader.addUAV(this->boidAccelUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidLogicShader.addShaderBuffer(this->boidLogicShaderBuffer);
+
+	// Set number of boids once
+	this->blb.numBoids = NUM_BOIDS;
 }
 
 BoidHandler::~BoidHandler()

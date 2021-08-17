@@ -9,14 +9,12 @@
 class BoidHandler
 {
 private:
-	static const unsigned int NUM_BOIDS = 16;
+	static const unsigned int NUM_BOIDS = 32;
+	static const int PLAY_HALF_VOLUME_SIZE = 5;
 
 	Renderer& renderer;
 
 	Boid boidClone;
-
-	D3DBuffer boidAccelBuffer;
-	D3DUAV boidAccelUAV;
 
 	D3DBuffer boidVelocBuffer;
 	D3DUAV boidVelocUAV;
@@ -33,7 +31,9 @@ private:
 	{
 		float deltaTime;
 
-		XMFLOAT3 padding;
+		int numBoids;
+
+		XMFLOAT2 padding;
 	} blb{};
 
 
