@@ -10,7 +10,7 @@ class BoidHandler
 {
 private:
 	static const unsigned int NUM_BOIDS = 1024 * 32; // 128
-	static const int PLAY_HALF_VOLUME_SIZE = 50;	// 5
+	static const int PLAY_HALF_VOLUME_SIZE = 50;	// 10
 
 	Renderer& renderer;
 

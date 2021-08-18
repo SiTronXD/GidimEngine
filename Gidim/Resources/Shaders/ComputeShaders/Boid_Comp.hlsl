@@ -1,5 +1,5 @@
 
-cbuffer BoidBuffer : register(b0)
+cbuffer BoidLogicBuffer : register(b0)
 {
 	float deltaTime;
 	float halfVolumeSize;
@@ -28,6 +28,7 @@ float randomFloat(float state)
 	return float(wang_hash(uint(state))) / 4294967296.0;
 }
 
+// Set magnitude of vector
 float3 setVecMag(float3 vec, float mag)
 {
 	return normalize(vec) * mag;
@@ -56,8 +57,9 @@ float3 getPos(uint boidIndex)
 	);
 }
 
-// Values defining behaviour
-#define speedScale 1.5f
+// Values for boid behaviour
+// (works best for 128 boids with a half play volume of 10)
+#define accelerationScale 1.5f
 
 #define minAccel 2.0f
 #define maxAccel 0.25f
@@ -66,6 +68,7 @@ float3 getPos(uint boidIndex)
 #define cohesionRadiusSqrd 25.0f
 #define separationRadiusSqrd 1.0f
 
+// Old separate functions for each rule
 float3 getAlignment(uint id, float3 myPos, float3 myVelocity)
 {
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
@@ -95,7 +98,6 @@ float3 getAlignment(uint id, float3 myPos, float3 myVelocity)
 
 	return currentAcceleration;
 }
-
 float3 getCohesion(uint id, float3 myPos, float3 myVelocity)
 {
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
@@ -127,7 +129,6 @@ float3 getCohesion(uint id, float3 myPos, float3 myVelocity)
 
 	return currentAcceleration;
 }
-
 float3 getSeparation(uint id, float3 myPos, float3 myVelocity)
 {
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
@@ -160,63 +161,13 @@ float3 getSeparation(uint id, float3 myPos, float3 myVelocity)
 	return currentAcceleration;
 }
 
+// One function incorporating all rules
 float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 {
-	// ---------- Alignment ----------
 	float3 alignmentAccel = float3(0.0f, 0.0f, 0.0f);
 	int alignmentBoidsInRadius = 0;
-
-	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
-	{
-		float3 deltaPos = getPos(i) - myPos;
-
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && dot(deltaPos, deltaPos) <= alignRadiusSqrd)
-		{
-			alignmentAccel += boidVelocities[i];
-			alignmentBoidsInRadius++;
-		}
-	}
-
-	// Average acceleration
-	if (alignmentBoidsInRadius > 0)
-	{
-		alignmentAccel /= float(alignmentBoidsInRadius);
-		alignmentAccel = setVecMag(alignmentAccel, minAccel);
-		alignmentAccel -= myVelocity;
-		alignmentAccel = limitVecMag(alignmentAccel, maxAccel);
-	}
-
-	// ---------- Cohesion ----------
 	float3 cohesionAccel = float3(0.0f, 0.0f, 0.0f);
 	int cohesionBoidsInRadius = 0;
-
-	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
-	{
-		float3 otherPos = getPos(i);
-		float3 deltaPos = otherPos - myPos;
-
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && dot(deltaPos, deltaPos) <= cohesionRadiusSqrd)
-		{
-			cohesionAccel += otherPos;
-			cohesionBoidsInRadius++;
-		}
-	}
-
-	// Average acceleration
-	if (cohesionBoidsInRadius > 0)
-	{
-		cohesionAccel /= float(cohesionBoidsInRadius);
-		cohesionAccel -= myPos;
-		cohesionAccel = setVecMag(cohesionAccel, minAccel);
-		cohesionAccel -= myVelocity;
-		cohesionAccel = limitVecMag(cohesionAccel, maxAccel);
-	}
-
-	// ---------- Separation ----------
 	float3 separationAccel = float3(0.0f, 0.0f, 0.0f);
 	int separationBoidsInRadius = 0;
 
@@ -227,15 +178,52 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 		float3 deltaPos = myPos - otherPos;
 		float distSqrd = dot(deltaPos, deltaPos);
 
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && distSqrd <= separationRadiusSqrd)
+		// Make sure this boid is not my boid
+		if (i != id)
 		{
-			separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
-			separationBoidsInRadius++;
+			// Alignment
+			if (distSqrd <= alignRadiusSqrd)
+			{
+				alignmentAccel += boidVelocities[i];
+				alignmentBoidsInRadius++;
+			}
+
+			// Cohesion
+			if (distSqrd <= cohesionRadiusSqrd)
+			{
+				cohesionAccel += otherPos;
+				cohesionBoidsInRadius++;
+			}
+
+			// Separation
+			if (distSqrd <= separationRadiusSqrd)
+			{
+				separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
+				separationBoidsInRadius++;
+			}
 		}
 	}
 
-	// Average acceleration
+	// ---------- Alignment ----------
+	if (alignmentBoidsInRadius > 0)
+	{
+		alignmentAccel /= float(alignmentBoidsInRadius);
+		alignmentAccel = setVecMag(alignmentAccel, minAccel);
+		alignmentAccel -= myVelocity;
+		alignmentAccel = limitVecMag(alignmentAccel, maxAccel);
+	}
+
+	// ---------- Cohesion ----------
+	if (cohesionBoidsInRadius > 0)
+	{
+		cohesionAccel /= float(cohesionBoidsInRadius);
+		cohesionAccel -= myPos;
+		cohesionAccel = setVecMag(cohesionAccel, minAccel);
+		cohesionAccel -= myVelocity;
+		cohesionAccel = limitVecMag(cohesionAccel, maxAccel);
+	}
+
+	// ---------- Separation ----------
 	if (separationBoidsInRadius > 0)
 	{
 		separationAccel /= float(separationBoidsInRadius);
@@ -263,7 +251,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float3 acceleration = getAcceleration(id, oldPos, oldVelocity);
 
 	// Apply acceleration
-	boidVelocities[id] += acceleration * deltaTime * speedScale;
+	boidVelocities[id] += acceleration * deltaTime * accelerationScale;
 
 	float3 newPos = oldPos + boidVelocities[id] * deltaTime;
 
