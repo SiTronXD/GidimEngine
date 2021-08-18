@@ -2,10 +2,11 @@
 cbuffer BoidBuffer : register(b0)
 {
 	float deltaTime;
+	float halfVolumeSize;
 
 	int numBoids;
 
-	float2 padding;
+	float padding;
 };
 
 RWStructuredBuffer<float3> boidVelocities : register(u0);
@@ -55,12 +56,18 @@ float3 getPos(uint boidIndex)
 	);
 }
 
+// Values defining behaviour
+#define speedScale 1.5f
+
+#define minAccel 2.0f
+#define maxAccel 0.25f
+
+#define alignRadiusSqrd 4.0f
+#define cohesionRadiusSqrd 25.0f
+#define separationRadiusSqrd 1.0f
+
 float3 getAlignment(uint id, float3 myPos, float3 myVelocity)
 {
-	const float alignRadiusSqrd = 5.0f * 5.0f;
-	const float minAccel = 15.0f;
-	const float maxAccel = 0.5f;
-
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
 	int numBoidsInRadius = 0;
 
@@ -91,10 +98,6 @@ float3 getAlignment(uint id, float3 myPos, float3 myVelocity)
 
 float3 getCohesion(uint id, float3 myPos, float3 myVelocity)
 {
-	const float cohesionRadiusSqrd = 2.0f * 2.0f;
-	const float minAccel = 10.0f;
-	const float maxAccel = 2.0f;
-
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
 	int numBoidsInRadius = 0;
 
@@ -127,10 +130,6 @@ float3 getCohesion(uint id, float3 myPos, float3 myVelocity)
 
 float3 getSeparation(uint id, float3 myPos, float3 myVelocity)
 {
-	const float separationRadiusSqrd = 1.0f * 1.0f;
-	const float minAccel = 3.0f;
-	const float maxAccel = 2.5f;
-
 	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
 	int numBoidsInRadius = 0;
 
@@ -161,7 +160,94 @@ float3 getSeparation(uint id, float3 myPos, float3 myVelocity)
 	return currentAcceleration;
 }
 
-[numthreads(32, 1, 1)]
+float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
+{
+	// ---------- Alignment ----------
+	float3 alignmentAccel = float3(0.0f, 0.0f, 0.0f);
+	int alignmentBoidsInRadius = 0;
+
+	// Loop through all boids
+	for (int i = 0; i < numBoids; ++i)
+	{
+		float3 deltaPos = getPos(i) - myPos;
+
+		// Check if this boid is not my boid, and if it is close enough
+		if (i != id && dot(deltaPos, deltaPos) <= alignRadiusSqrd)
+		{
+			alignmentAccel += boidVelocities[i];
+			alignmentBoidsInRadius++;
+		}
+	}
+
+	// Average acceleration
+	if (alignmentBoidsInRadius > 0)
+	{
+		alignmentAccel /= float(alignmentBoidsInRadius);
+		alignmentAccel = setVecMag(alignmentAccel, minAccel);
+		alignmentAccel -= myVelocity;
+		alignmentAccel = limitVecMag(alignmentAccel, maxAccel);
+	}
+
+	// ---------- Cohesion ----------
+	float3 cohesionAccel = float3(0.0f, 0.0f, 0.0f);
+	int cohesionBoidsInRadius = 0;
+
+	// Loop through all boids
+	for (int i = 0; i < numBoids; ++i)
+	{
+		float3 otherPos = getPos(i);
+		float3 deltaPos = otherPos - myPos;
+
+		// Check if this boid is not my boid, and if it is close enough
+		if (i != id && dot(deltaPos, deltaPos) <= cohesionRadiusSqrd)
+		{
+			cohesionAccel += otherPos;
+			cohesionBoidsInRadius++;
+		}
+	}
+
+	// Average acceleration
+	if (cohesionBoidsInRadius > 0)
+	{
+		cohesionAccel /= float(cohesionBoidsInRadius);
+		cohesionAccel -= myPos;
+		cohesionAccel = setVecMag(cohesionAccel, minAccel);
+		cohesionAccel -= myVelocity;
+		cohesionAccel = limitVecMag(cohesionAccel, maxAccel);
+	}
+
+	// ---------- Separation ----------
+	float3 separationAccel = float3(0.0f, 0.0f, 0.0f);
+	int separationBoidsInRadius = 0;
+
+	// Loop through all boids
+	for (int i = 0; i < numBoids; ++i)
+	{
+		float3 otherPos = getPos(i);
+		float3 deltaPos = myPos - otherPos;
+		float distSqrd = dot(deltaPos, deltaPos);
+
+		// Check if this boid is not my boid, and if it is close enough
+		if (i != id && distSqrd <= separationRadiusSqrd)
+		{
+			separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
+			separationBoidsInRadius++;
+		}
+	}
+
+	// Average acceleration
+	if (separationBoidsInRadius > 0)
+	{
+		separationAccel /= float(separationBoidsInRadius);
+		separationAccel = setVecMag(separationAccel, minAccel);
+		separationAccel -= myVelocity;
+		separationAccel = limitVecMag(separationAccel, maxAccel);
+	}
+
+	return alignmentAccel + cohesionAccel + separationAccel;
+}
+
+[numthreads(1024, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;
@@ -170,22 +256,22 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float3 oldVelocity = boidVelocities[id];
 
 	// Apply boid rules
-	float3 acceleration = float3(0.0f, 0.0f, 0.0f);
+	/*float3 acceleration = float3(0.0f, 0.0f, 0.0f);
 	acceleration += getAlignment(id, oldPos, oldVelocity);
 	acceleration += getCohesion(id, oldPos, oldVelocity);
-	acceleration += getSeparation(id, oldPos, oldVelocity);
+	acceleration += getSeparation(id, oldPos, oldVelocity);*/
+	float3 acceleration = getAcceleration(id, oldPos, oldVelocity);
 
 	// Apply acceleration
-	boidVelocities[id] += acceleration * deltaTime;
+	boidVelocities[id] += acceleration * deltaTime * speedScale;
 
 	float3 newPos = oldPos + boidVelocities[id] * deltaTime;
 
-	// Keep boid positions within [-5, 5]
-	const float halfSize = 5.0f;
-	newPos = frac((newPos + float3(halfSize, halfSize, halfSize)) / 
-		(float3(halfSize, halfSize, halfSize) * 2.0f)) * 
-		(float3(halfSize, halfSize, halfSize) * 2.0f) - 
-		float3(halfSize, halfSize, halfSize);
+	// Keep boid positions within [-halfVolumeSize, halfVolumeSize]
+	float3 halfSize = float3(halfVolumeSize, halfVolumeSize, halfVolumeSize);
+	newPos = frac((newPos + halfSize) /
+		(halfSize * 2.0f)) * (halfSize * 2.0f) -
+		halfSize;
 
 	// Direction vectors
 	float3 forwardDir = normalize(boidVelocities[id]);

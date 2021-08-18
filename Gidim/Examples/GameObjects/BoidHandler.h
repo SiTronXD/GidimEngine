@@ -9,8 +9,8 @@
 class BoidHandler
 {
 private:
-	static const unsigned int NUM_BOIDS = 32;
-	static const int PLAY_HALF_VOLUME_SIZE = 5;
+	static const unsigned int NUM_BOIDS = 1024 * 32; // 128
+	static const int PLAY_HALF_VOLUME_SIZE = 50;	// 5
 
 	Renderer& renderer;
 
@@ -30,10 +30,11 @@ private:
 	struct BoidLogicBuffer
 	{
 		float deltaTime;
+		float halfVolumeSize;
 
 		int numBoids;
 
-		XMFLOAT2 padding;
+		float padding;
 	} blb{};
 
 

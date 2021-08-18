@@ -170,7 +170,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
-	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 32, 1, 1),
 	boidClone(renderer),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
@@ -182,7 +182,8 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidLogicShader.addShaderBuffer(this->boidLogicShaderBuffer);
 
-	// Set number of boids once
+	// Set values in constant buffer once
+	this->blb.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
 	this->blb.numBoids = NUM_BOIDS;
 }
 
