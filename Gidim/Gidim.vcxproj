@@ -179,7 +179,6 @@
     <ClCompile Include="Examples\RunnableExample.cpp" />
     <ClCompile Include="ShaderHandlers\ColorShader.cpp" />
     <ClCompile Include="Engine\Graphics\ComputeShader.cpp" />
-    <ClCompile Include="Engine\Graphics\DirectX11\SDXBuffer.cpp" />
     <ClCompile Include="External\DDSTextureLoader11.cpp" />
     <ClCompile Include="External\WICTextureLoader11.cpp" />
     <ClCompile Include="Engine\Application\Input.cpp" />
@@ -189,7 +188,7 @@
     <ClCompile Include="Engine\Graphics\MeshData.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\Shader.cpp" />
-    <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp" />
+    <ClCompile Include="Engine\Graphics\ConstantBuffer.cpp" />
     <ClCompile Include="ShaderHandlers\SkyboxShader.cpp" />
     <ClCompile Include="Engine\SMath.cpp" />
     <ClCompile Include="Engine\Graphics\Texture.cpp" />
@@ -217,7 +216,6 @@
     <ClInclude Include="Examples\RunnableExample.h" />
     <ClInclude Include="ShaderHandlers\ColorShader.h" />
     <ClInclude Include="Engine\Graphics\ComputeShader.h" />
-    <ClInclude Include="Engine\Graphics\DirectX11\SDXBuffer.h" />
     <ClInclude Include="External\DDSTextureLoader11.h" />
     <ClInclude Include="External\WICTextureLoader11.h" />
     <ClInclude Include="Engine\Application\Input.h" />
@@ -227,7 +225,7 @@
     <ClInclude Include="Engine\Graphics\Renderer.h" />
     <ClInclude Include="Engine\Dev\Helpers.h" />
     <ClInclude Include="Engine\Graphics\Shader.h" />
-    <ClInclude Include="Engine\Graphics\ShaderBuffer.h" />
+    <ClInclude Include="Engine\Graphics\ConstantBuffer.h" />
     <ClInclude Include="ShaderHandlers\SkyboxShader.h" />
     <ClInclude Include="Engine\SMath.h" />
     <ClInclude Include="Engine\Graphics\Texture.h" />
@@ -240,6 +238,20 @@
     <ClInclude Include="Examples\GameObjects\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidInsertList_Comp.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)/CompiledShaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)/CompiledShaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)/CompiledShaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)/CompiledShaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\Boid_Comp.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>

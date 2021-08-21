@@ -9,23 +9,16 @@
 class BoidHandler
 {
 private:
-	static const unsigned int NUM_BOIDS = 1024 * 32; // 128
-	static const int PLAY_HALF_VOLUME_SIZE = 50;	// 10
+	static const unsigned int NUM_BOIDS = 2; // 128, 1024 * 32
+	static const int PLAY_HALF_VOLUME_SIZE = 5;	// 10, 50
 
-	Renderer& renderer;
+	struct BoidInsertBuffer
+	{
+		float halfVolumeSize;
+		float maxSearchRadius;
 
-	Boid boidClone;
-
-	D3DBuffer boidVelocBuffer;
-	D3DUAV boidVelocUAV;
-
-	D3DBuffer boidBuffer;
-	D3DUAV boidBufferUAV;
-	D3DSRV boidBufferSRV;
-
-	ComputeShader boidLogicShader;
-
-	ShaderBuffer boidLogicShaderBuffer;
+		XMFLOAT2 padding;
+	} bInsertb{};
 
 	struct BoidLogicBuffer
 	{
@@ -35,11 +28,31 @@ private:
 		int numBoids;
 
 		float padding;
-	} blb{};
+	} bLogicb{};
+
+	Renderer& renderer;
+
+	Boid boidClone;
+
+	D3DBuffer boidListBuffer;
+	D3DUAV boidListBufferUAV;
+
+	D3DBuffer boidVelocBuffer;
+	D3DUAV boidVelocUAV;
+
+	D3DBuffer boidBuffer;
+	D3DUAV boidBufferUAV;
+	D3DSRV boidBufferSRV;
+
+	ComputeShader boidInsertShader;
+	ComputeShader boidLogicShader;
+
+	ConstantBuffer boidInsertShaderBuffer;
+	ConstantBuffer boidLogicShaderBuffer;
 
 
-	void createGPUBuffer();
-	void debugBoidsBuffer();
+	void createGPUBuffers();
+	void printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int index);
 
 	unsigned int getWangHash(unsigned int seed);
 	float getWangHashFloat(unsigned int state);

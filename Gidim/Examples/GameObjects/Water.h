@@ -2,7 +2,7 @@
 
 #include "../../Engine/Graphics/Mesh.h"
 #include "../../Engine/Graphics/ComputeShader.h"
-#include "../../Engine/Graphics/ShaderBuffer.h"
+#include "../../Engine/Graphics/ConstantBuffer.h"
 #include "../../ShaderHandlers/WaterShader.h"
 #include "Skybox.h"
 
@@ -128,17 +128,17 @@ private:
 	Texture foamTexture;
 
 	// FFT shader buffers
-	ShaderBuffer spectrumCreatorShaderBuffer;
-	ShaderBuffer spectrumInterpolationShaderBuffer;
-	ShaderBuffer butterflyTextureShaderBuffer;
-	ShaderBuffer butterflyOperationShaderBuffer;
-	ShaderBuffer invPermShaderBuffer;
+	ConstantBuffer spectrumCreatorShaderBuffer;
+	ConstantBuffer spectrumInterpolationShaderBuffer;
+	ConstantBuffer butterflyTextureShaderBuffer;
+	ConstantBuffer butterflyOperationShaderBuffer;
+	ConstantBuffer invPermShaderBuffer;
 
-	ShaderBuffer disToNormShaderBuffer;
-	ShaderBuffer foamMaskShaderBuffer;
+	ConstantBuffer disToNormShaderBuffer;
+	ConstantBuffer foamMaskShaderBuffer;
 
-	ShaderBuffer waterVertexShaderBuffer;
-	ShaderBuffer waterShaderBuffer;
+	ConstantBuffer waterVertexShaderBuffer;
+	ConstantBuffer waterShaderBuffer;
 
 	Skybox* skybox;
 	CubeMap* reflectedCubeMap;

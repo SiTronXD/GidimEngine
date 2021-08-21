@@ -23,5 +23,5 @@ public:
 		UINT numElements
 	);
 
-	ID3D11UnorderedAccessView* getUAV() const;
+	inline ID3D11UnorderedAccessView* getUAV() const { return this->bufferUAV; }
 };

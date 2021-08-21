@@ -63,10 +63,17 @@ ComputeShader::~ComputeShader()
 
 void ComputeShader::run()
 {
+	// Make sure atleast 1 resource is attached
+	if (this->unorderedAccessViews.size() <= 0 && this->renderTextures.size() <= 0 &&
+		this->constantBuffers.size() <= 0)
+	{
+		Log::error("This compute shader has no resources attached to it...");
+	}
+
 	// Set
 	this->deviceContext->CSSetShader(this->computeShader, NULL, 0);
 	this->deviceContext->CSSetUnorderedAccessViews(
-		0, this->currentUAVs.size(), VECTOR_ADDRESS(this->currentUAVs), NULL
+		0, this->unorderedAccessViews.size(), VECTOR_ADDRESS(this->unorderedAccessViews), NULL
 	);
 	this->deviceContext->CSSetConstantBuffers(
 		0, this->constantBuffers.size(), VECTOR_ADDRESS(this->constantBuffers)
@@ -89,7 +96,7 @@ void ComputeShader::run()
 		this->renderTextures[i]->createSRV();
 }
 
-void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
+void ComputeShader::addConstantBuffer(ConstantBuffer& buffer)
 {
 	// Add constant buffer, if we haven't reached the maximum yet
 	if (this->constantBuffers.size() < NUM_MAX_CONSTANT_BUFFERS)
@@ -102,7 +109,12 @@ void ComputeShader::addShaderBuffer(ShaderBuffer& buffer)
 
 void ComputeShader::addUAV(ID3D11UnorderedAccessView* uavToAdd)
 {
-	this->currentUAVs.push_back(uavToAdd);
+	if (this->unorderedAccessViews.size() < NUM_MAX_UAV)
+	{
+		this->unorderedAccessViews.push_back(uavToAdd);
+	}
+	else
+		Log::error("Too many UAVs were attempted to be added for this compute shader.");
 }
 
 void ComputeShader::addRenderTexture(Texture& texture)
@@ -117,14 +129,15 @@ void ComputeShader::addRenderTexture(Texture& texture)
 		Log::error("Too many render textures were attempted to be added for this compute shader.");
 }
 
+// This is assuming that all UAVs have corresponding render textures
 void ComputeShader::removeRenderTextureAt(int index)
 {
 	this->renderTextures.erase(this->renderTextures.begin() + index);
-	this->currentUAVs.erase(this->currentUAVs.begin() + index);
+	this->unorderedAccessViews.erase(this->unorderedAccessViews.begin() + index);
 }
 
 void ComputeShader::removeAllRenderTextures()
 {
 	this->renderTextures.clear();
-	this->currentUAVs.clear();
+	this->unorderedAccessViews.clear();
 }

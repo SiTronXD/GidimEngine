@@ -28,7 +28,7 @@ private:
 
 	SkyboxShader shader;
 
-	ShaderBuffer shaderBuffer;
+	ConstantBuffer constantBuffer;
 
 	CubeMap skyCubeMap;
 	ComputeShader preethamCreatorShader;

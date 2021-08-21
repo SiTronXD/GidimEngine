@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "Texture.h"
 #include "CubeMap.h"
-#include "ShaderBuffer.h"
+#include "ConstantBuffer.h"
 
 class ComputeShader
 {
@@ -19,7 +19,7 @@ private:
 	ID3D11Buffer* constantBufferNULL[NUM_MAX_CONSTANT_BUFFERS];
 
 	std::vector<Texture*> renderTextures;
-	std::vector<ID3D11UnorderedAccessView*> currentUAVs;
+	std::vector<ID3D11UnorderedAccessView*> unorderedAccessViews;
 	std::vector<ID3D11Buffer*> constantBuffers;
 
 	ID3D11Device* device;
@@ -32,14 +32,17 @@ private:
 	bool createFromFile(std::string path);
 
 public:
-	ComputeShader(Renderer& renderer, const std::string path, int threadGroupX, int threadGroupY, 
+	ComputeShader(Renderer& renderer, const std::string path, 
+		int threadGroupX, 
+		int threadGroupY = 1, 
 		int threadGroupZ = 1);
 	~ComputeShader();
 
 	void run();
-	void addRenderTexture(Texture& texture);
-	void addShaderBuffer(ShaderBuffer& buffer);
+
+	void addConstantBuffer(ConstantBuffer& buffer);
 	void addUAV(ID3D11UnorderedAccessView* uavToAdd);
+	void addRenderTexture(Texture& texture);
 
 	void removeRenderTextureAt(int index);
 	void removeAllRenderTextures();

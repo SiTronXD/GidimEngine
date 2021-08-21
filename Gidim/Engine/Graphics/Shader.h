@@ -2,7 +2,7 @@
 
 #include "../../pch.h"
 #include "Renderer.h"
-#include "ShaderBuffer.h"
+#include "ConstantBuffer.h"
 
 using namespace DirectX;
 
@@ -23,7 +23,7 @@ private:
 
 	ID3D11DeviceContext* deviceContext;
 
-	ShaderBuffer matrixBuffer;
+	ConstantBuffer matrixBuffer;
 
 	bool loadFromFile(
 		ID3D11Device* device,

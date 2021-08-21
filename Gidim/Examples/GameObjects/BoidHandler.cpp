@@ -17,9 +17,26 @@ float BoidHandler::getWangHashFloat(unsigned int state)
 	return this->getWangHash(state) / 4294967296.0;
 }
 
-void BoidHandler::createGPUBuffer()
+void BoidHandler::createGPUBuffers()
 {
 	ID3D11Device* device = renderer.getDevice();
+
+	// ---------- Unsorted list buffer ----------
+
+	// Buffer
+	this->boidListBuffer.createArrayBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(unsigned int) * 2,
+		NUM_BOIDS
+	);
+
+	// Buffer UAV
+	this->boidListBufferUAV.createUAV(
+		this->boidListBuffer.getBuffer(),
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER,
+		this->boidListBuffer.getNumElements()
+	);
 
 	// ---------- Velocity vectors ----------
 
@@ -46,7 +63,7 @@ void BoidHandler::createGPUBuffer()
 	initialVelocData.pSysMem = initialVeloc;
 
 	// Buffer
-	this->boidVelocBuffer.createBuffer(
+	this->boidVelocBuffer.createArrayBuffer(
 		D3D11_BIND_UNORDERED_ACCESS,
 		sizeof(XMFLOAT3),
 		NUM_BOIDS,
@@ -54,15 +71,12 @@ void BoidHandler::createGPUBuffer()
 	);
 	delete[] initialVeloc;
 
-	// Get description from buffer
-	D3D11_BUFFER_DESC boidVelocDesc = this->boidVelocBuffer.getDesc();
-
 	// Buffer UAV
 	this->boidVelocUAV.createUAV(
 		this->boidVelocBuffer.getBuffer(),
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER,
-		boidVelocDesc.ByteWidth / boidVelocDesc.StructureByteStride
+		this->boidVelocBuffer.getNumElements()
 	);
 
 	// ---------- Transformation matrices ----------
@@ -90,7 +104,7 @@ void BoidHandler::createGPUBuffer()
 	initialBufferData.pSysMem = initialMatrices;
 	
 	// Buffer
-	this->boidBuffer.createBuffer(
+	this->boidBuffer.createArrayBuffer(
 		D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 		sizeof(XMFLOAT4X4),
 		NUM_BOIDS,
@@ -99,16 +113,12 @@ void BoidHandler::createGPUBuffer()
 
 	delete[] initialMatrices;
 
-	// Get description from buffer
-	D3D11_BUFFER_DESC boidBufferDesc = this->boidBuffer.getDesc();
-	
-
 	// Buffer UAV
 	this->boidBufferUAV.createUAV(
 		this->boidBuffer.getBuffer(),
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER,
-		boidBufferDesc.ByteWidth / boidBufferDesc.StructureByteStride
+		this->boidBuffer.getNumElements()
 	);
 
 	// Buffer SRV
@@ -116,11 +126,11 @@ void BoidHandler::createGPUBuffer()
 		this->boidBuffer.getBuffer(), 
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_SRV_DIMENSION_BUFFER,
-		boidBufferDesc.ByteWidth / boidBufferDesc.StructureByteStride
+		this->boidBuffer.getNumElements()
 	);
 }
 
-void BoidHandler::debugBoidsBuffer()
+void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int index)
 {
 	// --- Read buffer from GPU to CPU
 	ID3D11Device* device = this->renderer.getDevice();
@@ -128,7 +138,7 @@ void BoidHandler::debugBoidsBuffer()
 
 	// Initialize temporary readable buffer description 
 	ID3D11Buffer* debugbuf = nullptr;
-	D3D11_BUFFER_DESC desc = this->boidBuffer.getDesc();
+	D3D11_BUFFER_DESC desc = debugBuffer.getDesc();
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.BindFlags = 0;
@@ -138,7 +148,7 @@ void BoidHandler::debugBoidsBuffer()
 	if (SUCCEEDED(device->CreateBuffer(&desc, NULL, &debugbuf)))
 	{
 		// Copy data from GPU buffer to readable buffer
-		deviceContext->CopyResource(debugbuf, this->boidBuffer.getBuffer());
+		deviceContext->CopyResource(debugbuf, debugBuffer.getBuffer());
 
 		// Map data
 		D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -147,10 +157,10 @@ void BoidHandler::debugBoidsBuffer()
 			Log::error("Failed to map debugbuf.");
 		}
 
-		// Use data
+		// Print data
 		Log::print("X: " +
 			std::to_string(
-				((float*)mappedResource.pData)[0]
+				((unsigned int*) mappedResource.pData)[index]
 			)
 		);
 
@@ -163,6 +173,9 @@ void BoidHandler::debugBoidsBuffer()
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
 
+	boidListBuffer(renderer, "boidListBuffer"),
+	boidListBufferUAV(renderer, "boidListBufferUAV"),
+
 	boidVelocBuffer(renderer, "boidVelocBuffer"),
 	boidVelocUAV(renderer, "boidVelocUAV"),
 
@@ -170,21 +183,33 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
-	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 32, 1, 1),
+	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", 1, 1, 1),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
 	boidClone(renderer),
+	boidInsertShaderBuffer(renderer, sizeof(BoidInsertBuffer)),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
-	// Prepare buffer
-	this->createGPUBuffer();
+	// Prepare buffers
+	this->createGPUBuffers();
 
-	// Add buffers to compute shader
+	// Add buffers to list compute shader
+	this->boidInsertShader.addUAV(this->boidListBufferUAV.getUAV());
+	this->boidInsertShader.addUAV(this->boidBufferUAV.getUAV());
+	this->boidInsertShader.addConstantBuffer(this->boidInsertShaderBuffer);
+
+	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
-	this->boidLogicShader.addShaderBuffer(this->boidLogicShaderBuffer);
+	this->boidLogicShader.addConstantBuffer(this->boidLogicShaderBuffer);
 
-	// Set values in constant buffer once
-	this->blb.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
-	this->blb.numBoids = NUM_BOIDS;
+	// Set values in list constant buffer once
+	this->bInsertb.halfVolumeSize = PLAY_HALF_VOLUME_SIZE;
+	this->bInsertb.maxSearchRadius = 5.0f;
+	this->boidInsertShaderBuffer.update(&this->bInsertb);
+
+	// Set values in logic constant buffer once
+	this->bLogicb.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
+	this->bLogicb.numBoids = NUM_BOIDS;
 }
 
 BoidHandler::~BoidHandler()
@@ -194,14 +219,22 @@ BoidHandler::~BoidHandler()
 
 void BoidHandler::updateBoids(float deltaTime)
 {
+	// ---------- Boid insert list shader ----------
+	this->boidInsertShader.run();
+
+
+	// ---------- Boid logic shader ----------
+
 	// Update logic shader buffer
-	this->blb.deltaTime = deltaTime;
-	this->boidLogicShaderBuffer.update(&this->blb.deltaTime);
+	this->bLogicb.deltaTime = deltaTime;
+	this->boidLogicShaderBuffer.update(&this->bLogicb);
 
 	// Run boids logic shader
 	this->boidLogicShader.run();
 
-	//this->debugBoidsBuffer();
+
+	// Debug GPU buffer
+	//this->printBoidBufferElement(this->boidListBuffer, 3);
 }
 
 void BoidHandler::drawBoids()

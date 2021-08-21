@@ -3,7 +3,7 @@
 
 Skybox::Skybox(Renderer& renderer)
 	: meshData(DefaultMesh::CUBE, 0, 0, true), mesh(renderer, this->meshData),
-	shader(renderer), shaderBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
+	shader(renderer), constantBuffer(renderer, sizeof(SkyboxBuffer)), renderer(renderer),
 	timer(0.0f), skyCubeMap(renderer/*, TextureFilter::NEAREST_NEIGHBOR*/), 
 	preethamCreatorShader(renderer, "CompiledShaders/PreethamSkyCreator_Comp.cso", CUBE_FACE_WIDTH / 16, CUBE_FACE_HEIGHT / 16, 6 / 2)
 {
@@ -15,7 +15,7 @@ Skybox::Skybox(Renderer& renderer)
 
 	// Preetham creator shader
 	this->preethamCreatorShader.addRenderTexture(this->skyCubeMap);
-	this->preethamCreatorShader.addShaderBuffer(this->shaderBuffer);
+	this->preethamCreatorShader.addConstantBuffer(this->constantBuffer);
 
 	// Set constants in shader buffer struct
 	this->sb.faceWidth = CUBE_FACE_WIDTH;
@@ -35,7 +35,7 @@ void Skybox::draw()
 	// Update and set shader buffer
 	this->sb.sunDir = this->sunDir;
 	this->sb.turbidity = 2.0f;
-	this->shaderBuffer.update(&this->sb);
+	this->constantBuffer.update(&this->sb);
 
 	// Render sky box
 	this->preethamCreatorShader.run();

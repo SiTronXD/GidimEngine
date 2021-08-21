@@ -81,7 +81,7 @@ Water::Water(Renderer& renderer)
 
 	// Spectrum texture creator shader
 	this->spectrumCreatorShader.addRenderTexture(this->initialSpectrumTexture);
-	this->spectrumCreatorShader.addShaderBuffer(this->spectrumCreatorShaderBuffer);
+	this->spectrumCreatorShader.addConstantBuffer(this->spectrumCreatorShaderBuffer);
 	this->spectrumCreatorShader.run();
 
 
@@ -95,7 +95,7 @@ Water::Water(Renderer& renderer)
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureX);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureY);
 	this->spectrumInterpolatorShader.addRenderTexture(this->finalSpectrumTextureZ);
-	this->spectrumInterpolatorShader.addShaderBuffer(this->spectrumInterpolationShaderBuffer);
+	this->spectrumInterpolatorShader.addConstantBuffer(this->spectrumInterpolationShaderBuffer);
 
 	// Update butterfly texture shader constant buffer
 	this->btb.gridSize = GRID_WIDTH;
@@ -103,12 +103,12 @@ Water::Water(Renderer& renderer)
 
 	// Butterfly texture shader
 	this->butterflyTextureShader.addRenderTexture(this->butterflyTexture);
-	this->butterflyTextureShader.addShaderBuffer(this->butterflyTextureShaderBuffer);
+	this->butterflyTextureShader.addConstantBuffer(this->butterflyTextureShaderBuffer);
 	this->butterflyTextureShader.run();
 
 	// Butterfly operations shader
 	this->butterflyOperationsShader.addRenderTexture(this->butterflyTexture);
-	this->butterflyOperationsShader.addShaderBuffer(this->butterflyOperationShaderBuffer);
+	this->butterflyOperationsShader.addConstantBuffer(this->butterflyOperationShaderBuffer);
 
 	// Update inversion and permutation shader buffer
 	this->ipb.gridSize = GRID_WIDTH;
@@ -119,7 +119,7 @@ Water::Water(Renderer& renderer)
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureY);
 	this->invPermShader.addRenderTexture(this->finalSpectrumTextureZ);
 	this->invPermShader.addRenderTexture(this->displacementTexture);
-	this->invPermShader.addShaderBuffer(this->invPermShaderBuffer);
+	this->invPermShader.addConstantBuffer(this->invPermShaderBuffer);
 
 	// Update displacementmap to normalmap shader buffer
 	this->htnb.gridWidth = GRID_WIDTH;
@@ -132,7 +132,7 @@ Water::Water(Renderer& renderer)
 	// Heightmap to normal map shader
 	this->displacementToNormalShader.addRenderTexture(this->displacementTexture);
 	this->displacementToNormalShader.addRenderTexture(this->normalMapTexture);
-	this->displacementToNormalShader.addShaderBuffer(this->disToNormShaderBuffer);
+	this->displacementToNormalShader.addConstantBuffer(this->disToNormShaderBuffer);
 
 	// Update foam mask buffer
 	this->fmb.gridWidth = GRID_WIDTH;
@@ -143,7 +143,7 @@ Water::Water(Renderer& renderer)
 	// Foam mask shader
 	this->foamMaskShader.addRenderTexture(this->displacementTexture);
 	this->foamMaskShader.addRenderTexture(this->foamMaskTexture);
-	this->foamMaskShader.addShaderBuffer(this->foamMaskShaderBuffer);
+	this->foamMaskShader.addConstantBuffer(this->foamMaskShaderBuffer);
 
 	// Update water vertex shader buffer
 	this->wvb.lambdaDispScale = this->lambdaDisplacementScale;

@@ -37,8 +37,3 @@ void D3DUAV::createUAV(
 		Log::resultFailed("Failed creating UAV: " + this->debugName + ".", result);
 	}
 }
-
-ID3D11UnorderedAccessView* D3DUAV::getUAV() const
-{
-	return this->bufferUAV;
-}

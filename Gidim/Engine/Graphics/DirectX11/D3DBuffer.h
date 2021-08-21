@@ -10,20 +10,29 @@ private:
 
 	Renderer& renderer;
 
+	UINT numElements;
+
 	std::string debugName;
 
 public:
 	D3DBuffer(Renderer& renderer, std::string debugName);
 	~D3DBuffer();
 
-	void createBuffer(
+	void createArrayBuffer(
 		UINT bindFlags,
 		UINT elementSize,
 		UINT numElements,
 		D3D11_SUBRESOURCE_DATA* initialBufferData = nullptr
 	);
+	void createConstantBuffer(UINT structSize);
+
+	void map(
+		D3D11_MAPPED_SUBRESOURCE& inputMappedSubresource
+	);
+	void unmap();
 
 	D3D11_BUFFER_DESC getDesc();
 
-	ID3D11Buffer* getBuffer() const;
+	inline ID3D11Buffer* getBuffer() const { return this->buffer; }
+	inline const UINT& getNumElements() const { return this->numElements; }
 };

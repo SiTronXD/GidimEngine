@@ -48,6 +48,7 @@ float3 limitVecMag(float3 vec, float maxMag)
 	return vec;
 }
 
+// Extract position from transformation matrix
 float3 getPos(uint boidIndex)
 {
 	return float3(
@@ -235,7 +236,7 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	return alignmentAccel + cohesionAccel + separationAccel;
 }
 
-[numthreads(1024, 1, 1)]
+[numthreads(2, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;

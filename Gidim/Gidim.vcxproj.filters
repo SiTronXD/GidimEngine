@@ -56,6 +56,12 @@
     <Filter Include="Shaders\ComputeShaders\WaterFFT\Stage 4">
       <UniqueIdentifier>{aed1e930-8a48-4b17-8d4e-1a8d53e3cdc0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Examples">
+      <UniqueIdentifier>{735787a2-7ab9-4083-bab1-307404486eba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Examples\GameObjects">
+      <UniqueIdentifier>{cef5ebc4-1724-4252-ac6b-763770938c71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -118,16 +124,13 @@
     <ClCompile Include="Engine\SMath.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\DirectX11\SDXBuffer.cpp">
-      <Filter>Engine\Graphics\DirectX</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderHandlers\WaterShader.cpp">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClCompile>
     <ClCompile Include="Examples\GameObjects\Water.cpp">
       <Filter>Gidim\Examples</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\ShaderBuffer.cpp">
+    <ClCompile Include="Engine\Graphics\ConstantBuffer.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -139,15 +142,33 @@
     <ClCompile Include="Engine\Graphics\CubeMap.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Examples\RunnableExample.cpp" />
-    <ClCompile Include="Examples\BoidsExample.cpp" />
-    <ClCompile Include="Examples\GameObjects\Boid.cpp" />
-    <ClCompile Include="Examples\GameObjects\BoidHandler.cpp" />
-    <ClCompile Include="ShaderHandlers\BoidRenderShader.cpp" />
-    <ClCompile Include="Engine\Graphics\MeshInstancer.cpp" />
-    <ClCompile Include="Engine\Graphics\DirectX11\D3DSRV.cpp" />
-    <ClCompile Include="Engine\Graphics\DirectX11\D3DUAV.cpp" />
-    <ClCompile Include="Engine\Graphics\DirectX11\D3DBuffer.cpp" />
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DUAV.cpp">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DSRV.cpp">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\DirectX11\D3DBuffer.cpp">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\MeshInstancer.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\GameObjects\Boid.cpp">
+      <Filter>Examples\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\BoidsExample.cpp">
+      <Filter>Examples</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\RunnableExample.cpp">
+      <Filter>Examples</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderHandlers\BoidRenderShader.cpp">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Examples\GameObjects\BoidHandler.cpp">
+      <Filter>Examples\GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Examples\GameObjects\CameraController.h">
@@ -207,9 +228,6 @@
     <ClInclude Include="Engine\SMath.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\DirectX11\SDXBuffer.h">
-      <Filter>Engine\Graphics\DirectX</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderHandlers\WaterShader.h">
       <Filter>Gidim\ShaderClasses</Filter>
     </ClInclude>
@@ -219,7 +237,7 @@
     <ClInclude Include="Examples\GameObjects\Water.h">
       <Filter>Gidim\Examples</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\ShaderBuffer.h">
+    <ClInclude Include="Engine\Graphics\ConstantBuffer.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -231,15 +249,33 @@
     <ClInclude Include="Engine\Graphics\CubeMap.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Examples\RunnableExample.h" />
-    <ClInclude Include="Examples\BoidsExample.h" />
-    <ClInclude Include="Examples\GameObjects\Boid.h" />
-    <ClInclude Include="Examples\GameObjects\BoidHandler.h" />
-    <ClInclude Include="ShaderHandlers\BoidRenderShader.h" />
-    <ClInclude Include="Engine\Graphics\MeshInstancer.h" />
-    <ClInclude Include="Engine\Graphics\DirectX11\D3DSRV.h" />
-    <ClInclude Include="Engine\Graphics\DirectX11\D3DUAV.h" />
-    <ClInclude Include="Engine\Graphics\DirectX11\D3DBuffer.h" />
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DUAV.h">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DSRV.h">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\DirectX11\D3DBuffer.h">
+      <Filter>Engine\Graphics\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\MeshInstancer.h">
+      <Filter>Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples\GameObjects\Boid.h">
+      <Filter>Examples\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples\BoidsExample.h">
+      <Filter>Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples\RunnableExample.h">
+      <Filter>Examples</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderHandlers\BoidRenderShader.h">
+      <Filter>Gidim\ShaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Examples\GameObjects\BoidHandler.h">
+      <Filter>Examples\GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\PixelShaders\DefaultColorShader_Pix.hlsl">
@@ -298,6 +334,9 @@
     </FxCompile>
     <FxCompile Include="Resources\Shaders\PixelShaders\Boid_Pix.hlsl">
       <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidInsertList_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
