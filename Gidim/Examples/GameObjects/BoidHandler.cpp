@@ -1,5 +1,6 @@
 #include "../../pch.h"
 #include "BoidHandler.h"
+#include "../../Engine/Application/Time.h"
 
 unsigned int BoidHandler::getWangHash(unsigned int seed)
 {
@@ -158,11 +159,17 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 		}
 
 		// Print data
-		Log::print("X: " +
-			std::to_string(
-				((unsigned int*) mappedResource.pData)[index]
-			)
-		);
+		for (int i = 0; i < 16; ++i)
+		{
+			Log::print("uint(" +
+				std::to_string(
+					((unsigned int*)mappedResource.pData)[i * 2 + 0]
+				) + ", " +
+				std::to_string(
+					((unsigned int*)mappedResource.pData)[i * 2 + 1]
+				) + ")"
+			);
+		}
 
 		// Unmap and release temporary buffer
 		deviceContext->Unmap(debugbuf, 0);
@@ -184,6 +191,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", 1, 1, 1),
+	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", 1, 1, 1),
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
 	boidClone(renderer),
 	boidInsertShaderBuffer(renderer, sizeof(BoidInsertBuffer)),
@@ -196,6 +204,9 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->boidInsertShader.addUAV(this->boidListBufferUAV.getUAV());
 	this->boidInsertShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidInsertShader.addConstantBuffer(this->boidInsertShaderBuffer);
+
+	// Add buffers to sort compute shader
+	this->boidSortShader.addUAV(this->boidListBufferUAV.getUAV());
 
 	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
@@ -222,6 +233,24 @@ void BoidHandler::updateBoids(float deltaTime)
 	// ---------- Boid insert list shader ----------
 	this->boidInsertShader.run();
 
+	// ---------- Boid list sort shader ----------
+
+	if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	{
+		// Debug GPU buffer
+		Log::print("--------------------");
+		Log::print("before sort:");
+		this->printBoidBufferElement(this->boidListBuffer, 0);
+	}
+
+	this->boidSortShader.run();
+
+	if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	{
+		// Debug GPU buffer
+		Log::print("after sort:");
+		this->printBoidBufferElement(this->boidListBuffer, 0);
+	}
 
 	// ---------- Boid logic shader ----------
 
@@ -231,10 +260,6 @@ void BoidHandler::updateBoids(float deltaTime)
 
 	// Run boids logic shader
 	this->boidLogicShader.run();
-
-
-	// Debug GPU buffer
-	//this->printBoidBufferElement(this->boidListBuffer, 3);
 }
 
 void BoidHandler::drawBoids()

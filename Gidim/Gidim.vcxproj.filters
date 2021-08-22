@@ -338,5 +338,8 @@
     <FxCompile Include="Resources\Shaders\ComputeShaders\BoidInsertList_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidListSort_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

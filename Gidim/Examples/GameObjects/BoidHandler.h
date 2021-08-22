@@ -9,8 +9,8 @@
 class BoidHandler
 {
 private:
-	static const unsigned int NUM_BOIDS = 2; // 128, 1024 * 32
-	static const int PLAY_HALF_VOLUME_SIZE = 5;	// 10, 50
+	static const unsigned int NUM_BOIDS = 16; // 128, 1024 * 32
+	static const int PLAY_HALF_VOLUME_SIZE = 10;	// 10, 50
 
 	struct BoidInsertBuffer
 	{
@@ -45,6 +45,7 @@ private:
 	D3DSRV boidBufferSRV;
 
 	ComputeShader boidInsertShader;
+	ComputeShader boidSortShader;
 	ComputeShader boidLogicShader;
 
 	ConstantBuffer boidInsertShaderBuffer;

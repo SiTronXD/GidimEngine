@@ -31,11 +31,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 void Window::handleFrame()
 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	// Exit if the escape button is pressed
 	if (Input::isKeyDown(Keys::ESCAPE))
 		this->running = false;
-#endif
+//#endif
 }
 
 Window::Window(int windowWidth, int windowHeight, std::string windowTitle)
@@ -179,8 +179,11 @@ bool Window::update()
 	);
 
 	// Lock cursor position
-	ClientToScreen(this->handle, &newCursorPoint);
-	SetCursorPos(newCursorPoint.x, newCursorPoint.y);
+	if (this->isFocus())
+	{
+		ClientToScreen(this->handle, &newCursorPoint);
+		SetCursorPos(newCursorPoint.x, newCursorPoint.y);
+	}
 
 	// Update cursor position
 	input.setCursorPos(newCursorPoint.x, newCursorPoint.y);
@@ -259,4 +262,9 @@ const int& Window::getWidth() const
 const int& Window::getHeight() const
 {
 	return windowHeight;
+}
+
+const bool Window::isFocus() const
+{
+	return GetFocus() != NULL;
 }

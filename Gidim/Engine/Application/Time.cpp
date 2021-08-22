@@ -53,6 +53,11 @@ const bool Time::hasOneSecondPassed()
 	return oneSecondPassed;
 }
 
+const float& Time::getTimeSinceStart()
+{
+	return gameTimer;
+}
+
 const int& Time::getFramesPerSecond()
 {
 	return currentFPS;

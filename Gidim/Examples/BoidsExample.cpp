@@ -54,7 +54,8 @@ void BoidsExample::run()
 		/////////////////////////////////////////////////////////////////////////
 		// GAME LOGIC
 
-		cameraController.update();
+		if(window.isFocus())
+			cameraController.update();
 
 		// Print fps once every second
 		if (Time::hasOneSecondPassed())

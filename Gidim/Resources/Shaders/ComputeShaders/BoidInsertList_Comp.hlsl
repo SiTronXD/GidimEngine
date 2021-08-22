@@ -36,7 +36,7 @@ uint getCellID(uint id)
 	return uint(pos.x + pos.y * maxNumCells + pos.z * maxNumCells * maxNumCells);
 }
 
-[numthreads(2, 1, 1)]
+[numthreads(16, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;

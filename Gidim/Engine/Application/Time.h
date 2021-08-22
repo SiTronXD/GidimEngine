@@ -29,4 +29,5 @@ public:
 	static const float& getDeltaTime();
 	static const int& getFramesPerSecond();
 	static const bool hasOneSecondPassed();
+	static const float& getTimeSinceStart();
 };

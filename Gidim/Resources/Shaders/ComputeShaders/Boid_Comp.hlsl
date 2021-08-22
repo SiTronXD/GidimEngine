@@ -236,7 +236,7 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	return alignmentAccel + cohesionAccel + separationAccel;
 }
 
-[numthreads(2, 1, 1)]
+[numthreads(16, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;

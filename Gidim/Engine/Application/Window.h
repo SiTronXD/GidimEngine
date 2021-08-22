@@ -40,4 +40,6 @@ public:
 
 	const int& getWidth() const;
 	const int& getHeight() const;
+
+	const bool isFocus() const;
 };
