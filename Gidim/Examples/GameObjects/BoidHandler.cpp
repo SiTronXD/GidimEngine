@@ -320,19 +320,8 @@ void BoidHandler::updateBoids(float deltaTime)
 		this->printBoidBufferElement(this->boidListBuffer, 0);
 	}*/
 
-	// Record start time
-	auto startTime = std::chrono::steady_clock::now();
-
 	// Sort!
 	this->sortBoidList();
-
-	// Record end time and print sorting time
-	auto endTime = std::chrono::steady_clock::now();
-	Log::print("Sort time: " + 
-		std::to_string(
-			std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()
-		) + " ms"
-	);
 
 	// Print boid list after sorting
 	/*if (Time::hasOneSecondPassed() && !hasPrintedSortedBuffer)
