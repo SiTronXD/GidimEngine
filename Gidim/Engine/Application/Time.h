@@ -16,7 +16,6 @@ private:
 
 	static bool oneSecondPassed;
 
-
 	std::chrono::system_clock::time_point lastTime;
 	std::chrono::system_clock::time_point currentTime;
 

@@ -37,7 +37,7 @@ void Time::updateDeltaTime()
 	// Update fps
 	if (oneSecondPassed)
 	{
-		currentFPS = (float) numFrames;
+		currentFPS = numFrames;
 
 		numFrames = 0;
 	}

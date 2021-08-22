@@ -15,7 +15,7 @@ unsigned int BoidHandler::getWangHash(unsigned int seed)
 
 float BoidHandler::getWangHashFloat(unsigned int state)
 {
-	return this->getWangHash(state) / 4294967296.0;
+	return this->getWangHash(state) / 4294967296.0f;
 }
 
 void BoidHandler::createGPUBuffers()
@@ -302,6 +302,8 @@ BoidHandler::~BoidHandler()
 }
 
 #include <chrono>
+bool hasPrintedSortedBuffer = false;
+
 void BoidHandler::updateBoids(float deltaTime)
 {
 	// ---------- Boid insert list shader ----------
@@ -310,7 +312,7 @@ void BoidHandler::updateBoids(float deltaTime)
 	// ---------- Boid list sort shader ----------
 
 	// Print boid list before sorting
-	/*if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	/*if (Time::hasOneSecondPassed() && !hasPrintedSortedBuffer)
 	{
 		// Debug GPU buffer
 		Log::print("--------------------");
@@ -333,11 +335,13 @@ void BoidHandler::updateBoids(float deltaTime)
 	);
 
 	// Print boid list after sorting
-	/*if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	/*if (Time::hasOneSecondPassed() && !hasPrintedSortedBuffer)
 	{
 		// Debug GPU buffer
 		Log::print("after sort:");
 		this->printBoidBufferElement(this->boidListBuffer, 0);
+
+		hasPrintedSortedBuffer = true;
 	}*/
 
 	// ---------- Boid logic shader ----------
