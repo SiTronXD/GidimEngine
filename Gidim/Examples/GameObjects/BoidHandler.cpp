@@ -159,7 +159,7 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 		}
 
 		// Print data
-		for (int i = 0; i < 16; ++i)
+		for (int i = 0; i < NUM_BOIDS; ++i)
 		{
 			Log::print("uint(" +
 				std::to_string(
@@ -177,6 +177,74 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 	}
 }
 
+#define SORT_LOCAL_WORKGROUP_SIZE 8
+
+void BoidHandler::localBMS(unsigned int h)
+{
+	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_BMS;
+
+	this->dispatchSort(h);
+}
+void BoidHandler::bigFlip(unsigned int h)
+{
+	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::BIG_FLIP;
+
+	this->dispatchSort(h);
+}
+void BoidHandler::localDisperse(unsigned int h)
+{
+	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_DISPERSE;
+
+	this->dispatchSort(h);
+}
+void BoidHandler::bigDisperse(unsigned int h)
+{
+	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::BIG_DISPERSE;
+	
+	this->dispatchSort(h);
+}
+void BoidHandler::dispatchSort(unsigned int h)
+{
+	this->bSortb.parameterH = h;
+	this->boidSortShaderBuffer.update(&this->bSortb);
+
+	this->boidSortShader.run();
+}
+
+void BoidHandler::sortBoidList()
+{
+	unsigned int workgroupCount = NUM_BOIDS / THREAD_GROUP_SIZE;
+	unsigned int h = THREAD_GROUP_SIZE;
+
+	// Calculate the first smaller iterations within thread groups
+	// (flip + disperse)
+	this->localBMS(h);
+
+	h <<= 1;
+
+	for (; h <= NUM_BOIDS; h <<= 1)
+	{
+		// Calculate flip that overlaps several thread groups
+		this->bigFlip(h);
+
+		// Disperse
+		for (unsigned int hh = h >> 1; hh > 1; hh >>= 1)
+		{
+			// If possible, calculate disperse within thread group
+			if (hh <= THREAD_GROUP_SIZE)
+			{
+				this->localDisperse(hh);
+				break;
+			}
+			// If not, calculate disperse that overlaps several thread groups
+			else
+			{
+				this->bigDisperse(hh);
+			}
+		}
+	}
+}
+
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
 
@@ -190,11 +258,12 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
-	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", 1, 1, 1),
-	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", 1, 1, 1),
-	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", 1, 1, 1),
+	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidClone(renderer),
 	boidInsertShaderBuffer(renderer, sizeof(BoidInsertBuffer)),
+	boidSortShaderBuffer(renderer, sizeof(BoidSortBuffer)),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
 	// Prepare buffers
@@ -207,6 +276,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	// Add buffers to sort compute shader
 	this->boidSortShader.addUAV(this->boidListBufferUAV.getUAV());
+	this->boidSortShader.addConstantBuffer(this->boidSortShaderBuffer);
 
 	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
@@ -218,6 +288,9 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->bInsertb.maxSearchRadius = 5.0f;
 	this->boidInsertShaderBuffer.update(&this->bInsertb);
 
+	// Set values in sort constant buffer once
+	this->bSortb.numElements = NUM_BOIDS;
+
 	// Set values in logic constant buffer once
 	this->bLogicb.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
 	this->bLogicb.numBoids = NUM_BOIDS;
@@ -228,6 +301,7 @@ BoidHandler::~BoidHandler()
 
 }
 
+#include <chrono>
 void BoidHandler::updateBoids(float deltaTime)
 {
 	// ---------- Boid insert list shader ----------
@@ -235,22 +309,36 @@ void BoidHandler::updateBoids(float deltaTime)
 
 	// ---------- Boid list sort shader ----------
 
-	if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	// Print boid list before sorting
+	/*if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
 	{
 		// Debug GPU buffer
 		Log::print("--------------------");
 		Log::print("before sort:");
 		this->printBoidBufferElement(this->boidListBuffer, 0);
-	}
+	}*/
 
-	this->boidSortShader.run();
+	// Record start time
+	auto startTime = std::chrono::steady_clock::now();
 
-	if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
+	// Sort!
+	this->sortBoidList();
+
+	// Record end time and print sorting time
+	auto endTime = std::chrono::steady_clock::now();
+	Log::print("Sort time: " + 
+		std::to_string(
+			std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()
+		) + " ms"
+	);
+
+	// Print boid list after sorting
+	/*if (Time::hasOneSecondPassed() && Time::getTimeSinceStart() < 2.0f)
 	{
 		// Debug GPU buffer
 		Log::print("after sort:");
 		this->printBoidBufferElement(this->boidListBuffer, 0);
-	}
+	}*/
 
 	// ---------- Boid logic shader ----------
 

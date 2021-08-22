@@ -1,4 +1,6 @@
 
+#define THREAD_GROUP_SIZE 1024
+
 cbuffer BoidInsertBuffer : register(b0)
 {
 	float halfVolumeSize;
@@ -36,7 +38,7 @@ uint getCellID(uint id)
 	return uint(pos.x + pos.y * maxNumCells + pos.z * maxNumCells * maxNumCells);
 }
 
-[numthreads(16, 1, 1)]
+[numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;

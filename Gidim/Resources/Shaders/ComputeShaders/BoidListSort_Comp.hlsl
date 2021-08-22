@@ -1,12 +1,44 @@
 
-#define N_ELEMENTS 16
+// This sorting implementation is based on this blog post:
+// Tim Gfrerer. "Implementing Bitonic Merge Sort in Vulkan Compute". (https://poniesandlight.co.uk/reflect/bitonic_merge_sort/, accessed August 22, 2021)
+
+// Each thread controls a pair of elements, hence size/2
+#define DESIRED_THREAD_GROUP_SIZE 1024
+#define LOCAL_SIZE (DESIRED_THREAD_GROUP_SIZE / 2)
+
+#define ALG_LOCAL_BMS 0
+#define ALG_LOCAL_DISPERSE 1
+#define ALG_BIG_FLIP 2
+#define ALG_BIG_DISPERSE 3
+
+cbuffer BoidSortBuffer : register(b0)
+{
+	int numElements;
+	int subAlgorithmEnum;
+	int parameterH;
+
+	float padding;
+};
 
 // uint2(cell ID, boid ID)
+// (sort elements by cell IDs)
 RWStructuredBuffer<uint2> boidList : register(u0);
 
-groupshared uint2 localValue[N_ELEMENTS];
+groupshared uint2 localValue[LOCAL_SIZE * 2];
 
-void localCompareAndSwap(int2 idx)
+// Compare and swap globally within all threads in dispatch
+void globalCompareAndSwap(uint2 idx)
+{
+	if (boidList[idx.x].x > boidList[idx.y].x)
+	{
+		uint2 temp = boidList[idx.x];
+		boidList[idx.x] = boidList[idx.y];
+		boidList[idx.y] = temp;
+	}
+}
+
+// Compare and swap within thread group
+void localCompareAndSwap(uint2 idx)
 {
 	if (localValue[idx.x].x > localValue[idx.y].x)
 	{
@@ -16,47 +48,119 @@ void localCompareAndSwap(int2 idx)
 	}
 }
 
-void doFlip(uint t, int h)
+// Flip globally within all threads in dispatch
+void bigFlip(uint globalInvocationID, uint workGroupSize, uint h)
 {
-	int q = int((2 * t) / h) * h;
-	int halfH = h / 2;
-	int2 indices = int2(q, q) + int2(t % halfH, h - (t % halfH) - 1);
-	localCompareAndSwap(indices);
+	uint tPrime = globalInvocationID;
+	uint halfH = h >> 1;
+
+	uint q = uint((2 * tPrime) / h) * h;
+	uint x = q + (tPrime % halfH);
+	uint y = q + h - (tPrime % halfH) - 1;
+
+	globalCompareAndSwap(uint2(x, y));
 }
 
-void doDisperse(uint t, int h)
+// Disperse globally within all threads in dispatch
+void bigDisperse(uint globalInvocationID, uint workGroupSize, uint h)
 {
-	int q = int((2 * t) / h) * h;
-	int halfH = h / 2;
-	int2 indices = int2(q, q) + int2(t % halfH, (t % halfH) + halfH);
-	localCompareAndSwap(indices);
+	uint tPrime = globalInvocationID;
+	uint halfH = h >> 1;
+
+	uint q = uint((2 * tPrime) / h) * h;
+	uint x = q + (tPrime % halfH);
+	uint y = q + (tPrime % halfH) + halfH;
+
+	globalCompareAndSwap(uint2(x, y));
 }
 
-[numthreads(N_ELEMENTS / 2, 1, 1)]
-void main(uint3 dispatchThreadID : SV_DispatchThreadID)
+// Flip within thread group
+void localFlip(uint localID, uint h)
 {
-	uint t = dispatchThreadID.x;
-
-	localValue[t * 2 + 0] = boidList[t * 2 + 0];
-	localValue[t * 2 + 1] = boidList[t * 2 + 1];
-
-	int n = N_ELEMENTS;
-
-	for (uint h = 2; h <= n; h *= 2)
-	{
-		GroupMemoryBarrierWithGroupSync();
-		doFlip(t, h);
-
-		for (uint hh = h / 2; hh > 1; hh /= 2)
-		{
-			GroupMemoryBarrierWithGroupSync();
-			doDisperse(t, hh);
-		}
-	}
-
+	uint t = localID;
 	GroupMemoryBarrierWithGroupSync();
 
+	uint halfH = h >> 1;
+	uint2 indices = uint2(
+		uint((t * 2) / h) * h + t % halfH,
+		uint((t * 2) / h) * h + h - (t % halfH) - 1
+	);
 
-	boidList[t * 2 + 0] = localValue[t * 2 + 0];
-	boidList[t * 2 + 1] = localValue[t * 2 + 1];
+	localCompareAndSwap(indices);
+}
+
+// Disperse within thread group
+void localDisperse(uint localID, uint h)
+{
+	uint t = localID;
+
+	for ( ; h > 1; h >>= 1)
+	{
+		GroupMemoryBarrierWithGroupSync();
+
+		uint halfH = h >> 1;
+		uint2 indices = uint2(
+			uint((t * 2) / h) * h + (t % halfH),
+			uint((t * 2) / h) * h + (t % halfH) + halfH
+		);
+
+		localCompareAndSwap(indices);
+	}
+}
+
+// "Regular" Bitonic mergesort within thread group
+void localBMS(uint localID, uint h)
+{
+	for (uint hh = 2; hh <= h; hh <<= 1)
+	{
+		localFlip(localID, hh);
+		localDisperse(localID, hh >> 1);
+	}
+}
+
+[numthreads(LOCAL_SIZE, 1, 1)]
+void main(
+	uint3 dispatchThreadID : SV_DispatchThreadID,
+	uint3 localThreadID : SV_GroupThreadID,
+	uint3 groupID : SV_GroupID
+)
+{
+	uint localID = localThreadID.x;
+	uint offset = LOCAL_SIZE * 2 * groupID.x;
+
+	// Copy list values into shared memory for local use
+	if (subAlgorithmEnum <= ALG_LOCAL_DISPERSE)
+	{
+		localValue[localID * 2 + 0] = boidList[offset + localID * 2 + 0];
+		localValue[localID * 2 + 1] = boidList[offset + localID * 2 + 1];
+	}
+
+	// Choose sub-algorithm
+	switch (subAlgorithmEnum)
+	{
+	case ALG_LOCAL_BMS:
+		localBMS(localID, parameterH);
+		break;
+
+	case ALG_LOCAL_DISPERSE:
+		localDisperse(localID, parameterH);
+		break;
+
+	case ALG_BIG_FLIP:
+		bigFlip(dispatchThreadID.x, LOCAL_SIZE, parameterH);
+		break;
+
+	case ALG_BIG_DISPERSE:
+		bigDisperse(dispatchThreadID.x, LOCAL_SIZE, parameterH);
+		break;
+	}
+
+	// Copy shared memory into list values after local use
+	if (subAlgorithmEnum <= ALG_LOCAL_DISPERSE)
+	{
+		GroupMemoryBarrierWithGroupSync();
+
+		boidList[offset + localID * 2 + 0] = localValue[localID * 2 + 0];
+		boidList[offset + localID * 2 + 1] = localValue[localID * 2 + 1];
+	}
 }

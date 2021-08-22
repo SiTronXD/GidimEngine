@@ -1,4 +1,6 @@
 
+#define THREAD_GROUP_SIZE 1024
+
 cbuffer BoidLogicBuffer : register(b0)
 {
 	float deltaTime;
@@ -236,7 +238,7 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	return alignmentAccel + cohesionAccel + separationAccel;
 }
 
-[numthreads(16, 1, 1)]
+[numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;
