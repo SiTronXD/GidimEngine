@@ -1,5 +1,5 @@
 
-#define THREAD_GROUP_SIZE 1024
+#define THREAD_GROUP_SIZE 128
 
 cbuffer BoidLogicBuffer : register(b0)
 {

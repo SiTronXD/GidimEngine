@@ -11,10 +11,9 @@ D3DSRV::~D3DSRV()
 }
 
 void D3DSRV::createSRV(
-	ID3D11Resource* buffer,
+	D3DBuffer& buffer,
 	DXGI_FORMAT format,
-	D3D11_SRV_DIMENSION viewDimension,
-	UINT numElements
+	D3D11_SRV_DIMENSION viewDimension
 	)
 {
 	// Deallocate old SRV
@@ -28,17 +27,21 @@ void D3DSRV::createSRV(
 	descSRV.Format = format;
 	descSRV.ViewDimension = viewDimension;
 	descSRV.Buffer.FirstElement = 0;
-	descSRV.Buffer.NumElements = numElements;
+	descSRV.Buffer.NumElements = buffer.getNumElements();
 
 	// Create buffer from desc
-	HRESULT result = this->renderer.getDevice()->CreateShaderResourceView(buffer, &descSRV, &this->bufferSRV);
+	HRESULT result = this->renderer.getDevice()->CreateShaderResourceView(buffer.getBuffer(), &descSRV, &this->bufferSRV);
 	if (FAILED(result))
 	{
 		Log::resultFailed("Failed creating SRV: " + this->debugName + ".", result);
 	}
 }
 
-void D3DSRV::setVS()
+void D3DSRV::setVS(UINT startSlot)
 {
-	this->renderer.getDeviceContext()->VSSetShaderResources(0, 1, &this->bufferSRV);
+	this->renderer.getDeviceContext()->VSSetShaderResources(
+		startSlot, 
+		1, 
+		&this->bufferSRV
+	);
 }

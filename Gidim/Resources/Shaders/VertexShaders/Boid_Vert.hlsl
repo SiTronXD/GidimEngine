@@ -21,6 +21,7 @@ struct Output
 };
 
 StructuredBuffer<float4x4> boidsBuffer : register(t0);
+StructuredBuffer<uint2> boidsList : register(t1);
 
 uint wang_hash(uint seed)
 {
@@ -54,10 +55,11 @@ Output main(Input input)
 	output.uv = input.uv;
 
 	// Color
+	uint colID = boidsList[id].x;
 	output.color = float3(
-		randomFloat(id * 3 + 0),
-		randomFloat(id * 3 + 1),
-		randomFloat(id * 3 + 2)
+		randomFloat(colID * 3 + 0),
+		randomFloat(colID * 3 + 1),
+		randomFloat(colID * 3 + 2)
 	);
 
 	return output;

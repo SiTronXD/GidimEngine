@@ -26,7 +26,7 @@ void BoidHandler::createGPUBuffers()
 
 	// Buffer
 	this->boidListBuffer.createStructuredBuffer(
-		D3D11_BIND_UNORDERED_ACCESS,
+		D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 		sizeof(unsigned int) * 2,
 		NUM_BOIDS
 	);
@@ -36,6 +36,13 @@ void BoidHandler::createGPUBuffers()
 		this->boidListBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER
+	);
+
+	// Buffer SRV
+	this->boidListBufferSRV.createSRV(
+		this->boidListBuffer,
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_SRV_DIMENSION_BUFFER
 	);
 
 	// ---------- Offset buffer ----------
@@ -137,10 +144,9 @@ void BoidHandler::createGPUBuffers()
 
 	// Buffer SRV
 	this->boidBufferSRV.createSRV(
-		this->boidBuffer.getBuffer(), 
+		this->boidBuffer, 
 		DXGI_FORMAT_UNKNOWN,
-		D3D11_SRV_DIMENSION_BUFFER,
-		this->boidBuffer.getNumElements()
+		D3D11_SRV_DIMENSION_BUFFER
 	);
 }
 
@@ -281,6 +287,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	// List of cell- and boid IDs
 	boidListBuffer(renderer, "boidListBuffer"),
 	boidListBufferUAV(renderer, "boidListBufferUAV"),
+	boidListBufferSRV(renderer, "boidListBufferSRV"),
 
 	// Offsets into sorted list
 	boidOffsetBuffer(renderer, "boidOffsetBuffer"),
@@ -295,6 +302,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
+	// Compute shaders
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidOffsetClearShader(renderer, "CompiledShaders/BoidOffsetClear_Comp.cso", (NUM_GRID_CELLS-1) / 32 + 1, 1, 1),
@@ -317,6 +325,8 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	// Add buffers to sort compute shader
 	this->boidSortShader.addUAV(this->boidListBufferUAV.getUAV());
+	this->boidSortShader.addUAV(this->boidVelocUAV.getUAV());
+	this->boidSortShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidSortShader.addConstantBuffer(this->boidSortShaderBuffer);
 
 	// Add buffers to offset clear compute shader
@@ -401,6 +411,11 @@ void BoidHandler::updateBoids(float deltaTime)
 	Log::print("---------- OFFSET ----------");
 	this->printBoidBufferElement(this->boidOffsetBuffer, 1);*/
 
+	// ---------- Coherent shaders ----------
+
+	// this->boidCoherentVelocityShader.run();
+	// this->boidCoherentTransformShader.run();
+
 	// ---------- Boid logic shader ----------
 
 	// Update logic shader buffer
@@ -414,7 +429,8 @@ void BoidHandler::updateBoids(float deltaTime)
 void BoidHandler::drawBoids()
 {
 	// Set boid buffer SRV in vertex shader
-	this->boidBufferSRV.setVS();
+	this->boidBufferSRV.setVS(0);
+	this->boidListBufferSRV.setVS(1);
 
 	// Draw all boids
 	this->boidInstancer.draw(NUM_BOIDS);

@@ -1,5 +1,5 @@
 
-#define THREAD_GROUP_SIZE 1024
+#define THREAD_GROUP_SIZE 128
 
 RWStructuredBuffer<uint2> boidSortedList : register(u0);
 RWStructuredBuffer<uint> boidListOffsets : register(u1);

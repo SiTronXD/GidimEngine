@@ -17,8 +17,8 @@ enum BitonicAlgorithmType
 class BoidHandler
 {
 private:
-	static const unsigned int THREAD_GROUP_SIZE = 1024;
-	static const unsigned int NUM_BOIDS = 1024 * 512; // 1024, 1024 * 512
+	static const unsigned int THREAD_GROUP_SIZE = 128;
+	static const unsigned int NUM_BOIDS = 1024 * 1024; // 1024, 1024 * 512
 	static const int PLAY_HALF_VOLUME_SIZE = 200;	// 15, 200
 	static const int BOID_MAX_SEARCH_RADIUS = 5;
 	static const unsigned int NUM_GRID_CELLS =
@@ -66,6 +66,7 @@ private:
 	// List of cell- and boid IDs
 	D3DBuffer boidListBuffer;
 	D3DUAV boidListBufferUAV;
+	D3DSRV boidListBufferSRV;
 
 	// Offsets into sorted list
 	D3DBuffer boidOffsetBuffer;
