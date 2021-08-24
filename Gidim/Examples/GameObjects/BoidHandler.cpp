@@ -297,7 +297,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
-	boidOffsetClearShader(renderer, "CompiledShaders/BoidOffsetClear_Comp.cso", (int) ceil(NUM_GRID_CELLS / 32), 1, 1),
+	boidOffsetClearShader(renderer, "CompiledShaders/BoidOffsetClear_Comp.cso", (NUM_GRID_CELLS-1) / 32 + 1, 1, 1),
 	boidOffsetInsertShader(renderer, "CompiledShaders/BoidOffsetInsert_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 
@@ -330,6 +330,8 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidListBufferUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidOffsetBufferUAV.getUAV());
 	this->boidLogicShader.addConstantBuffer(this->boidLogicShaderBuffer);
 
 	// Set values in list constant buffer once
@@ -346,6 +348,7 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	// Set values in logic constant buffer once
 	this->bLogicB.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
+	this->bLogicB.maxSearchRadius = (float) BOID_MAX_SEARCH_RADIUS;
 	this->bLogicB.numBoids = NUM_BOIDS;
 }
 
@@ -393,10 +396,10 @@ void BoidHandler::updateBoids(float deltaTime)
 
 	this->boidOffsetInsertShader.run();
 
-	Log::print("---------- LIST BUFFER ----------");
+	/*Log::print("---------- LIST BUFFER ----------");
 	this->printBoidBufferElement(this->boidListBuffer, 0);
 	Log::print("---------- OFFSET ----------");
-	this->printBoidBufferElement(this->boidOffsetBuffer, 1);
+	this->printBoidBufferElement(this->boidOffsetBuffer, 1);*/
 
 	// ---------- Boid logic shader ----------
 

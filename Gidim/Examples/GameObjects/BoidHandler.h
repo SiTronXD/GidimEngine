@@ -17,9 +17,9 @@ enum BitonicAlgorithmType
 class BoidHandler
 {
 private:
-	static const unsigned int THREAD_GROUP_SIZE = 8;
-	static const unsigned int NUM_BOIDS = 8; // 128, 1024 * 32
-	static const int PLAY_HALF_VOLUME_SIZE = 10;	// 10, 50
+	static const unsigned int THREAD_GROUP_SIZE = 1024;
+	static const unsigned int NUM_BOIDS = 1024; // 1024, 1024 * 512
+	static const int PLAY_HALF_VOLUME_SIZE = 15;	// 15, 150
 	static const int BOID_MAX_SEARCH_RADIUS = 5;
 	static const unsigned int NUM_GRID_CELLS =
 		(PLAY_HALF_VOLUME_SIZE / BOID_MAX_SEARCH_RADIUS * 2) *
@@ -54,10 +54,9 @@ private:
 	{
 		float deltaTime;
 		float halfVolumeSize;
+		float maxSearchRadius;
 
 		int numBoids;
-
-		float padding;
 	} bLogicB{};
 
 	Renderer& renderer;

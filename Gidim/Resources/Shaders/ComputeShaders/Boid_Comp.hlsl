@@ -1,18 +1,19 @@
 
-#define THREAD_GROUP_SIZE 8
+#define THREAD_GROUP_SIZE 1024
 
 cbuffer BoidLogicBuffer : register(b0)
 {
 	float deltaTime;
 	float halfVolumeSize;
+	float maxSearchRadius;
 
 	int numBoids;
-
-	float padding;
 };
 
 RWStructuredBuffer<float3> boidVelocities : register(u0);
 RWStructuredBuffer<float4x4> boidTransforms : register(u1);
+RWStructuredBuffer<uint2> boidSortedList : register(u2);
+RWStructuredBuffer<uint> boidListOffsets : register(u3);
 
 uint wang_hash(uint seed)
 {
@@ -58,6 +59,26 @@ float3 getPos(uint boidIndex)
 		boidTransforms[boidIndex]._42, 
 		boidTransforms[boidIndex]._43
 	);
+}
+
+// Get cell ID that the boid resides within
+uint getCellID(float3 worldPos)
+{
+	// From [-halfVolumeSize, halfVolumeSize] to [0.0, volumeSize]
+	worldPos += float3(halfVolumeSize, halfVolumeSize, halfVolumeSize);
+
+	// From [0, volumeSize] to [0, maxNumCells - 1]
+	worldPos = floor(worldPos / maxSearchRadius);
+
+	float numCellsSingleSide = halfVolumeSize * 2.0f / maxSearchRadius;
+
+	uint foundID = uint(
+		worldPos.x +
+		worldPos.y * numCellsSingleSide +
+		worldPos.z * numCellsSingleSide * numCellsSingleSide
+	);
+
+	return clamp(foundID, 0, numBoids);
 }
 
 // Values for boid behaviour
@@ -175,7 +196,7 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	int separationBoidsInRadius = 0;
 
 	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
+	/*for (int i = 0; i < numBoids; ++i)
 	{
 		float3 otherPos = getPos(i);
 		float3 deltaPos = myPos - otherPos;
@@ -203,6 +224,81 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 			{
 				separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
 				separationBoidsInRadius++;
+			}
+		}
+	}*/
+
+	// Loop through all neighboring boids
+	for (int zo = -1; zo <= 1; ++zo)
+	{
+		for (int yo = -1; yo <= 1; ++yo)
+		{
+			for (int xo = -1; xo <= 1; ++xo)
+			{
+				// Create temporary position
+				float3 tempPos = myPos + float3(xo, yo, zo) * maxSearchRadius;
+
+				// Ignore boids outside play volume
+				if (tempPos.x < -halfVolumeSize || tempPos.x > halfVolumeSize ||
+					tempPos.y < -halfVolumeSize || tempPos.y > halfVolumeSize ||
+					tempPos.z < -halfVolumeSize || tempPos.z > halfVolumeSize)
+				{
+					continue;
+				}
+
+				// Find IDs from temporary position
+				uint tempCellID = getCellID(tempPos);
+				uint boidOffsetID = boidListOffsets[tempCellID];
+
+				// Iterate through all boids within cell
+				while (boidOffsetID < 0xFFFFFFFF && boidOffsetID < numBoids)
+				{
+					// uint(cell ID, boid ID)
+					uint2 neighborBoidIDs = boidSortedList[boidOffsetID];
+
+					// Not iterating within same cell anymore
+					if (neighborBoidIDs.x != tempCellID)
+					{
+						break;
+					}
+
+					// ---------- Start of evaluation ----------
+					int i = neighborBoidIDs.y;
+					float3 otherPos = getPos(i);
+					float3 deltaPos = myPos - otherPos;
+					float distSqrd = dot(deltaPos, deltaPos);
+
+					// Make sure this boid is not my boid
+					if (i != id)
+					{
+						// Alignment
+						if (distSqrd <= alignRadiusSqrd)
+						{
+							alignmentAccel += boidVelocities[i];
+							alignmentBoidsInRadius++;
+						}
+
+						// Cohesion
+						if (distSqrd <= cohesionRadiusSqrd)
+						{
+							cohesionAccel += otherPos;
+							cohesionBoidsInRadius++;
+						}
+
+						// Separation
+						if (distSqrd <= separationRadiusSqrd)
+						{
+							separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
+							separationBoidsInRadius++;
+						}
+					}
+
+					// ---------- End of evaluation ----------
+
+
+					// Next boid within cell
+					boidOffsetID++;
+				}
 			}
 		}
 	}

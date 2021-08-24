@@ -1,14 +1,14 @@
 
-#define THREAD_GROUP_SIZE 8
+#define THREAD_GROUP_SIZE 1024
 
-RWStructuredBuffer<uint2> boidList : register(u0);
-RWStructuredBuffer<uint> boidOffsets : register(u1);
+RWStructuredBuffer<uint2> boidSortedList : register(u0);
+RWStructuredBuffer<uint> boidListOffsets : register(u1);
 
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
 	uint id = dispatchThreadID.x;
-	uint boidCellID = boidList[id].x;
+	uint boidCellID = boidSortedList[id].x;
 
-	InterlockedMin(boidOffsets[boidCellID], id);
+	InterlockedMin(boidListOffsets[boidCellID], id);
 }

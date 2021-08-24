@@ -8,7 +8,7 @@
 
 // The dynamic hashed grid is then used to find neighboring boids in the grid
 
-#define THREAD_GROUP_SIZE 8
+#define THREAD_GROUP_SIZE 1024
 
 cbuffer BoidInsertBuffer : register(b0)
 {
@@ -32,6 +32,7 @@ float3 getPos(uint boidIndex)
 	);
 }
 
+// Get cell ID that the boid resides within
 uint getCellID(uint id)
 {
 	float3 pos = getPos(id);
