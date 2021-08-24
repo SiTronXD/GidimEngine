@@ -2,6 +2,7 @@
 
 #include "../../../pch.h"
 #include "../Renderer.h"
+#include "D3DBuffer.h"
 
 class D3DUAV
 {
@@ -17,10 +18,9 @@ public:
 	~D3DUAV();
 
 	void createUAV(
-		ID3D11Resource* buffer,
+		D3DBuffer& buffer,
 		DXGI_FORMAT format,
-		D3D11_UAV_DIMENSION viewDimension,
-		UINT numElements
+		D3D11_UAV_DIMENSION viewDimension
 	);
 
 	inline ID3D11UnorderedAccessView* getUAV() const { return this->bufferUAV; }

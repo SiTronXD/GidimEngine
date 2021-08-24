@@ -10,7 +10,7 @@ D3DBuffer::~D3DBuffer()
 	S_RELEASE(this->buffer);
 }
 
-void D3DBuffer::createArrayBuffer(
+void D3DBuffer::createStructuredBuffer(
 	UINT bindFlags,
 	UINT elementSize,
 	UINT numElements,

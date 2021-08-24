@@ -1,5 +1,14 @@
+// This optimization implementation is based on this blog post:
+// Turánszki János. "GPU Fluid Simulation". (https://wickedengine.net/2018/05/21/scalabe-gpu-fluid-simulation/, accessed August 22, 2021)
 
-#define THREAD_GROUP_SIZE 1024
+// The optimization creates a dynamic hashed grid in 3 steps:
+// 1. Create unsorted list where each element is (cell ID, boid ID)
+// 2. Sort the list based on the cell IDs
+// 3. Create offset list that describes cell ID offsets in the sorted list
+
+// The dynamic hashed grid is then used to find neighboring boids in the grid
+
+#define THREAD_GROUP_SIZE 8
 
 cbuffer BoidInsertBuffer : register(b0)
 {

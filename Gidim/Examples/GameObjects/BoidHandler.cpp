@@ -22,10 +22,10 @@ void BoidHandler::createGPUBuffers()
 {
 	ID3D11Device* device = renderer.getDevice();
 
-	// ---------- Unsorted list buffer ----------
+	// ---------- List buffer ----------
 
 	// Buffer
-	this->boidListBuffer.createArrayBuffer(
+	this->boidListBuffer.createStructuredBuffer(
 		D3D11_BIND_UNORDERED_ACCESS,
 		sizeof(unsigned int) * 2,
 		NUM_BOIDS
@@ -33,10 +33,25 @@ void BoidHandler::createGPUBuffers()
 
 	// Buffer UAV
 	this->boidListBufferUAV.createUAV(
-		this->boidListBuffer.getBuffer(),
+		this->boidListBuffer,
 		DXGI_FORMAT_UNKNOWN,
-		D3D11_UAV_DIMENSION_BUFFER,
-		this->boidListBuffer.getNumElements()
+		D3D11_UAV_DIMENSION_BUFFER
+	);
+
+	// ---------- Offset buffer ----------
+
+	// Buffer
+	this->boidOffsetBuffer.createStructuredBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(unsigned int),
+		NUM_GRID_CELLS
+	);
+
+	// Buffer UAV
+	this->boidOffsetBufferUAV.createUAV(
+		this->boidOffsetBuffer,
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER
 	);
 
 	// ---------- Velocity vectors ----------
@@ -64,7 +79,7 @@ void BoidHandler::createGPUBuffers()
 	initialVelocData.pSysMem = initialVeloc;
 
 	// Buffer
-	this->boidVelocBuffer.createArrayBuffer(
+	this->boidVelocBuffer.createStructuredBuffer(
 		D3D11_BIND_UNORDERED_ACCESS,
 		sizeof(XMFLOAT3),
 		NUM_BOIDS,
@@ -74,10 +89,9 @@ void BoidHandler::createGPUBuffers()
 
 	// Buffer UAV
 	this->boidVelocUAV.createUAV(
-		this->boidVelocBuffer.getBuffer(),
+		this->boidVelocBuffer,
 		DXGI_FORMAT_UNKNOWN,
-		D3D11_UAV_DIMENSION_BUFFER,
-		this->boidVelocBuffer.getNumElements()
+		D3D11_UAV_DIMENSION_BUFFER
 	);
 
 	// ---------- Transformation matrices ----------
@@ -105,7 +119,7 @@ void BoidHandler::createGPUBuffers()
 	initialBufferData.pSysMem = initialMatrices;
 	
 	// Buffer
-	this->boidBuffer.createArrayBuffer(
+	this->boidBuffer.createStructuredBuffer(
 		D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 		sizeof(XMFLOAT4X4),
 		NUM_BOIDS,
@@ -116,10 +130,9 @@ void BoidHandler::createGPUBuffers()
 
 	// Buffer UAV
 	this->boidBufferUAV.createUAV(
-		this->boidBuffer.getBuffer(),
+		this->boidBuffer,
 		DXGI_FORMAT_UNKNOWN,
-		D3D11_UAV_DIMENSION_BUFFER,
-		this->boidBuffer.getNumElements()
+		D3D11_UAV_DIMENSION_BUFFER
 	);
 
 	// Buffer SRV
@@ -159,16 +172,33 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 		}
 
 		// Print data
-		for (int i = 0; i < NUM_BOIDS; ++i)
+		if (index <= 0)
 		{
-			Log::print("uint(" +
-				std::to_string(
-					((unsigned int*)mappedResource.pData)[i * 2 + 0]
-				) + ", " +
-				std::to_string(
-					((unsigned int*)mappedResource.pData)[i * 2 + 1]
-				) + ")"
-			);
+			for (int i = 0; i < NUM_BOIDS; ++i)
+			{
+				Log::print("uint(" +
+					std::to_string(
+						((unsigned int*)mappedResource.pData)[i * 2 + 0]
+					) + ", " +
+					std::to_string(
+						((unsigned int*)mappedResource.pData)[i * 2 + 1]
+					) + ")"
+				);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < NUM_GRID_CELLS; ++i)
+			{
+				Log::print("uint(" +
+					std::to_string(
+						i//((unsigned int*)mappedResource.pData)[i * 1 + 0]
+					) + ", " +
+					std::to_string(
+						((unsigned int*)mappedResource.pData)[i * 1 + 0]
+					) + ")"
+				);
+			}
 		}
 
 		// Unmap and release temporary buffer
@@ -181,32 +211,32 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 
 void BoidHandler::localBMS(unsigned int h)
 {
-	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_BMS;
+	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_BMS;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::bigFlip(unsigned int h)
 {
-	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::BIG_FLIP;
+	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::BIG_FLIP;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::localDisperse(unsigned int h)
 {
-	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_DISPERSE;
+	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_DISPERSE;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::bigDisperse(unsigned int h)
 {
-	this->bSortb.subAlgorithmEnum = BitonicAlgorithmType::BIG_DISPERSE;
+	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::BIG_DISPERSE;
 	
 	this->dispatchSort(h);
 }
 void BoidHandler::dispatchSort(unsigned int h)
 {
-	this->bSortb.parameterH = h;
-	this->boidSortShaderBuffer.update(&this->bSortb);
+	this->bSortB.parameterH = h;
+	this->boidSortShaderBuffer.update(&this->bSortB);
 
 	this->boidSortShader.run();
 }
@@ -248,22 +278,33 @@ void BoidHandler::sortBoidList()
 BoidHandler::BoidHandler(Renderer& renderer)
 	: renderer(renderer),
 
+	// List of cell- and boid IDs
 	boidListBuffer(renderer, "boidListBuffer"),
 	boidListBufferUAV(renderer, "boidListBufferUAV"),
 
+	// Offsets into sorted list
+	boidOffsetBuffer(renderer, "boidOffsetBuffer"),
+	boidOffsetBufferUAV(renderer, "boidOffsetBufferUAV"),
+
+	// Boid velocities
 	boidVelocBuffer(renderer, "boidVelocBuffer"),
 	boidVelocUAV(renderer, "boidVelocUAV"),
 
+	// Boid transformations
 	boidBuffer(renderer, "boidBuffer"),
 	boidBufferUAV(renderer, "boidBufferUAV"),
 	boidBufferSRV(renderer, "boidBufferSRV"),
 
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	boidOffsetClearShader(renderer, "CompiledShaders/BoidOffsetClear_Comp.cso", (int) ceil(NUM_GRID_CELLS / 32), 1, 1),
+	boidOffsetInsertShader(renderer, "CompiledShaders/BoidOffsetInsert_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
-	boidClone(renderer),
+
+	boidInstancer(renderer),
 	boidInsertShaderBuffer(renderer, sizeof(BoidInsertBuffer)),
 	boidSortShaderBuffer(renderer, sizeof(BoidSortBuffer)),
+	boidOffsetClearShaderBuffer(renderer, sizeof(BoidOffsetClearBuffer)),
 	boidLogicShaderBuffer(renderer, sizeof(BoidLogicBuffer))
 {
 	// Prepare buffers
@@ -278,22 +319,34 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->boidSortShader.addUAV(this->boidListBufferUAV.getUAV());
 	this->boidSortShader.addConstantBuffer(this->boidSortShaderBuffer);
 
+	// Add buffers to offset clear compute shader
+	this->boidOffsetClearShader.addUAV(this->boidOffsetBufferUAV.getUAV());
+	this->boidOffsetClearShader.addConstantBuffer(this->boidOffsetClearShaderBuffer);
+
+	// Add bufers to offset insert compute shader
+	this->boidOffsetInsertShader.addUAV(this->boidListBufferUAV.getUAV());
+	this->boidOffsetInsertShader.addUAV(this->boidOffsetBufferUAV.getUAV());
+
 	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
 	this->boidLogicShader.addConstantBuffer(this->boidLogicShaderBuffer);
 
 	// Set values in list constant buffer once
-	this->bInsertb.halfVolumeSize = PLAY_HALF_VOLUME_SIZE;
-	this->bInsertb.maxSearchRadius = 5.0f;
-	this->boidInsertShaderBuffer.update(&this->bInsertb);
+	this->bInsertB.halfVolumeSize = PLAY_HALF_VOLUME_SIZE;
+	this->bInsertB.maxSearchRadius = (float) BOID_MAX_SEARCH_RADIUS;
+	this->boidInsertShaderBuffer.update(&this->bInsertB);
 
 	// Set values in sort constant buffer once
-	this->bSortb.numElements = NUM_BOIDS;
+	this->bSortB.numElements = NUM_BOIDS;
+
+	// Set values in offset clear buffer once
+	this->bOffsetClearB.numGridCells = NUM_GRID_CELLS;
+	this->boidOffsetClearShaderBuffer.update(&this->bOffsetClearB);
 
 	// Set values in logic constant buffer once
-	this->bLogicb.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
-	this->bLogicb.numBoids = NUM_BOIDS;
+	this->bLogicB.halfVolumeSize = (float) PLAY_HALF_VOLUME_SIZE;
+	this->bLogicB.numBoids = NUM_BOIDS;
 }
 
 BoidHandler::~BoidHandler()
@@ -301,7 +354,6 @@ BoidHandler::~BoidHandler()
 
 }
 
-#include <chrono>
 bool hasPrintedSortedBuffer = false;
 
 void BoidHandler::updateBoids(float deltaTime)
@@ -333,11 +385,24 @@ void BoidHandler::updateBoids(float deltaTime)
 		hasPrintedSortedBuffer = true;
 	}*/
 
+	// ---------- Boid offset clear shader ----------
+
+	this->boidOffsetClearShader.run();
+
+	// ---------- Boid offset insert shader ----------
+
+	this->boidOffsetInsertShader.run();
+
+	Log::print("---------- LIST BUFFER ----------");
+	this->printBoidBufferElement(this->boidListBuffer, 0);
+	Log::print("---------- OFFSET ----------");
+	this->printBoidBufferElement(this->boidOffsetBuffer, 1);
+
 	// ---------- Boid logic shader ----------
 
 	// Update logic shader buffer
-	this->bLogicb.deltaTime = deltaTime;
-	this->boidLogicShaderBuffer.update(&this->bLogicb);
+	this->bLogicB.deltaTime = deltaTime;
+	this->boidLogicShaderBuffer.update(&this->bLogicB);
 
 	// Run boids logic shader
 	this->boidLogicShader.run();
@@ -348,6 +413,6 @@ void BoidHandler::drawBoids()
 	// Set boid buffer SRV in vertex shader
 	this->boidBufferSRV.setVS();
 
-	// Draw
-	this->boidClone.draw(NUM_BOIDS);
+	// Draw all boids
+	this->boidInstancer.draw(NUM_BOIDS);
 }

@@ -18,7 +18,7 @@ public:
 	D3DBuffer(Renderer& renderer, std::string debugName);
 	~D3DBuffer();
 
-	void createArrayBuffer(
+	void createStructuredBuffer(
 		UINT bindFlags,
 		UINT elementSize,
 		UINT numElements,

@@ -3,7 +3,7 @@
 // Tim Gfrerer. "Implementing Bitonic Merge Sort in Vulkan Compute". (https://poniesandlight.co.uk/reflect/bitonic_merge_sort/, accessed August 22, 2021)
 
 // Each thread controls a pair of elements, hence size/2
-#define DESIRED_THREAD_GROUP_SIZE 1024
+#define DESIRED_THREAD_GROUP_SIZE 8
 #define LOCAL_SIZE (DESIRED_THREAD_GROUP_SIZE / 2)
 
 #define ALG_LOCAL_BMS 0
