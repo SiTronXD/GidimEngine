@@ -15,22 +15,6 @@ RWStructuredBuffer<float4x4> boidTransforms : register(u1);
 RWStructuredBuffer<uint2> boidSortedList : register(u2);
 RWStructuredBuffer<uint> boidListOffsets : register(u3);
 
-uint wang_hash(uint seed)
-{
-	seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
-	seed *= uint(9);
-	seed = seed ^ (seed >> 4);
-	seed *= uint(0x27d4eb2d);
-	seed = seed ^ (seed >> 15);
-
-	return seed;
-}
-
-float randomFloat(float state)
-{
-	return float(wang_hash(uint(state))) / 4294967296.0;
-}
-
 // Set magnitude of vector
 float3 setVecMag(float3 vec, float mag)
 {
@@ -91,99 +75,6 @@ uint getCellID(float3 worldPos)
 #define alignRadiusSqrd 4.0f
 #define cohesionRadiusSqrd 25.0f
 #define separationRadiusSqrd 1.0f
-
-// Old separate functions for each rule
-float3 getAlignment(uint id, float3 myPos, float3 myVelocity)
-{
-	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
-	int numBoidsInRadius = 0;
-
-	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
-	{
-		float3 deltaPos = getPos(i) - myPos;
-
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && dot(deltaPos, deltaPos) <= alignRadiusSqrd)
-		{
-			currentAcceleration += boidVelocities[i];
-			numBoidsInRadius++;
-		}
-	}
-
-	// Average acceleration
-	if (numBoidsInRadius > 0)
-	{
-		currentAcceleration /= float(numBoidsInRadius);
-		currentAcceleration = setVecMag(currentAcceleration, minAccel);
-		currentAcceleration -= myVelocity;
-		currentAcceleration = limitVecMag(currentAcceleration, maxAccel);
-	}
-
-	return currentAcceleration;
-}
-float3 getCohesion(uint id, float3 myPos, float3 myVelocity)
-{
-	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
-	int numBoidsInRadius = 0;
-
-	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
-	{
-		float3 otherPos = getPos(i);
-		float3 deltaPos = otherPos - myPos;
-
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && dot(deltaPos, deltaPos) <= cohesionRadiusSqrd)
-		{
-			currentAcceleration += otherPos;
-			numBoidsInRadius++;
-		}
-	}
-
-	// Average acceleration
-	if (numBoidsInRadius > 0)
-	{
-		currentAcceleration /= float(numBoidsInRadius);
-		currentAcceleration -= myPos;
-		currentAcceleration = setVecMag(currentAcceleration, minAccel);
-		currentAcceleration -= myVelocity;
-		currentAcceleration = limitVecMag(currentAcceleration, maxAccel);
-	}
-
-	return currentAcceleration;
-}
-float3 getSeparation(uint id, float3 myPos, float3 myVelocity)
-{
-	float3 currentAcceleration = float3(0.0f, 0.0f, 0.0f);
-	int numBoidsInRadius = 0;
-
-	// Loop through all boids
-	for (int i = 0; i < numBoids; ++i)
-	{
-		float3 otherPos = getPos(i);
-		float3 deltaPos = myPos - otherPos;
-		float distSqrd = dot(deltaPos, deltaPos);
-
-		// Check if this boid is not my boid, and if it is close enough
-		if (i != id && distSqrd <= separationRadiusSqrd)
-		{
-			currentAcceleration += deltaPos / max(sqrt(distSqrd), 0.1f);
-			numBoidsInRadius++;
-		}
-	}
-
-	// Average acceleration
-	if (numBoidsInRadius > 0)
-	{
-		currentAcceleration /= float(numBoidsInRadius);
-		currentAcceleration = setVecMag(currentAcceleration, minAccel);
-		currentAcceleration -= myVelocity;
-		currentAcceleration = limitVecMag(currentAcceleration, maxAccel);
-	}
-
-	return currentAcceleration;
-}
 
 // One function incorporating all rules
 float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
@@ -340,32 +231,31 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	uint id = dispatchThreadID.x;
 
 	float3 oldPos = getPos(id);
-	float3 oldVelocity = boidVelocities[id];
+	float3 velocity = boidVelocities[id];
 
 	// Apply boid rules
-	/*float3 acceleration = float3(0.0f, 0.0f, 0.0f);
-	acceleration += getAlignment(id, oldPos, oldVelocity);
-	acceleration += getCohesion(id, oldPos, oldVelocity);
-	acceleration += getSeparation(id, oldPos, oldVelocity);*/
-	float3 acceleration = getAcceleration(id, oldPos, oldVelocity);
+	float3 acceleration = getAcceleration(id, oldPos, velocity);
 
-	// Apply acceleration
-	boidVelocities[id] += acceleration * deltaTime * accelerationScale;
+	// Apply acceleration to velocity
+	velocity += acceleration * deltaTime * accelerationScale;
 
-	float3 newPos = oldPos + boidVelocities[id] * deltaTime;
+	float3 newPos = oldPos + velocity * deltaTime;
 
-	// Keep boid positions within [-halfVolumeSize, halfVolumeSize]
+	// Keep boid positions wrapped within [-halfVolumeSize, halfVolumeSize]
 	float3 halfSize = float3(halfVolumeSize, halfVolumeSize, halfVolumeSize);
 	newPos = frac((newPos + halfSize) /
 		(halfSize * 2.0f)) * (halfSize * 2.0f) -
 		halfSize;
 
 	// Direction vectors
-	float3 forwardDir = normalize(boidVelocities[id]);
+	float3 forwardDir = normalize(velocity);
 	float3 leftDir = normalize(cross(forwardDir, float3(0.0f, 1.0f, 0.0f)));
 	float3 upDir = cross(leftDir, forwardDir);
 
-	// Apply final matrix
+	// Apply new velocity to the old one
+	boidVelocities[id] = velocity;
+
+	// Apply translation and rotation to the final matrix
 	boidTransforms[id] = float4x4(
 		float4(leftDir.xyz, 0.0f),
 		float4(upDir.xyz, 0.0f),
