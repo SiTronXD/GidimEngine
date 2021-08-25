@@ -32,14 +32,14 @@ void BoidHandler::createGPUBuffers()
 	);
 
 	// Buffer UAV
-	this->boidListBufferUAV.createUAV(
+	this->boidListUAV.createUAV(
 		this->boidListBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER
 	);
 
 	// Buffer SRV
-	this->boidListBufferSRV.createSRV(
+	this->boidListSRV.createSRV(
 		this->boidListBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_SRV_DIMENSION_BUFFER
@@ -55,7 +55,7 @@ void BoidHandler::createGPUBuffers()
 	);
 
 	// Buffer UAV
-	this->boidOffsetBufferUAV.createUAV(
+	this->boidOffsetUAV.createUAV(
 		this->boidOffsetBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER
@@ -86,7 +86,7 @@ void BoidHandler::createGPUBuffers()
 	initialVelocData.pSysMem = initialVeloc;
 
 	// Buffer
-	this->boidVelocBuffer.createStructuredBuffer(
+	this->boidVelocityBuffer.createStructuredBuffer(
 		D3D11_BIND_UNORDERED_ACCESS,
 		sizeof(XMFLOAT3),
 		NUM_BOIDS,
@@ -95,8 +95,8 @@ void BoidHandler::createGPUBuffers()
 	delete[] initialVeloc;
 
 	// Buffer UAV
-	this->boidVelocUAV.createUAV(
-		this->boidVelocBuffer,
+	this->boidVelocityUAV.createUAV(
+		this->boidVelocityBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER
 	);
@@ -126,7 +126,7 @@ void BoidHandler::createGPUBuffers()
 	initialBufferData.pSysMem = initialMatrices;
 	
 	// Buffer
-	this->boidBuffer.createStructuredBuffer(
+	this->boidTransformBuffer.createStructuredBuffer(
 		D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE,
 		sizeof(XMFLOAT4X4),
 		NUM_BOIDS,
@@ -136,15 +136,15 @@ void BoidHandler::createGPUBuffers()
 	delete[] initialMatrices;
 
 	// Buffer UAV
-	this->boidBufferUAV.createUAV(
-		this->boidBuffer,
+	this->boidTransformUAV.createUAV(
+		this->boidTransformBuffer,
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_UAV_DIMENSION_BUFFER
 	);
 
 	// Buffer SRV
-	this->boidBufferSRV.createSRV(
-		this->boidBuffer, 
+	this->boidTransformSRV.createSRV(
+		this->boidTransformBuffer, 
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_SRV_DIMENSION_BUFFER
 	);
@@ -286,27 +286,35 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	// List of cell- and boid IDs
 	boidListBuffer(renderer, "boidListBuffer"),
-	boidListBufferUAV(renderer, "boidListBufferUAV"),
-	boidListBufferSRV(renderer, "boidListBufferSRV"),
+	boidListUAV(renderer, "boidListBufferUAV"),
+	boidListSRV(renderer, "boidListBufferSRV"),
 
 	// Offsets into sorted list
 	boidOffsetBuffer(renderer, "boidOffsetBuffer"),
-	boidOffsetBufferUAV(renderer, "boidOffsetBufferUAV"),
+	boidOffsetUAV(renderer, "boidOffsetBufferUAV"),
 
 	// Boid velocities
-	boidVelocBuffer(renderer, "boidVelocBuffer"),
-	boidVelocUAV(renderer, "boidVelocUAV"),
+	boidVelocityBuffer(renderer, "boidVelocBuffer"),
+	boidVelocityUAV(renderer, "boidVelocUAV"),
 
 	// Boid transformations
-	boidBuffer(renderer, "boidBuffer"),
-	boidBufferUAV(renderer, "boidBufferUAV"),
-	boidBufferSRV(renderer, "boidBufferSRV"),
+	boidTransformBuffer(renderer, "boidBuffer"),
+	boidTransformUAV(renderer, "boidBufferUAV"),
+	boidTransformSRV(renderer, "boidBufferSRV"),
 
-	// Compute shaders
+	// Creates list of cell IDs paired with boid IDs
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	
+	// Sorts list based on cell ID
 	boidSortShader(renderer, "CompiledShaders/BoidListSort_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	
+	// Clears offset buffer
 	boidOffsetClearShader(renderer, "CompiledShaders/BoidOffsetClear_Comp.cso", (NUM_GRID_CELLS-1) / 32 + 1, 1, 1),
+	
+	// Inserts cell offsets into offset list
 	boidOffsetInsertShader(renderer, "CompiledShaders/BoidOffsetInsert_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+	
+	// Performs boid logic
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 
 	boidInstancer(renderer),
@@ -319,29 +327,27 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	this->createGPUBuffers();
 
 	// Add buffers to list compute shader
-	this->boidInsertShader.addUAV(this->boidListBufferUAV.getUAV());
-	this->boidInsertShader.addUAV(this->boidBufferUAV.getUAV());
+	this->boidInsertShader.addUAV(this->boidListUAV.getUAV());
+	this->boidInsertShader.addUAV(this->boidTransformUAV.getUAV());
 	this->boidInsertShader.addConstantBuffer(this->boidInsertShaderBuffer);
 
 	// Add buffers to sort compute shader
-	this->boidSortShader.addUAV(this->boidListBufferUAV.getUAV());
-	this->boidSortShader.addUAV(this->boidVelocUAV.getUAV());
-	this->boidSortShader.addUAV(this->boidBufferUAV.getUAV());
+	this->boidSortShader.addUAV(this->boidListUAV.getUAV());
 	this->boidSortShader.addConstantBuffer(this->boidSortShaderBuffer);
 
 	// Add buffers to offset clear compute shader
-	this->boidOffsetClearShader.addUAV(this->boidOffsetBufferUAV.getUAV());
+	this->boidOffsetClearShader.addUAV(this->boidOffsetUAV.getUAV());
 	this->boidOffsetClearShader.addConstantBuffer(this->boidOffsetClearShaderBuffer);
 
-	// Add bufers to offset insert compute shader
-	this->boidOffsetInsertShader.addUAV(this->boidListBufferUAV.getUAV());
-	this->boidOffsetInsertShader.addUAV(this->boidOffsetBufferUAV.getUAV());
+	// Add buffers to offset insert compute shader
+	this->boidOffsetInsertShader.addUAV(this->boidListUAV.getUAV());
+	this->boidOffsetInsertShader.addUAV(this->boidOffsetUAV.getUAV());
 
 	// Add buffers to logic compute shader
-	this->boidLogicShader.addUAV(this->boidVelocUAV.getUAV());
-	this->boidLogicShader.addUAV(this->boidBufferUAV.getUAV());
-	this->boidLogicShader.addUAV(this->boidListBufferUAV.getUAV());
-	this->boidLogicShader.addUAV(this->boidOffsetBufferUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidVelocityUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidTransformUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidListUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidOffsetUAV.getUAV());
 	this->boidLogicShader.addConstantBuffer(this->boidLogicShaderBuffer);
 
 	// Set values in list constant buffer once
@@ -411,11 +417,6 @@ void BoidHandler::updateBoids(float deltaTime)
 	Log::print("---------- OFFSET ----------");
 	this->printBoidBufferElement(this->boidOffsetBuffer, 1);*/
 
-	// ---------- Coherent shaders ----------
-
-	// this->boidCoherentVelocityShader.run();
-	// this->boidCoherentTransformShader.run();
-
 	// ---------- Boid logic shader ----------
 
 	// Update logic shader buffer
@@ -429,8 +430,8 @@ void BoidHandler::updateBoids(float deltaTime)
 void BoidHandler::drawBoids()
 {
 	// Set boid buffer SRV in vertex shader
-	this->boidBufferSRV.setVS(0);
-	this->boidListBufferSRV.setVS(1);
+	this->boidTransformSRV.setVS(0);
+	this->boidListSRV.setVS(1);
 
 	// Draw all boids
 	this->boidInstancer.draw(NUM_BOIDS);

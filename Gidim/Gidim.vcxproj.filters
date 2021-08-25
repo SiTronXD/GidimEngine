@@ -62,6 +62,9 @@
     <Filter Include="Examples\GameObjects">
       <UniqueIdentifier>{cef5ebc4-1724-4252-ac6b-763770938c71}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\ComputeShaders\Boids">
+      <UniqueIdentifier>{318d2596-dc75-4aec-b9e6-76c291151a11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -326,26 +329,26 @@
     <FxCompile Include="Resources\Shaders\ComputeShaders\FoamMaskCreator_Comp.hlsl">
       <Filter>Shaders\ComputeShaders</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\ComputeShaders\Boid_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders</Filter>
-    </FxCompile>
     <FxCompile Include="Resources\Shaders\VertexShaders\Boid_Vert.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\PixelShaders\Boid_Pix.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidOffsetInsert_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
+    </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\Boid_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
+    </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\BoidInsertList_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders</Filter>
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\BoidListSort_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders</Filter>
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\ComputeShaders\BoidOffsetClear_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidOffsetInsert_Comp.hlsl">
-      <Filter>Shaders\ComputeShaders</Filter>
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

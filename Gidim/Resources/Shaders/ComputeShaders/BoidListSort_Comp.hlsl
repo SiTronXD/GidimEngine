@@ -3,7 +3,7 @@
 // Tim Gfrerer. "Implementing Bitonic Merge Sort in Vulkan Compute". (https://poniesandlight.co.uk/reflect/bitonic_merge_sort/, accessed August 22, 2021)
 
 // Each thread controls a pair of elements, hence size/2
-#define DESIRED_THREAD_GROUP_SIZE 128
+#define DESIRED_THREAD_GROUP_SIZE 1024
 #define LOCAL_SIZE (DESIRED_THREAD_GROUP_SIZE / 2)
 
 #define ALG_LOCAL_BMS 0
@@ -23,12 +23,8 @@ cbuffer BoidSortBuffer : register(b0)
 // uint2(cell ID, boid ID)
 // (sort elements by cell IDs)
 RWStructuredBuffer<uint2> boidList : register(u0);
-RWStructuredBuffer<float3> boidVelocities : register(u1);
-RWStructuredBuffer<float4x4> boidTransforms : register(u2);
 
 groupshared uint2 localValue[LOCAL_SIZE * 2];
-groupshared float3 localVelocValue[LOCAL_SIZE * 2];
-groupshared float4x4 localTransformValue[LOCAL_SIZE * 2];
 
 // Compare and swap globally within all threads in dispatch
 void globalCompareAndSwap(uint2 idx)
@@ -38,15 +34,6 @@ void globalCompareAndSwap(uint2 idx)
 		uint2 temp = boidList[idx.x];
 		boidList[idx.x] = boidList[idx.y];
 		boidList[idx.y] = temp;
-
-
-		float3 tempVeloc = boidVelocities[idx.x];
-		boidVelocities[idx.x] = boidVelocities[idx.y];
-		boidVelocities[idx.y] = tempVeloc;
-
-		float4x4 tempTransform = boidTransforms[idx.x];
-		boidTransforms[idx.x] = boidTransforms[idx.y];
-		boidTransforms[idx.y] = tempTransform;
 	}
 }
 
@@ -58,14 +45,6 @@ void localCompareAndSwap(uint2 idx)
 		uint2 temp = localValue[idx.x];
 		localValue[idx.x] = localValue[idx.y];
 		localValue[idx.y] = temp;
-
-		float3 tempVeloc = localVelocValue[idx.x];
-		localVelocValue[idx.x] = localVelocValue[idx.y];
-		localVelocValue[idx.y] = tempVeloc;
-
-		float4x4 tempTransform = localTransformValue[idx.x];
-		localTransformValue[idx.x] = localTransformValue[idx.y];
-		localTransformValue[idx.y] = tempTransform;
 	}
 }
 
@@ -154,12 +133,6 @@ void main(
 	{
 		localValue[localID * 2 + 0] = boidList[offset + localID * 2 + 0];
 		localValue[localID * 2 + 1] = boidList[offset + localID * 2 + 1];
-
-		localVelocValue[localID * 2 + 0] = boidVelocities[offset + localID * 2 + 0];
-		localVelocValue[localID * 2 + 1] = boidVelocities[offset + localID * 2 + 1];
-
-		localTransformValue[localID * 2 + 0] = boidTransforms[offset + localID * 2 + 0];
-		localTransformValue[localID * 2 + 1] = boidTransforms[offset + localID * 2 + 1];
 	}
 
 	// Choose sub-algorithm
@@ -189,11 +162,5 @@ void main(
 
 		boidList[offset + localID * 2 + 0] = localValue[localID * 2 + 0];
 		boidList[offset + localID * 2 + 1] = localValue[localID * 2 + 1];
-
-		boidVelocities[offset + localID * 2 + 0] = localVelocValue[localID * 2 + 0];
-		boidVelocities[offset + localID * 2 + 1] = localVelocValue[localID * 2 + 1];
-
-		boidTransforms[offset + localID * 2 + 0] = localTransformValue[localID * 2 + 0];
-		boidTransforms[offset + localID * 2 + 1] = localTransformValue[localID * 2 + 1];
 	}
 }

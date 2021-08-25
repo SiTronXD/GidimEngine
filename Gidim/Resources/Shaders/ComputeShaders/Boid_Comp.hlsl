@@ -1,5 +1,5 @@
 
-#define THREAD_GROUP_SIZE 128
+#define THREAD_GROUP_SIZE 1024
 
 cbuffer BoidLogicBuffer : register(b0)
 {
@@ -85,39 +85,6 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	int cohesionBoidsInRadius = 0;
 	float3 separationAccel = float3(0.0f, 0.0f, 0.0f);
 	int separationBoidsInRadius = 0;
-
-	// Loop through all boids
-	/*for (int i = 0; i < numBoids; ++i)
-	{
-		float3 otherPos = getPos(i);
-		float3 deltaPos = myPos - otherPos;
-		float distSqrd = dot(deltaPos, deltaPos);
-
-		// Make sure this boid is not my boid
-		if (i != id)
-		{
-			// Alignment
-			if (distSqrd <= alignRadiusSqrd)
-			{
-				alignmentAccel += boidVelocities[i];
-				alignmentBoidsInRadius++;
-			}
-
-			// Cohesion
-			if (distSqrd <= cohesionRadiusSqrd)
-			{
-				cohesionAccel += otherPos;
-				cohesionBoidsInRadius++;
-			}
-
-			// Separation
-			if (distSqrd <= separationRadiusSqrd)
-			{
-				separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
-				separationBoidsInRadius++;
-			}
-		}
-	}*/
 
 	// Loop through all neighboring boids
 	for (int zo = -1; zo <= 1; ++zo)
@@ -228,18 +195,20 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 [numthreads(THREAD_GROUP_SIZE, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-	uint id = dispatchThreadID.x;
+	uint threadID = dispatchThreadID.x;
+	uint boidID = boidSortedList[threadID].y; // Better cache coherency
 
-	float3 oldPos = getPos(id);
-	float3 velocity = boidVelocities[id];
+	float3 position = getPos(boidID);
+	float3 velocity = boidVelocities[boidID];
 
 	// Apply boid rules
-	float3 acceleration = getAcceleration(id, oldPos, velocity);
+	float3 acceleration = getAcceleration(boidID, position, velocity);
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime * accelerationScale;
+	velocity = limitVecMag(velocity, 15.0f);
 
-	float3 newPos = oldPos + velocity * deltaTime;
+	float3 newPos = position + velocity * deltaTime;
 
 	// Keep boid positions wrapped within [-halfVolumeSize, halfVolumeSize]
 	float3 halfSize = float3(halfVolumeSize, halfVolumeSize, halfVolumeSize);
@@ -253,10 +222,10 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float3 upDir = cross(leftDir, forwardDir);
 
 	// Apply new velocity to the old one
-	boidVelocities[id] = velocity;
+	boidVelocities[boidID] = velocity;
 
 	// Apply translation and rotation to the final matrix
-	boidTransforms[id] = float4x4(
+	boidTransforms[boidID] = float4x4(
 		float4(leftDir.xyz, 0.0f),
 		float4(upDir.xyz, 0.0f),
 		float4(forwardDir.xyz, 0.0f),

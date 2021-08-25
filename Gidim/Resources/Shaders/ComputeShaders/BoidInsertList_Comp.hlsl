@@ -8,7 +8,7 @@
 
 // The dynamic hashed grid is then used to find neighboring boids in the grid
 
-#define THREAD_GROUP_SIZE 128
+#define THREAD_GROUP_SIZE 1024
 
 cbuffer BoidInsertBuffer : register(b0)
 {

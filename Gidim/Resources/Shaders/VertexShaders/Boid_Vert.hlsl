@@ -39,11 +39,31 @@ float randomFloat(float state)
 	return float(wang_hash(uint(state))) / 4294967296.0;
 }
 
+// Types of coloring for the boids
+#define COLOR_TYPE_BOID_ID 0
+#define COLOR_TYPE_CELL_ID 1
+
+#define SELECTED_COLOR_TYPE COLOR_TYPE_CELL_ID
+
 Output main(Input input)
 {
 	Output output;
 
 	uint id = input.instanceID;
+	uint colID = id;
+
+	// Choose IDs depending on the coloring type
+#if (SELECTED_COLOR_TYPE == COLOR_TYPE_CELL_ID)
+	id = boidsList[input.instanceID].y;
+	colID = boidsList[input.instanceID].x;
+#endif
+
+	// Color
+	output.color = float3(
+		randomFloat(colID * 3 + 0),
+		randomFloat(colID * 3 + 1),
+		randomFloat(colID * 3 + 2)
+	);
 
 	// Position
 	float4 p = float4(input.position.xyz, 1.0f);
@@ -53,14 +73,6 @@ Output main(Input input)
 
 	// UV coordinates
 	output.uv = input.uv;
-
-	// Color
-	uint colID = boidsList[id].x;
-	output.color = float3(
-		randomFloat(colID * 3 + 0),
-		randomFloat(colID * 3 + 1),
-		randomFloat(colID * 3 + 2)
-	);
 
 	return output;
 }
