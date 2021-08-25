@@ -6,7 +6,7 @@
 #include "../../Engine/Graphics/DirectX11/D3DUAV.h"
 #include "../../Engine/Graphics/DirectX11/D3DSRV.h"
 
-enum BitonicAlgorithmType
+enum BitonicSubAlgorithmType
 {
 	LOCAL_BMS = 0,
 	LOCAL_DISPERSE = 1,
@@ -95,7 +95,7 @@ private:
 
 
 	void createGPUBuffers();
-	void printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int index);
+	void printBoidBufferElement(D3DBuffer& debugBuffer);
 
 	void localBMS(unsigned int h);
 	void bigFlip(unsigned int h);

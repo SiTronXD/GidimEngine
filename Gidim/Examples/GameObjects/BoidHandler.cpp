@@ -150,7 +150,8 @@ void BoidHandler::createGPUBuffers()
 	);
 }
 
-void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int index)
+// Print data from GPU buffer
+void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer)
 {
 	// --- Read buffer from GPU to CPU
 	ID3D11Device* device = this->renderer.getDevice();
@@ -178,33 +179,16 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 		}
 
 		// Print data
-		if (index <= 0)
+		for (int i = 0; i < NUM_GRID_CELLS; ++i)
 		{
-			for (int i = 0; i < NUM_BOIDS; ++i)
-			{
-				Log::print("uint(" +
-					std::to_string(
-						((unsigned int*)mappedResource.pData)[i * 2 + 0]
-					) + ", " +
-					std::to_string(
-						((unsigned int*)mappedResource.pData)[i * 2 + 1]
-					) + ")"
-				);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < NUM_GRID_CELLS; ++i)
-			{
-				Log::print("uint(" +
-					std::to_string(
-						i//((unsigned int*)mappedResource.pData)[i * 1 + 0]
-					) + ", " +
-					std::to_string(
-						((unsigned int*)mappedResource.pData)[i * 1 + 0]
-					) + ")"
-				);
-			}
+			Log::print("uint(" +
+				std::to_string(
+					i
+				) + ", " +
+				std::to_string(
+					((unsigned int*)mappedResource.pData)[i * 1 + 0]
+				) + ")"
+			);
 		}
 
 		// Unmap and release temporary buffer
@@ -217,25 +201,25 @@ void BoidHandler::printBoidBufferElement(D3DBuffer& debugBuffer, unsigned int in
 
 void BoidHandler::localBMS(unsigned int h)
 {
-	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_BMS;
+	this->bSortB.subAlgorithmEnum = BitonicSubAlgorithmType::LOCAL_BMS;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::bigFlip(unsigned int h)
 {
-	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::BIG_FLIP;
+	this->bSortB.subAlgorithmEnum = BitonicSubAlgorithmType::BIG_FLIP;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::localDisperse(unsigned int h)
 {
-	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::LOCAL_DISPERSE;
+	this->bSortB.subAlgorithmEnum = BitonicSubAlgorithmType::LOCAL_DISPERSE;
 
 	this->dispatchSort(h);
 }
 void BoidHandler::bigDisperse(unsigned int h)
 {
-	this->bSortB.subAlgorithmEnum = BitonicAlgorithmType::BIG_DISPERSE;
+	this->bSortB.subAlgorithmEnum = BitonicSubAlgorithmType::BIG_DISPERSE;
 	
 	this->dispatchSort(h);
 }
@@ -373,53 +357,23 @@ BoidHandler::~BoidHandler()
 
 }
 
-bool hasPrintedSortedBuffer = false;
-
 void BoidHandler::updateBoids(float deltaTime)
 {
 	// ---------- Boid insert list shader ----------
 	this->boidInsertShader.run();
 
-	// ---------- Boid list sort shader ----------
-
-	// Print boid list before sorting
-	/*if (Time::hasOneSecondPassed() && !hasPrintedSortedBuffer)
-	{
-		// Debug GPU buffer
-		Log::print("--------------------");
-		Log::print("before sort:");
-		this->printBoidBufferElement(this->boidListBuffer, 0);
-	}*/
-
-	// Sort!
+	// ---------- Boid list sort ----------
 	this->sortBoidList();
 
-	// Print boid list after sorting
-	/*if (Time::hasOneSecondPassed() && !hasPrintedSortedBuffer)
-	{
-		// Debug GPU buffer
-		Log::print("after sort:");
-		this->printBoidBufferElement(this->boidListBuffer, 0);
-
-		hasPrintedSortedBuffer = true;
-	}*/
-
 	// ---------- Boid offset clear shader ----------
-
 	this->boidOffsetClearShader.run();
 
 	// ---------- Boid offset insert shader ----------
-
 	this->boidOffsetInsertShader.run();
-
-	/*Log::print("---------- LIST BUFFER ----------");
-	this->printBoidBufferElement(this->boidListBuffer, 0);
-	Log::print("---------- OFFSET ----------");
-	this->printBoidBufferElement(this->boidOffsetBuffer, 1);*/
 
 	// ---------- Boid logic shader ----------
 
-	// Update logic shader buffer
+	// Update logic shader constant buffer
 	this->bLogicB.deltaTime = deltaTime;
 	this->boidLogicShaderBuffer.update(&this->bLogicB);
 

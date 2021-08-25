@@ -26,7 +26,7 @@ RWStructuredBuffer<uint2> boidList : register(u0);
 
 groupshared uint2 localValue[LOCAL_SIZE * 2];
 
-// Compare and swap globally within all threads in dispatch
+// Compare and swap globally within dispatch
 void globalCompareAndSwap(uint2 idx)
 {
 	if (boidList[idx.x].x > boidList[idx.y].x)
@@ -48,43 +48,54 @@ void localCompareAndSwap(uint2 idx)
 	}
 }
 
-// Flip globally within all threads in dispatch
+// Flip globally within dispatch
 void bigFlip(uint globalInvocationID, uint workGroupSize, uint h)
 {
-	uint tPrime = globalInvocationID;
+	uint t = globalInvocationID;
 	uint halfH = h >> 1;
+	uint tModHH = t % halfH;
+	uint q = uint((2 * t) / h) * h;
 
-	uint q = uint((2 * tPrime) / h) * h;
-	uint x = q + (tPrime % halfH);
-	uint y = q + h - (tPrime % halfH) - 1;
+	uint2 indices = uint2(
+		q + tModHH,
+		q + h - tModHH - 1
+	);
 
-	globalCompareAndSwap(uint2(x, y));
+	globalCompareAndSwap(indices);
 }
 
-// Disperse globally within all threads in dispatch
+// Disperse globally within dispatch
 void bigDisperse(uint globalInvocationID, uint workGroupSize, uint h)
 {
-	uint tPrime = globalInvocationID;
+	uint t = globalInvocationID;
 	uint halfH = h >> 1;
+	uint tModHH = t % halfH;
+	uint q = uint((2 * t) / h) * h;
 
-	uint q = uint((2 * tPrime) / h) * h;
-	uint x = q + (tPrime % halfH);
-	uint y = q + (tPrime % halfH) + halfH;
+	uint2 indices = uint2(
+		q + tModHH,
+		q + tModHH + halfH
+	);
 
-	globalCompareAndSwap(uint2(x, y));
+	globalCompareAndSwap(indices);
 }
 
 // Flip within thread group
 void localFlip(uint localID, uint h)
 {
 	uint t = localID;
-	GroupMemoryBarrierWithGroupSync();
 
 	uint halfH = h >> 1;
+	uint tModHH = t % halfH;
+	uint q = uint((2 * t) / h) * h;
+
 	uint2 indices = uint2(
-		uint((t * 2) / h) * h + t % halfH,
-		uint((t * 2) / h) * h + h - (t % halfH) - 1
+		q + tModHH,
+		q + h - tModHH - 1
 	);
+
+	// Sync threads within group
+	GroupMemoryBarrierWithGroupSync();
 
 	localCompareAndSwap(indices);
 }
@@ -96,13 +107,17 @@ void localDisperse(uint localID, uint h)
 
 	for ( ; h > 1; h >>= 1)
 	{
-		GroupMemoryBarrierWithGroupSync();
-
 		uint halfH = h >> 1;
+		uint tModHH = t % halfH;
+		uint q = uint((2 * t) / h) * h;
+
 		uint2 indices = uint2(
-			uint((t * 2) / h) * h + (t % halfH),
-			uint((t * 2) / h) * h + (t % halfH) + halfH
+			q + tModHH,
+			q + tModHH + halfH
 		);
+
+		// Sync threads within group
+		GroupMemoryBarrierWithGroupSync();
 
 		localCompareAndSwap(indices);
 	}
