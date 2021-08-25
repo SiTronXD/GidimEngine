@@ -11,9 +11,11 @@ cbuffer BoidLogicBuffer : register(b0)
 };
 
 RWStructuredBuffer<float3> boidVelocities : register(u0);
-RWStructuredBuffer<float4x4> boidTransforms : register(u1);
-RWStructuredBuffer<uint2> boidSortedList : register(u2);
-RWStructuredBuffer<uint> boidListOffsets : register(u3);
+RWStructuredBuffer<float3> boidNewVelocities : register(u1);
+RWStructuredBuffer<float4x4> boidTransforms : register(u2);
+RWStructuredBuffer<float4x4> boidNewTransforms : register(u3);
+RWStructuredBuffer<uint2> boidSortedList : register(u4);
+RWStructuredBuffer<uint> boidListOffsets : register(u5);
 
 // Set magnitude of vector
 float3 setVecMag(float3 vec, float mag)
@@ -96,7 +98,7 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 				// Create temporary position
 				float3 tempPos = myPos + float3(xo, yo, zo) * maxSearchRadius;
 
-				// Ignore boids outside play volume
+				// Don't search outside play volume
 				if (tempPos.x < -halfVolumeSize || tempPos.x > halfVolumeSize ||
 					tempPos.y < -halfVolumeSize || tempPos.y > halfVolumeSize ||
 					tempPos.z < -halfVolumeSize || tempPos.z > halfVolumeSize)
@@ -221,11 +223,12 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 	float3 leftDir = normalize(cross(forwardDir, float3(0.0f, 1.0f, 0.0f)));
 	float3 upDir = cross(leftDir, forwardDir);
 
-	// Apply new velocity to the old one
-	boidVelocities[boidID] = velocity;
 
-	// Apply translation and rotation to the final matrix
-	boidTransforms[boidID] = float4x4(
+	// Apply new velocity to separate buffer
+	boidNewVelocities[boidID] = velocity;
+
+	// Apply translation and rotation to separate buffer
+	boidNewTransforms[boidID] = float4x4(
 		float4(leftDir.xyz, 0.0f),
 		float4(upDir.xyz, 0.0f),
 		float4(forwardDir.xyz, 0.0f),

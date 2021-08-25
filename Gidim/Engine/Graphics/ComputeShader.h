@@ -9,7 +9,8 @@
 class ComputeShader
 {
 private:
-	static const int NUM_MAX_UAV = 4;
+	static const int NUM_MAX_UAV = 8;
+	static const int NUM_MAX_RENDER_TEXTURES = 4;
 	static const int NUM_MAX_CONSTANT_BUFFERS = 2;
 
 	ID3D11ComputeShader* computeShader;

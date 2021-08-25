@@ -148,6 +148,39 @@ void BoidHandler::createGPUBuffers()
 		DXGI_FORMAT_UNKNOWN,
 		D3D11_SRV_DIMENSION_BUFFER
 	);
+
+
+	// ---------- New velocities ----------
+
+	// Buffer
+	this->boidNewVelocityBuffer.createStructuredBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(XMFLOAT3),
+		NUM_BOIDS
+	);
+
+	// Buffer UAV
+	this->boidNewVelocityUAV.createUAV(
+		this->boidNewVelocityBuffer,
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER
+	);
+
+	// ---------- New transforms ----------
+
+	// Buffer
+	this->boidNewTransformBuffer.createStructuredBuffer(
+		D3D11_BIND_UNORDERED_ACCESS,
+		sizeof(XMFLOAT4X4),
+		NUM_BOIDS
+	);
+
+	// Buffer UAV
+	this->boidNewTransformUAV.createUAV(
+		this->boidNewTransformBuffer,
+		DXGI_FORMAT_UNKNOWN,
+		D3D11_UAV_DIMENSION_BUFFER
+	);
 }
 
 // Print data from GPU buffer
@@ -281,10 +314,18 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	boidVelocityBuffer(renderer, "boidVelocBuffer"),
 	boidVelocityUAV(renderer, "boidVelocUAV"),
 
-	// Boid transformations
+	// New boid velocities
+	boidNewVelocityBuffer(renderer, "boidTempVelocityBuffer"),
+	boidNewVelocityUAV(renderer, "boidTempVelocityUAV"),
+
+	// Boid transforms
 	boidTransformBuffer(renderer, "boidBuffer"),
 	boidTransformUAV(renderer, "boidBufferUAV"),
 	boidTransformSRV(renderer, "boidBufferSRV"),
+
+	// New boid transforms
+	boidNewTransformBuffer(renderer, "boidNewTransformBuffer"),
+	boidNewTransformUAV(renderer, "boidNewTransformUAV"),
 
 	// Creates list of cell IDs paired with boid IDs
 	boidInsertShader(renderer, "CompiledShaders/BoidInsertList_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
@@ -300,6 +341,9 @@ BoidHandler::BoidHandler(Renderer& renderer)
 	
 	// Performs boid logic
 	boidLogicShader(renderer, "CompiledShaders/Boid_Comp.cso", NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
+
+	// Updates the velocity- and transform buffers to their new values
+	boidUpdateVelocityTransformShader(renderer, "CompiledShaders/BoidUpdateVelocityTransform_Comp.cso",NUM_BOIDS / THREAD_GROUP_SIZE, 1, 1),
 
 	boidInstancer(renderer),
 	boidInsertShaderBuffer(renderer, sizeof(BoidInsertBuffer)),
@@ -329,10 +373,18 @@ BoidHandler::BoidHandler(Renderer& renderer)
 
 	// Add buffers to logic compute shader
 	this->boidLogicShader.addUAV(this->boidVelocityUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidNewVelocityUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidTransformUAV.getUAV());
+	this->boidLogicShader.addUAV(this->boidNewTransformUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidListUAV.getUAV());
 	this->boidLogicShader.addUAV(this->boidOffsetUAV.getUAV());
 	this->boidLogicShader.addConstantBuffer(this->boidLogicShaderBuffer);
+
+	// Add buffers to update velocities/transforms shader
+	this->boidUpdateVelocityTransformShader.addUAV(this->boidVelocityUAV.getUAV());
+	this->boidUpdateVelocityTransformShader.addUAV(this->boidNewVelocityUAV.getUAV());
+	this->boidUpdateVelocityTransformShader.addUAV(this->boidTransformUAV.getUAV());
+	this->boidUpdateVelocityTransformShader.addUAV(this->boidNewTransformUAV.getUAV());
 
 	// Set values in list constant buffer once
 	this->bInsertB.halfVolumeSize = PLAY_HALF_VOLUME_SIZE;
@@ -379,6 +431,9 @@ void BoidHandler::updateBoids(float deltaTime)
 
 	// Run boids logic shader
 	this->boidLogicShader.run();
+
+	// ---------- Update velocities and transforms ----------
+	this->boidUpdateVelocityTransformShader.run();
 }
 
 void BoidHandler::drawBoids()

@@ -350,5 +350,8 @@
     <FxCompile Include="Resources\Shaders\ComputeShaders\BoidOffsetClear_Comp.hlsl">
       <Filter>Shaders\ComputeShaders\Boids</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\ComputeShaders\BoidUpdateVelocityTransform_Comp.hlsl">
+      <Filter>Shaders\ComputeShaders\Boids</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

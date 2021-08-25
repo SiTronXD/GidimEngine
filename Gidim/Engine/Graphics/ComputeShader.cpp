@@ -120,7 +120,7 @@ void ComputeShader::addUAV(ID3D11UnorderedAccessView* uavToAdd)
 void ComputeShader::addRenderTexture(Texture& texture)
 {
 	// Add render texture, if we haven't reached the maximum yet
-	if (this->renderTextures.size() < NUM_MAX_UAV)
+	if (this->renderTextures.size() < NUM_MAX_RENDER_TEXTURES)
 	{
 		this->renderTextures.push_back(&texture);
 		this->addUAV(texture.getTextureUAV());

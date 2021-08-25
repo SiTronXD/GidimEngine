@@ -76,10 +76,18 @@ private:
 	D3DBuffer boidVelocityBuffer;
 	D3DUAV boidVelocityUAV;
 
-	// Boid transformations
+	// New boid velocities
+	D3DBuffer boidNewVelocityBuffer;
+	D3DUAV boidNewVelocityUAV;
+
+	// Boid transformation matrices
 	D3DBuffer boidTransformBuffer;
 	D3DUAV boidTransformUAV;
 	D3DSRV boidTransformSRV;
+
+	// New boid transformation matrices
+	D3DBuffer boidNewTransformBuffer;
+	D3DUAV boidNewTransformUAV;
 
 	// Compute shader
 	ComputeShader boidInsertShader;
@@ -87,6 +95,7 @@ private:
 	ComputeShader boidOffsetClearShader;
 	ComputeShader boidOffsetInsertShader;
 	ComputeShader boidLogicShader;
+	ComputeShader boidUpdateVelocityTransformShader;
 
 	ConstantBuffer boidInsertShaderBuffer;
 	ConstantBuffer boidSortShaderBuffer;
