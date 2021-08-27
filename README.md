@@ -2,6 +2,7 @@
 
 # Renderer features
 * Easy and simple pipeline
+* Geometry instancing
 * Automatic mesh construction of different predetermined geometric shapes (triangle, tetrahedron, cube, plane and sphere)
 * Abstraction of compute shaders, structured buffers, constant buffers, UAVs and SRVs for ease of use
 * Ability to generate normal map from displacement map or height map
