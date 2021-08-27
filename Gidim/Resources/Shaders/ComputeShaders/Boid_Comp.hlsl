@@ -8,6 +8,9 @@ cbuffer BoidLogicBuffer : register(b0)
 	float maxSearchRadius;
 
 	int numBoids;
+	int evaluationOffset;
+
+	float3 padding;
 };
 
 RWStructuredBuffer<float3> boidVelocities : register(u0);
@@ -78,6 +81,10 @@ uint getCellID(float3 worldPos)
 #define cohesionRadiusSqrd 25.0f
 #define separationRadiusSqrd 1.0f
 
+// 0: evaluate all boids
+// 1: evaluate every other boid
+#define evaluateEveryOtherBoid 0
+
 // One function incorporating all rules
 float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 {
@@ -110,54 +117,67 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 				uint tempCellID = getCellID(tempPos);
 				uint boidOffsetID = boidListOffsets[tempCellID];
 
-				// Iterate through all boids within cell
-				while (boidOffsetID < 0xFFFFFFFF && boidOffsetID < numBoids)
+				// Make sure the offset is valid
+				if (boidOffsetID < 0xFFFFFFFF)
 				{
-					// uint(cell ID, boid ID)
-					uint2 neighborBoidIDs = boidSortedList[boidOffsetID];
+					// Switch between adding 0 or 1 every frame
+					#if (evaluateEveryOtherBoid == 1)
+						boidOffsetID += evaluationOffset;
+					#endif
 
-					// Not iterating within same cell anymore
-					if (neighborBoidIDs.x != tempCellID)
+					// Iterate through all boids within cell
+					while (boidOffsetID < numBoids)
 					{
-						break;
+						// uint(cell ID, boid ID)
+						uint2 neighborBoidIDs = boidSortedList[boidOffsetID];
+
+						// Not iterating within same cell anymore
+						if (neighborBoidIDs.x != tempCellID)
+						{
+							break;
+						}
+
+						// ---------- Start of evaluation ----------
+						int i = neighborBoidIDs.y;
+						float3 otherPos = getPos(i);
+						float3 deltaPos = myPos - otherPos;
+						float distSqrd = dot(deltaPos, deltaPos);
+
+						// Make sure this boid is not my boid
+						if (i != id)
+						{
+							// Alignment
+							if (distSqrd <= alignRadiusSqrd)
+							{
+								alignmentAccel += boidVelocities[i];
+								alignmentBoidsInRadius++;
+							}
+
+							// Cohesion
+							if (distSqrd <= cohesionRadiusSqrd)
+							{
+								cohesionAccel += otherPos;
+								cohesionBoidsInRadius++;
+							}
+
+							// Separation
+							if (distSqrd <= separationRadiusSqrd)
+							{
+								separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
+								separationBoidsInRadius++;
+							}
+						}
+
+						// ---------- End of evaluation ----------
+
+
+						// Next boid
+						#if (evaluateEveryOtherBoid == 1)
+							boidOffsetID += 2;
+						#else
+							boidOffsetID++;
+						#endif
 					}
-
-					// ---------- Start of evaluation ----------
-					int i = neighborBoidIDs.y;
-					float3 otherPos = getPos(i);
-					float3 deltaPos = myPos - otherPos;
-					float distSqrd = dot(deltaPos, deltaPos);
-
-					// Make sure this boid is not my boid
-					if (i != id)
-					{
-						// Alignment
-						if (distSqrd <= alignRadiusSqrd)
-						{
-							alignmentAccel += boidVelocities[i];
-							alignmentBoidsInRadius++;
-						}
-
-						// Cohesion
-						if (distSqrd <= cohesionRadiusSqrd)
-						{
-							cohesionAccel += otherPos;
-							cohesionBoidsInRadius++;
-						}
-
-						// Separation
-						if (distSqrd <= separationRadiusSqrd)
-						{
-							separationAccel += deltaPos / max(sqrt(distSqrd), 0.1f);
-							separationBoidsInRadius++;
-						}
-					}
-
-					// ---------- End of evaluation ----------
-
-
-					// Next boid within cell
-					boidOffsetID++;
 				}
 			}
 		}

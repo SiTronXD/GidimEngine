@@ -427,6 +427,7 @@ void BoidHandler::updateBoids(float deltaTime)
 
 	// Update logic shader constant buffer
 	this->bLogicB.deltaTime = deltaTime;
+	this->bLogicB.evaluationOffset = (this->bLogicB.evaluationOffset + 1) % 2;
 	this->boidLogicShaderBuffer.update(&this->bLogicB);
 
 	// Run boids logic shader
