@@ -74,8 +74,8 @@ uint getCellID(float3 worldPos)
 // (works best for 128 boids with a half play volume of 10)
 #define accelerationScale 1.5f
 
-#define minAccel 2.0f
-#define maxAccel 0.25f
+#define initialRuleAccel 2.0f
+#define maxRuleAccel 0.25f
 
 #define alignRadiusSqrd 4.0f
 #define cohesionRadiusSqrd 25.0f
@@ -187,9 +187,9 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	if (alignmentBoidsInRadius > 0)
 	{
 		alignmentAccel /= float(alignmentBoidsInRadius);
-		alignmentAccel = setVecMag(alignmentAccel, minAccel);
+		alignmentAccel = setVecMag(alignmentAccel, initialRuleAccel);
 		alignmentAccel -= myVelocity;
-		alignmentAccel = limitVecMag(alignmentAccel, maxAccel);
+		alignmentAccel = limitVecMag(alignmentAccel, maxRuleAccel);
 	}
 
 	// ---------- Cohesion ----------
@@ -197,18 +197,18 @@ float3 getAcceleration(uint id, float3 myPos, float3 myVelocity)
 	{
 		cohesionAccel /= float(cohesionBoidsInRadius);
 		cohesionAccel -= myPos;
-		cohesionAccel = setVecMag(cohesionAccel, minAccel);
+		cohesionAccel = setVecMag(cohesionAccel, initialRuleAccel);
 		cohesionAccel -= myVelocity;
-		cohesionAccel = limitVecMag(cohesionAccel, maxAccel);
+		cohesionAccel = limitVecMag(cohesionAccel, maxRuleAccel);
 	}
 
 	// ---------- Separation ----------
 	if (separationBoidsInRadius > 0)
 	{
 		separationAccel /= float(separationBoidsInRadius);
-		separationAccel = setVecMag(separationAccel, minAccel);
+		separationAccel = setVecMag(separationAccel, initialRuleAccel);
 		separationAccel -= myVelocity;
-		separationAccel = limitVecMag(separationAccel, maxAccel);
+		separationAccel = limitVecMag(separationAccel, maxRuleAccel);
 	}
 
 	return alignmentAccel + cohesionAccel + separationAccel;

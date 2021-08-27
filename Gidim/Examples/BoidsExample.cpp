@@ -73,11 +73,7 @@ void BoidsExample::run()
 		renderer.beginFrame();
 
 		// Clear background color
-		XMFLOAT4 clearColor;
-		clearColor.x = 0.1f;
-		clearColor.y = 0.1f;
-		clearColor.z = 0.1f;
-		clearColor.w = 1.0f;
+		XMFLOAT4 clearColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 
 		// Clear color and depth buffers
 		renderer.clear(clearColor);
