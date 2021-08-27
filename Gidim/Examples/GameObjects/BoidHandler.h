@@ -18,7 +18,7 @@ class BoidHandler
 {
 private:
 	static const unsigned int THREAD_GROUP_SIZE = 1024;
-	static const unsigned int NUM_BOIDS = 1024 * 1024; // 1024, 1024 * 1024
+	static const unsigned int NUM_BOIDS = 1024 * 512; // 1024, 1024 * 1024
 	static const int PLAY_HALF_VOLUME_SIZE = 200;	// 15, 200
 	static const int BOID_MAX_SEARCH_RADIUS = 5;
 	static const unsigned int NUM_GRID_CELLS =
