@@ -284,8 +284,8 @@ Renderer::Renderer(Window& window)
 	renderTargetView(nullptr), camera(nullptr)
 {
 	// Initialize matrices
-	this->projectionMatrix = XMMatrixIdentity();
-	this->viewMatrix = XMMatrixIdentity();
+	XMStoreFloat4x4(&this->projectionMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&this->viewMatrix, XMMatrixIdentity());
 
 	this->createDevice(window, vsyncEnabled);
 	this->createRenderTarget();
@@ -312,7 +312,7 @@ void Renderer::beginFrame()
 {
 	// Update view matrix
 	if (this->camera != nullptr)
-		this->viewMatrix = this->camera->getViewMatrix();
+		XMStoreFloat4x4(&this->viewMatrix, this->camera->getViewMatrix());
 }
 
 void Renderer::endFrame()
@@ -364,18 +364,22 @@ void Renderer::setCamera(Camera& cam)
 {
 	this->camera = &cam;
 
-	this->projectionMatrix = this->camera->getProjectionMatrix();
-	this->viewMatrix = this->camera->getViewMatrix();
+	XMStoreFloat4x4(&this->projectionMatrix, this->camera->getProjectionMatrix());
+	XMStoreFloat4x4(&this->viewMatrix, this->camera->getViewMatrix());
 }
 
 XMMATRIX Renderer::getProjectionMatrix()
 {
-	return this->projectionMatrix;
+	XMMATRIX tempProjectionMatrix = XMLoadFloat4x4(&this->projectionMatrix);
+
+	return tempProjectionMatrix;
 }
 
 XMMATRIX Renderer::getViewMatrix()
 {
-	return this->viewMatrix;
+	XMMATRIX tempViewMatrix = XMLoadFloat4x4(&this->viewMatrix);
+
+	return tempViewMatrix;
 }
 
 XMFLOAT3 Renderer::getCameraPosition() const

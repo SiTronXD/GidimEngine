@@ -128,14 +128,14 @@ Shader::~Shader()
 void Shader::update(Renderer& renderer, XMMATRIX currentWorldMatrix)
 {
 	// Transpose matrices
-	XMMATRIX projectionMatrix = XMMatrixTranspose(renderer.getProjectionMatrix());
-	XMMATRIX viewMatrix = XMMatrixTranspose(renderer.getViewMatrix());
-	XMMATRIX worldMatrix = XMMatrixTranspose(currentWorldMatrix);
+	XMMATRIX tempProjectionMatrix = XMMatrixTranspose(renderer.getProjectionMatrix());
+	XMMATRIX tempViewMatrix = XMMatrixTranspose(renderer.getViewMatrix());
+	XMMATRIX tempWorldMatrix = XMMatrixTranspose(currentWorldMatrix);
 
 	// Update values in the structure before passing it to the shader
-	this->matrixBufferValues.projectionMatrix = projectionMatrix;
-	this->matrixBufferValues.viewMatrix = viewMatrix;
-	this->matrixBufferValues.worldMatrix = worldMatrix;
+	XMStoreFloat4x4(&this->matrixBufferValues.projectionMatrix, tempProjectionMatrix);
+	XMStoreFloat4x4(&this->matrixBufferValues.viewMatrix, tempViewMatrix);
+	XMStoreFloat4x4(&this->matrixBufferValues.worldMatrix, tempWorldMatrix);
 
 	// Pass values to the shader buffer
 	this->matrixBuffer.update(&this->matrixBufferValues);

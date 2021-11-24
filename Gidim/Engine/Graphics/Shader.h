@@ -12,9 +12,9 @@ private:
 	// Needs 16 byte alignment
 	struct MatrixBuffer
 	{
-		XMMATRIX projectionMatrix;	// 64 bytes
-		XMMATRIX viewMatrix;		// 64 bytes
-		XMMATRIX worldMatrix;		// 64 bytes
+		XMFLOAT4X4 projectionMatrix;	// 64 bytes
+		XMFLOAT4X4 viewMatrix;			// 64 bytes
+		XMFLOAT4X4 worldMatrix;			// 64 bytes
 	} matrixBufferValues{};
 
 	ID3D11VertexShader* vertexShader;

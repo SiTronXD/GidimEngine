@@ -14,7 +14,7 @@ private:
 
 	Renderer& renderer;
 
-	XMMATRIX worldMatrix;
+	XMFLOAT4X4 worldMatrix;
 
 	unsigned int vertexCount;
 	unsigned int indexCount;
@@ -43,5 +43,5 @@ public:
 
 	virtual void draw();
 
-	const XMMATRIX& getWorldMatrix() const;
+	const XMMATRIX getWorldMatrix() const;
 };

@@ -5,16 +5,16 @@
 class Camera
 {
 private:
-	XMMATRIX projectionMatrix;
-	XMMATRIX viewMatrix;
+	XMFLOAT4X4 projectionMatrix;
+	XMFLOAT4X4 viewMatrix;
 
-	XMVECTOR position;
-	XMVECTOR lookAt;
-	XMVECTOR worldUp;
+	XMFLOAT3 position;
+	XMFLOAT3 lookAt;
+	XMFLOAT3 worldUp;
 
-	XMVECTOR forward;
-	XMVECTOR left;
-	XMVECTOR up;
+	XMFLOAT3 forward;
+	XMFLOAT3 left;
+	XMFLOAT3 up;
 
 	float pitch;
 	float yaw;
@@ -30,8 +30,8 @@ public:
 	void move(XMVECTOR dirV);
 	void rotate(XMVECTOR dirV);
 
-	const XMMATRIX& getProjectionMatrix() const;
-	const XMMATRIX& getViewMatrix();
+	const XMMATRIX getProjectionMatrix() const;
+	const XMMATRIX getViewMatrix();
 	
-	const XMFLOAT3 getPosition() const;
+	const XMFLOAT3& getPosition() const;
 };

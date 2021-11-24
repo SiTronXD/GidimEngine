@@ -3,33 +3,54 @@
 
 void Camera::updateDirectionVectors()
 {
-	this->forward = XMVectorSubtract(this->lookAt, this->position);
-	this->forward = XMVector3Normalize(this->forward);
+	XMVECTOR tempLookAt = XMLoadFloat3(&this->lookAt);
+	XMVECTOR tempPosition = XMLoadFloat3(&this->position);
+	XMVECTOR tempWorldUp = XMLoadFloat3(&this->worldUp);
 
-	this->left = XMVector3Cross(this->forward, this->worldUp);
-	this->left = XMVector3Normalize(this->left);
+	// Forward
+	XMVECTOR tempForward = XMVectorSubtract(tempLookAt, tempPosition);
+	tempForward = XMVector3Normalize(tempForward);
+	XMStoreFloat3(&this->forward, tempForward);
 
-	this->up = XMVector3Cross(this->left, this->forward);
-	this->up = XMVector3Normalize(this->up);
+	// Left
+	XMVECTOR tempLeft = XMVector3Cross(tempForward, tempWorldUp);
+	tempLeft = XMVector3Normalize(tempLeft);
+	XMStoreFloat3(&this->left, tempLeft);
+
+	// Up
+	XMVECTOR tempUp = XMVector3Cross(tempLeft, tempForward);
+	tempUp = XMVector3Normalize(tempUp);
+	XMStoreFloat3(&this->up, tempUp);
 }
 
 void Camera::updateViewMatrix()
 {
-	this->viewMatrix = XMMatrixLookAtLH(
-		this->position, 
-		XMVectorAdd(this->position, this->forward), 
-		this->worldUp
+	XMVECTOR tempPosition = XMLoadFloat3(&this->position);
+	XMVECTOR tempForward = XMLoadFloat3(&this->forward);
+	XMVECTOR tempWorldUp = XMLoadFloat3(&this->worldUp);
+
+	XMMATRIX tempViewMatrix = XMMatrixLookAtLH(
+		tempPosition, 
+		XMVectorAdd(tempPosition, tempForward), 
+		tempWorldUp
 	);
+
+	XMStoreFloat4x4(&this->viewMatrix, tempViewMatrix);
 }
 
 Camera::Camera(float fov, float aspectRatio, float nearZ, float farZ, XMVECTOR startPos)
 	: pitch(0.0f), yaw(0.0f)
 {
-	this->projectionMatrix = XMMatrixPerspectiveFovLH(fov, aspectRatio, nearZ, farZ);
+	// Projection matrix
+	XMStoreFloat4x4(
+		&this->projectionMatrix, 
+		XMMatrixPerspectiveFovLH(fov, aspectRatio, nearZ, farZ)
+	);
 
-	this->position = startPos;
-	this->lookAt = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	this->worldUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	// Vectors
+	XMStoreFloat3(&this->position, startPos);
+	XMStoreFloat3(&this->lookAt, XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f));
+	XMStoreFloat3(&this->worldUp, XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 
 	this->updateDirectionVectors();
 	this->updateViewMatrix();
@@ -41,27 +62,34 @@ Camera::~Camera()
 
 void Camera::setPosition(XMVECTOR newPos)
 {
-	this->position = newPos;
+	XMStoreFloat3(&this->position, newPos);
 }
 
 void Camera::move(XMVECTOR dirV)
 {
+	XMVECTOR tempLeft = XMLoadFloat3(&this->left);
+	XMVECTOR tempWorldUp = XMLoadFloat3(&this->worldUp);
+	XMVECTOR tempForward = XMLoadFloat3(&this->forward);
+	XMVECTOR tempPosition = XMLoadFloat3(&this->position);
+
 	XMVECTOR delta = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 
 	XMFLOAT4 dir;
 	XMStoreFloat4(&dir, dirV);
 
 	// Apply direction to delta
-	delta = XMVectorAdd(this->left * dir.x, delta);
-	delta = XMVectorAdd(this->worldUp * dir.y, delta);
-	delta = XMVectorAdd(this->forward * dir.z, delta);
+	delta = XMVectorAdd(tempLeft * dir.x, delta);
+	delta = XMVectorAdd(tempWorldUp * dir.y, delta);
+	delta = XMVectorAdd(tempForward * dir.z, delta);
 
 	// Apply movement to position
-	this->position = XMVectorAdd(this->position, delta);
+	XMStoreFloat3(&this->position, XMVectorAdd(tempPosition, delta));
 }
 
 void Camera::rotate(XMVECTOR dirV)
 {
+	XMVECTOR tempPosition = XMLoadFloat3(&this->position);
+
 	XMFLOAT4 dir;
 	XMStoreFloat4(&dir, dirV);
 
@@ -76,40 +104,38 @@ void Camera::rotate(XMVECTOR dirV)
 	);
 
 	// Create rotation matrix from new pitch, yaw and roll
-	this->lookAt = XMVectorAdd(this->position, 
-		XMVectorSet(
-			(float) (sin(yaw) * cos(pitch)),
-			(float) sin(pitch),
-			(float) (cos(yaw) * cos(pitch)),
-			0.0f
+	XMStoreFloat3(
+		&this->lookAt, 
+		XMVectorAdd(tempPosition, 
+			XMVectorSet(
+				(float) (sin(yaw) * cos(pitch)),
+				(float) sin(pitch),
+				(float) (cos(yaw) * cos(pitch)),
+				0.0f
+			)
 		)
 	);
 
 	this->updateDirectionVectors();
 }
 
-const XMMATRIX& Camera::getProjectionMatrix() const
+const XMMATRIX Camera::getProjectionMatrix() const
 {
-	return this->projectionMatrix;
+	XMMATRIX tempProjectionMatrix = XMLoadFloat4x4(&this->projectionMatrix);
+
+	return tempProjectionMatrix;
 }
 
-const XMMATRIX& Camera::getViewMatrix()
+const XMMATRIX Camera::getViewMatrix()
 {
 	this->updateViewMatrix();
 
-	return this->viewMatrix;
+	XMMATRIX tempViewMatrix = XMLoadFloat4x4(&this->viewMatrix);
+
+	return tempViewMatrix;
 }
 
-const XMFLOAT3 Camera::getPosition() const
+const XMFLOAT3& Camera::getPosition() const
 {
-	XMFLOAT3 tempFloat3;
-
-	XMStoreFloat3(&tempFloat3, this->position);
-
-	return tempFloat3;
+	return this->position;
 }
-
-/*const XMMATRIX Camera::getViewProjectionMatrix() const
-{
-	return XMMATRIX();
-}*/

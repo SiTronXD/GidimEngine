@@ -22,8 +22,8 @@ private:
 	D3D11_RASTERIZER_DESC rasterDesc;
 
 	Camera* camera;
-	XMMATRIX projectionMatrix;
-	XMMATRIX viewMatrix;
+	XMFLOAT4X4 projectionMatrix;
+	XMFLOAT4X4 viewMatrix;
 
 	const bool vsyncEnabled = false;
 

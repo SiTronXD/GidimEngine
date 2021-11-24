@@ -149,7 +149,7 @@ Mesh::~Mesh()
 
 void Mesh::setWorldMatrix(XMMATRIX newWorldMatrix)
 {
-	this->worldMatrix = newWorldMatrix;
+	XMStoreFloat4x4(&this->worldMatrix, newWorldMatrix);
 }
 
 void Mesh::draw()
@@ -163,7 +163,9 @@ void Mesh::draw()
 	deviceContext->DrawIndexed(this->indexCount, 0, 0);
 }
 
-const XMMATRIX& Mesh::getWorldMatrix() const
+const XMMATRIX Mesh::getWorldMatrix() const
 {
-	return this->worldMatrix;
+	XMMATRIX tempMatrix = XMLoadFloat4x4(&this->worldMatrix);
+
+	return tempMatrix;
 }
